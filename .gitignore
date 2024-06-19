@@ -1,0 +1,50 @@
+# Byte-compiled / optimized / DLL files
+*.py[cod]
+
+# Distribution / packaging
+bin/
+build*/
+develop-eggs/
+dist/
+downloads/
+package_sources/
+**/node_modules/
+eggs/
+.eggs/
+parts/
+sdist/
+*.egg-info/
+.installed.cfg
+.mr.developer.cfg
+.*.build
+**.cache/
+**.cache-prod/
+**.cache-dev/
+*.cdx.json
+*.cdx.xml
+version.txt
+
+# Unit test / coverage reports
+.coverage
+.coverage.*
+**/coverage/
+*coverage*.xml
+python-ut-coverage.xml
+python-it-coverage.xml
+**.jest-cache/
+*.junit.xml
+/reports/*
+junit.xml
+cept_test_results.json
+pytest*.xml
+
+# IDE configuration
+.idea/
+.vscode/
+*.code-workspace
+
+*.log
+
+# virtual and working environments
+.spin*
+venv*/

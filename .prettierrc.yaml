@@ -1,0 +1,10 @@
+# Prettier is a code formatter that we use to enforce a consistent formatting
+# style in our code bases which we define using this configuration file.
+#
+# See https://prettier.io/ for more information.
+jsxSingleQuote: true
+singleQuote: true
+endOfLine: auto
+tabWidth: 4
+bracketSpacing: false
+bracketSameLine: true
