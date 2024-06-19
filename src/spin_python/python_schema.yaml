@@ -1,0 +1,108 @@
+python:
+    requirements:
+        type: list
+        help: |
+            The list of this project's external Python requirements, that
+            have to be installed into the project's virtual
+            environment. This excludes requirements stated as
+            'install_requires' in setup.py/setup.cfg.
+    properties:
+        pyenv:
+            type: object
+            help: TODO
+            properties:
+                url:
+                    type: str
+                    help: TODO
+                path:
+                    type: path
+                    help: TODO
+                cache:
+                    type: path
+                    help: TODO
+                python_build:
+                    type: path
+                    help: TODO
+        user_pyenv:
+            type: bool
+            help: TODO
+        nuget:
+            type: object
+            help: TODO
+            properties:
+                url:
+                    type: str
+                    help: TODO
+                exe:
+                    type: path
+                    help: TODO
+                source:
+                    type: str
+                    help: TODO
+        version:
+            type: str
+            help: |
+                The Python version to use for the whole project when using in the
+                context of cs.spin
+        use:
+            type: str
+            help: |
+                The use property can be used to specify an alternative Python source to
+                use. This is useful to rather use the system Python than the one defined
+                in spinfile.yaml
+            default: ''
+        plat_dir:
+            type: path
+            help: TODO
+        inst_dir:
+            type: path
+            help: inst_dir can be used to point to a CE instance.
+        interpreter:
+            type: path
+            help: The path to the Python interpreter of the instance to use.
+        venv:
+            type: path
+            help: |
+                Path to the virtual environment which is used exclusively for the
+                project spin is running on
+        memo:
+            type: path
+            help: TODO
+        bindir:
+            type: path
+            help: TODO
+        scriptdir:
+            type: path
+            help: TODO
+        python:
+            type: path
+            help: |
+                The python property defines the path to the Python interpreter to use.
+        wheelhouse:
+            type: path
+            help: TODO
+        # NOTE: pipconf can't be defined in the schema here, since its data types
+        #       are to complex and can't be represented in YAML.
+        # pipconf:
+        #   type: object
+        #   help: TODO
+        #   properties:
+        #     global:
+        #       type: object
+        #       help: TODO
+        #       properties:
+        #         find-links:
+        #           type: object
+        #           help: TODO
+        #           # properties
+        # The provisioner type is evaluated during runtime and to complex to
+        # represent it in the schema.
+        # provisioner:
+        #   type:
+        #   help: TODO
+        extras:
+            type: list
+            help: TODO
+        devpackages:
+            type: list
+            help: TODO

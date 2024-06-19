@@ -1,0 +1,133 @@
+[build-system]
+build-backend = "setuptools.build_meta"
+requires = ["setuptools>=64", "setuptools_scm>=8"]
+
+[project]
+authors = [{name = "CONTACT Software GmbH"}]
+dependencies = []
+description = "Plugin package for cs.spin providing Python related plugins"
+dynamic = ["version", "readme"]
+license = {text = "Copyright (C) 2024 CONTACT Software GmbH"}
+maintainers = [
+  {name = "Waleri Enns", email = "waleri.enns@contact-software.com"},
+  {name = "Benjamin Thomas Schwertfeger", email = "benjaminthomas.schwertfeger@contact-software.com"},
+  {name = "Fabian Hafer", email = "fabian.hafer@contact-software.com"}
+]
+name = "spin_python"
+requires-python = ">=3.9"
+
+[project.urls]
+Issues = "https://code.contact.de/qs/spin/spin_python/-/issues"
+Repository = "https://code.contact.de/qs/spin/spin_python"
+
+[tool.isort]
+# The profile must be 'black', to avoid conflicting reordering caused by
+# isort and black sorting at the same time.
+known_first_party = ["cs", "cdb*"]
+multi_line_output = 3
+profile = "black"
+
+[tool.pylint.imports]
+# Deprecated modules which should not be used, separated by a comma.
+deprecated-modules = ["regsub", "TERMIOS", "Bastion", "rexec", "cgi"]
+
+[tool.pylint.main]
+# Files or directories to be skipped. They should be base names, not paths.
+# CON: exclude the usual candidates
+ignore = [".svn", "node_modules", ".git", "build"]
+# Use multiple processes to speed up Pylint. Specifying 0 will auto-detect the
+# number of processors available to use.
+# CON: 0 to use all available cores (it actually works and scales quite good).
+jobs = 0
+
+[tool.pylint.messages_control]
+# Only show warnings with the listed confidence levels. Leave empty to show
+# all. Valid levels: HIGH, CONTROL_FLOW, INFERENCE, INFERENCE_FAILURE,
+# UNDEFINED.
+# CON: excluding INFERENCE_FAILURE to decrease the number of false positives
+confidence = ["HIGH", "CONTROL_FLOW", "INFERENCE", "UNDEFINED"]
+# CON: We disable lots of rules to make Pylint less verbose and
+# actually usable. We do it for different reasons. First, we don't
+# check code formatting: nowadays, this is the job of
+# auto-formatters (black in this case). Second, there are some
+# informational rules which can be useful for setup debugging but
+# aren't useful day-to-day. Third, some rules are just bad/too
+# rigid/raise too many false positives.
+#
+# ** Setup debugging **
+# (I0011) locally-disabled
+# (I0013) file-ignored
+# (I0020) suppressed-message
+# (I0021) useless-suppression
+# (I0022) deprecated-pragma
+# (I0023) use-symbolic-message-instead
+# (I1101) c-extension-no-member: generates too many false positives, since we cannot load all c-extensions of external modules
+#
+# ** Bad/Too rigid/Generates too many false positives **
+# (C0103) invalid-name: too restricting
+# (C0303) trailing-whitespace: pre-commit
+# (C0415) import-outside-toplevel: too restricting
+# (E0401) import-error: pylint would need access to all third-party packages
+# (R1705) no-else-return: is allowed by PEP8 and is too rigid
+#
+# ** Not PyLints job **
+# (C0301) line-too-long: black
+# (C0304) missing-final-newline: black
+# (C0305) trailing-newlines: black
+# (W0311) bad-indentation: black
+# (C0327) mixed-line-endings: black
+# (C0410) multiple-imports: isort
+# (C0411) wrong-import-order: isort
+# (C0412) ungrouped-imports: isort
+# (C0413) wrong-import-position: isort
+#
+# ** Local modifications **
+# (W1203) logging-fstring-interpolation: "code consistency" > "potential, minimal performance drop"
+disable = [
+  "bad-indentation",
+  "c-extension-no-member",
+  "deprecated-pragma",
+  "file-ignored",
+  "import-error",
+  "invalid-name",
+  "import-outside-toplevel",
+  "line-too-long",
+  "locally-disabled",
+  "logging-fstring-interpolation",
+  "missing-final-newline",
+  "mixed-line-endings",
+  "multiple-imports",
+  "no-else-return",
+  "suppressed-message",
+  "trailing-newlines",
+  "trailing-whitespace",
+  "ungrouped-imports",
+  "unidiomatic-typecheck",
+  "useless-suppression",
+  "use-symbolic-message-instead",
+  "wrong-import-order",
+  "wrong-import-position",
+  "duplicate-code"
+]
+
+[tool.pylint.miscellaneous]
+# List of note tags to take in consideration, separated by a comma.
+# CON: added some more
+notes = ["FIXME", "XXX", "TODO", "TBC", "TBD"]
+
+[tool.pylint.reports]
+# Activate the evaluation score.
+# CON: to make the output more concise
+score = "no"
+
+[tool.setuptools.dynamic]
+readme = {file = ["README.md"]}
+
+[tool.setuptools.package-data]
+spin_python = ["*_schema.yaml"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools_scm]
+local_scheme = "no-local-version"
