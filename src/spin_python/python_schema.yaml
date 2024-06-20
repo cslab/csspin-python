@@ -1,3 +1,7 @@
+# -*- mode: yaml; coding: utf-8 -*-
+#
+# Schema for the python plugin for cs.spin
+
 python:
     requirements:
         type: list
