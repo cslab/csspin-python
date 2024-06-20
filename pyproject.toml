@@ -34,7 +34,7 @@ deprecated-modules = ["regsub", "TERMIOS", "Bastion", "rexec", "cgi"]
 [tool.pylint.main]
 # Files or directories to be skipped. They should be base names, not paths.
 # CON: exclude the usual candidates
-ignore = [".svn", "node_modules", ".git", "build"]
+ignore = [".svn", "node_modules", ".git", "build", "pytest.py"]
 # Use multiple processes to speed up Pylint. Specifying 0 will auto-detect the
 # number of processors available to use.
 # CON: 0 to use all available cores (it actually works and scales quite good).
