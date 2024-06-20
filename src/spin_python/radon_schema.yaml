@@ -1,0 +1,24 @@
+# -*- mode: yaml; coding: utf-8 -*-
+#
+# Schema for the radon plugin for cs.spin
+
+radon:
+    type: object
+    help: Configuration of the radon plugin for cs.spin
+    properties:
+        exe:
+            type: str
+            help: TODO
+        mi_threshold:
+            type: str
+            help: TODO
+        requires:
+            type: object
+            help: Dependencies of the radon plugin
+            properties:
+                spin:
+                    type: list
+                    help: Spin dependencies of the radon plugin
+                python:
+                    type: list
+                    help: Python dependencies of the radon plugin

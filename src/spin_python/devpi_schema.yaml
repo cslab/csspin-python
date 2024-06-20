@@ -1,0 +1,21 @@
+# -*- mode: yaml; coding: utf-8 -*-
+#
+# Schema for the devpi plugin for cs.spin
+
+devpi:
+    type: object
+    help: Configuration of the devpi plugin for cs.spin
+    properties:
+        formats:
+            type: list
+            help: TODO
+        requires:
+            type: object
+            help: Dependencies of the devpi plugin
+            properties:
+                spin:
+                    type: list
+                    help: Spin dependencies of the devpi plugin
+                python:
+                    type: list
+                    help: Python dependencies of the devpi plugin

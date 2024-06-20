@@ -1,0 +1,82 @@
+# -*- mode: yaml; coding: utf-8 -*-
+#
+# Schema for the piptools plugin for cs.spin
+
+piptools:
+    type: object
+    help: TODO
+    properties:
+        requires:
+            type: object
+            help: Dependencies of the piptools plugin
+            properties:
+                spin:
+                    type: list
+                    help: Spin dependencies of the piptools plugin
+                python:
+                    type: list
+                    help: Python dependencies of the piptools plugin
+        hashes:
+            type: bool
+            help: TODO
+        requirements:
+            type: path
+            help: TODO
+        requirements_sources:
+            type: list
+            help: TODO
+        spinreqs:
+            type: path
+            help: TODO
+        extras:
+            type: list
+            help: TODO
+        spinreqs_in:
+            type: path
+            help: TODO
+        editable_options:
+            type: list
+            help: TODO
+        pip_compile:
+            type: object
+            help: TODO
+            properties:
+                cmd:
+                    type: str
+                    help: TODO
+                options_hash:
+                    type: list
+                    help: TODO
+                options:
+                    type: list
+                    help: TODO
+                env:
+                    type: object
+                    help: TODO
+                    properties:
+                        CUSTOM_COMPILE_COMMAND:
+                            type: str
+                            help: TODO
+                        PYTHONWARNINGS:
+                            type: str
+                            help: TODO
+                pip_sync:
+                    type: object
+                    help: TODO
+                    properties:
+                        cmd:
+                            type: str
+                            help: TODO
+                        options:
+                            type: list
+                            help: TODO
+                        env:
+                            type: object
+                            help: TODO
+                            properties:
+                                PYTHONWARNINGS:
+                                    type: str
+                                    help: TODO
+                        prerequisites:
+                            type: list
+                            help: TODO
