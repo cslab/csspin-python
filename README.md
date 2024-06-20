@@ -8,3 +8,9 @@ The following are coped from: https://code.contact.de/qs/tooling/cs.spin/-/commi
 -   spin_python.devpi
 -   spin_python.piptools
 -   spin_python.radon
+
+The following plugins were copied from:
+https://code.contact.de/qs/tooling/spin-plugins/-/commit/87399f327a5979c3ef5619291cd12bc26fce04ac
+
+-   spin_python.pytest
+-   spin_python.behave

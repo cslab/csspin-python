@@ -1,0 +1,25 @@
+# -*- mode: yaml; coding: utf-8 -*-
+#
+# Schema for the pytest plugin for cs.spin
+
+pytest:
+    type: object
+    help: |
+        The pytest plugin provides the full pytest experience for
+        cs.spin.
+    properties:
+        coverage:
+            type: bool
+            help: Enable or disable code coverage analysis.
+        opts:
+            type: list
+            help: Additional options for the pytest command.
+        coverage_opts:
+            type: list
+            help: Additional options for the coverage run.
+        tests:
+            type: list
+            help: List of test files or directories to include.
+        services:
+            type: bool
+            help: Enable or disable services required for tests.

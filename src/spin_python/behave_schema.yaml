@@ -1,0 +1,31 @@
+# -*- mode: yaml; coding: utf-8 -*-
+#
+# Schema for the behave plugin for cs.spin
+
+behave:
+    type: object
+    help: |
+        The behave plugin for cs.spin enables running behave tests in the
+        context of cs.spin.
+    properties:
+        flaky:
+            type: bool
+            help: Enable or disable flaky tests
+        coverage:
+            type: bool
+            help: Collect coverage while running behave.
+        cov_report:
+            type: path
+            help: Filepath to store the coverage report.
+        cov_config:
+            type: path
+            help: Filepath to the configuration that behave should respect.
+        services:
+            type: bool
+            help: Enable or disable services required for tests.
+        opts:
+            type: list
+            help: Additional options for the behave command
+        tests:
+            type: list
+            help: List of test files or directories to include.
