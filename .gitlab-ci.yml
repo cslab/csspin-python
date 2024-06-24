@@ -6,8 +6,8 @@ include:
       file:
           - ci/common.yml
           - ci/pre-commit.yml
-          - ci/release.yml
           - ci/wheel.yml
+          - ci/release.yml
 
 # --------------------------------- Build stage --------------------------------
 pre-commit:
@@ -23,6 +23,15 @@ wheel:
     script:
         - python -m build -w .
 
+# --------------------------------- Test stage --------------------------------
+test:
+    needs: [wheel]
+    image: python:3.9
+    before_script:
+        - pip install ".[test]"
+    script:
+        - python -m pytest tests
+
 # --------------------------------- Release stage --------------------------------
 conpi:
     extends: ._conpi
@@ -30,7 +39,9 @@ conpi:
         PYPI_INDEX: tools/misc
     needs:
         - wheel
-        - job: pre-commit # Only upload wheel when pre-commit is successful
+        - job: test
+          artifacts: false
+        - job: pre-commit
           artifacts: false
     rules:
         - if: '$CI_COMMIT_TAG'
