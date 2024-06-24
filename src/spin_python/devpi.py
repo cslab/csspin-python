@@ -22,7 +22,10 @@ from spin import (
 
 defaults = config(
     formats=["bdist_wheel"],
-    requires=config(spin=["spin_python.python"], python=["devpi-client", "keyring"]),
+    requires=config(
+        spin=["spin_python.python"],
+        python=["devpi-client", "keyring"],
+    ),
 )
 
 
