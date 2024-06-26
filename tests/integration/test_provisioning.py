@@ -26,6 +26,7 @@ def do_test(tmpdir, what, cmd, path="tests/integration/yamls", props=""):
     return output
 
 
+@pytest.mark.integration()
 def test_python_use(tmpdir):
     """Ensuring that the python plugin and"""
     output = do_test(
