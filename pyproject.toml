@@ -17,11 +17,10 @@ name = "spin_python"
 requires-python = ">=3.9"
 
 [project.optional-dependencies]
-test = [
-  "cs.spin @ git+https://code.contact.de/qs/tooling/cs.spin.git",  # FIXME: pull from package-index
-  "pytest",
-  "pytest-cov"
+spin = [
+  "cs.spin @ git+https://code.contact.de/qs/tooling/cs.spin.git"  # FIXME: pull from package-index
 ]
+test = ["pytest"]
 
 [project.urls]
 Issues = "https://code.contact.de/qs/spin/spin_python/-/issues"
