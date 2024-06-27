@@ -8,7 +8,7 @@
 
 import logging
 
-from spin import config, option, sh, task
+from spin import config, info, option, sh, task
 
 defaults = config(
     exe="radon",
@@ -16,7 +16,6 @@ defaults = config(
     mi_treshold="B",
     requires=config(
         spin=[
-            "spin.builtin.vcs",
             "spin_python.python",
         ],
         python=["radon"],
@@ -32,10 +31,14 @@ def radon(
     args,
 ):
     """Run radon to measure code complexity."""
-    files = args or cfg.vcs.modified
-    files = [f for f in files if f.endswith(".py")]
     if allsource:
         files = ("{spin.project_root}/src", "{spin.project_root}/tests")
+    else:
+        files = args
+        if not files and hasattr(cfg, "vcs") and hasattr(cfg.vcs, "modified"):
+            info("Found modified files.")
+            files = cfg.vcs.modified
+        files = [f for f in files if f.endswith(".py")]
     if files:
         logging.debug(f"radon: Modified files: {files}")
         sh("{radon.exe}", "mi", *cfg.radon.opts, *files)
