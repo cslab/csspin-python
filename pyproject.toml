@@ -18,7 +18,7 @@ requires-python = ">=3.9"
 
 [project.optional-dependencies]
 spin = [
-  "cs.spin @ git+https://code.contact.de/qs/tooling/cs.spin.git"  # FIXME: pull from package-index
+  "cs.spin @ git+https://code.contact.de/qs/spin/cs.spin.git"  # FIXME: pull from package-index
 ]
 test = ["pytest"]
 
@@ -125,6 +125,9 @@ notes = ["FIXME", "XXX", "TODO", "TBC", "TBD"]
 # Activate the evaluation score.
 # CON: to make the output more concise
 score = "no"
+
+[tool.pytest.ini_options]
+markers = ["integration"]
 
 [tool.setuptools.dynamic]
 readme = {file = ["README.md"]}
