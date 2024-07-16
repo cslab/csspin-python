@@ -6,17 +6,21 @@
 
 """Module implementing the integration tests for spin_python"""
 
+from os import getcwd
+
 import pytest
-from spin import backtick, cli
+from spin import backtick, cd, cli
 
 
 @pytest.fixture(autouse=True)
 def cfg():
     """Fixture creating the configuration tree"""
-    cli.load_config_tree(None)
+    cwd = getcwd()
+    cli.load_config_tree("tests/yamls/minimal.yaml")
+    cd(cwd)
 
 
-def do_test(tmpdir, what, cmd, path="tests/integration/yamls", props=""):
+def execute_spin(tmpdir, what, cmd, path="tests/integration/yamls", props=""):
     """Helper to execute spin calls via spin."""
     output = backtick(
         f"spin -p spin.cache={tmpdir} {props} -q -C {path} --env {tmpdir} -f"
@@ -29,7 +33,7 @@ def do_test(tmpdir, what, cmd, path="tests/integration/yamls", props=""):
 @pytest.mark.integration()
 def test_python_use(tmpdir):
     """Ensuring that the python plugin and"""
-    output = do_test(
+    output = execute_spin(
         tmpdir,
         "python.yaml",
         "python --version",
