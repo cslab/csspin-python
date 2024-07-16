@@ -120,14 +120,14 @@ defaults = config(
         if sys.platform != "win32"
         else "{python.inst_dir}/python{platform.exe}"
     ),
-    venv="{spin.env_base}/py{python.version}-{platform.tag}",
+    venv="{spin.spin_dir}/py{python.version}-{platform.tag}",
     memo="{python.venv}/spininfo.memo",
     bindir="{python.venv}/bin" if sys.platform != "win32" else "{python.venv}",
     scriptdir=(
         "{python.venv}/bin" if sys.platform != "win32" else "{python.venv}/Scripts"
     ),
     python="{python.scriptdir}/python",
-    wheelhouse="{spin.env_base}/wheelhouse",
+    wheelhouse="{spin.spin_dir}/wheelhouse",
     pipconf=config({"global": config({"find-links": WHEELHOUSE_MARKER})}),
     provisioner=None,
     extras=[],
@@ -252,10 +252,10 @@ def wheel(cfg):
             cfg.quietflag,
             "build",
             "-b",
-            "{spin.env_base}/build",
+            "{spin.spin_dir}/build",
             "bdist_wheel",
             "-d",
-            "{spin.env_base}/dist",
+            "{spin.spin_dir}/dist",
         )
 
 
@@ -758,7 +758,7 @@ def venv_provision(cfg):  # pylint: disable=too-many-branches,missing-function-d
     # being provisioned (e.g. preparing the venv by adding pth
     # files or by adding packages with other installers like
     # easy_install).
-    for plugin in cfg.topo_plugins:
+    for plugin in cfg.spin.topo_plugins:
         plugin_module = cfg.loaded[plugin]
         hook = getattr(plugin_module, "venv_hook", None)
         if hook is not None:
@@ -777,7 +777,7 @@ def venv_provision(cfg):  # pylint: disable=too-many-branches,missing-function-d
 
     # Install packages required by plugins used
     # ('<plugin>.requires.python')
-    for plugin in cfg.topo_plugins:
+    for plugin in cfg.spin.topo_plugins:
         plugin_module = cfg.loaded[plugin]
         for req in get_requires(plugin_module.defaults, "python"):
             cfg.python.provisioner.add(interpolate1(req))
