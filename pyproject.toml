@@ -26,6 +26,14 @@ test = ["pytest"]
 Issues = "https://code.contact.de/qs/spin/spin_python/-/issues"
 Repository = "https://code.contact.de/qs/spin/spin_python"
 
+[tool.coverage.report]
+include = ["src/spin_python/*"]
+precision = 2
+
+[tool.coverage.run]
+parallel = true
+relative_files = true
+
 [tool.isort]
 # The profile must be 'black', to avoid conflicting reordering caused by
 # isort and black sorting at the same time.
