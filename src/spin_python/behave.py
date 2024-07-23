@@ -111,7 +111,7 @@ def behave(
     args,
 ):
     # pylint: disable=missing-function-docstring
-    import ce_services
+    from spin_ce import ce_services
 
     inst = os.path.abspath(instance or cfg.mkinstance.dbms)
     if not os.path.isdir(inst):
