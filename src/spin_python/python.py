@@ -312,11 +312,6 @@ def nuget_install(cfg):
         "-source",
         cfg.python.nuget.source,
     )
-    paths = os.pathsep.join([cfg.python.inst_dir, cfg.python.inst_dir / "Scripts"])
-    setenv(
-        f"set PATH={paths}{os.pathsep}$PATH",
-        PATH=os.pathsep.join((paths, os.environ["PATH"])),
-    )
     sh(f"{cfg.python.interpreter} -m ensurepip --upgrade")
     sh(
         cfg.python.interpreter,
