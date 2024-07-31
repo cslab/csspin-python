@@ -120,7 +120,7 @@ defaults = config(
         if sys.platform != "win32"
         else "{python.inst_dir}/python{platform.exe}"
     ),
-    venv="{spin.spin_dir}/py{python.version}-{platform.tag}",
+    venv="{spin.spin_dir}/venv",
     memo="{python.venv}/spininfo.memo",
     bindir="{python.venv}/bin" if sys.platform != "win32" else "{python.venv}",
     scriptdir=(
