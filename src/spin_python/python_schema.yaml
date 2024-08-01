@@ -17,16 +17,16 @@ python:
             properties:
                 url:
                     type: str
-                    help: TODO
+                    help: URL to install pyenv from
                 path:
                     type: path
-                    help: TODO
+                    help: Path to cache the pyenv sources
                 cache:
                     type: path
-                    help: TODO
+                    help: Path to cache the Python sources downloaded by pyenv
                 python_build:
                     type: path
-                    help: TODO
+                    help: Path to the python-build builtin plugin of pyenv
         user_pyenv:
             type: bool
             help: TODO
@@ -36,13 +36,13 @@ python:
             properties:
                 url:
                     type: str
-                    help: TODO
+                    help: URL to install nuget from
                 exe:
                     type: path
-                    help: TODO
+                    help: Path to nuget executable
                 source:
                     type: str
-                    help: TODO
+                    help: Index to use for nuget sources
         version:
             type: str
             help: |
@@ -55,12 +55,9 @@ python:
                 use. This is useful to rather use the system Python than the one defined
                 in spinfile.yaml
             default: ''
-        plat_dir:
-            type: path
-            help: TODO
         inst_dir:
             type: path
-            help: inst_dir can be used to point to a CE instance.
+            help: Path to the installation directory of Python.
         interpreter:
             type: path
             help: The path to the Python interpreter of the instance to use.

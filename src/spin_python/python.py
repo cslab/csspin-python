@@ -98,7 +98,7 @@ defaults = config(
     pyenv=config(
         url="https://github.com/pyenv/pyenv.git",
         path="{spin.cache}/pyenv",
-        cache="{spin.cache}/cache",
+        cache="{spin.cache}/pyenv_cache",
         python_build="{python.pyenv.path}/plugins/python-build/bin/python-build",
     ),
     user_pyenv=False,
@@ -109,11 +109,10 @@ defaults = config(
     ),
     version=None,
     use=None,
-    plat_dir="{spin.cache}/{platform.tag}",
     inst_dir=(
-        "{python.plat_dir}/python/{python.version}"
+        "{spin.cache}/python/{python.version}"
         if sys.platform != "win32"
-        else "{python.plat_dir}/python.{python.version}/tools"
+        else "{spin.cache}/python/python.{python.version}/tools"
     ),
     interpreter=(
         "{python.inst_dir}/bin/python{platform.exe}"
@@ -305,7 +304,7 @@ def nuget_install(cfg):
         "-verbosity",
         "quiet",
         "-o",
-        cfg.spin.cache / cfg.platform.tag,
+        cfg.spin.cache / "python",
         "python",
         "-version",
         cfg.python.version,
@@ -344,9 +343,11 @@ def configure(cfg):
             "Spin's Python plugin no longer sets a default version.\n"
             "Please choose a version in spinfile.yaml by setting python.version"
         )
+
     if cfg.python.use:
         warn("python.version will be ignored, using '{python.use}' instead")
         cfg.python.interpreter = cfg.python.use
+
     elif cfg.python.user_pyenv:
         setenv(PYENV_VERSION="{python.version}")
         try:
@@ -367,7 +368,7 @@ def init(cfg):
         if not exists(cfg.python.interpreter):
             die(
                 f"Python {cfg.python.version} has not been provisioned for this"
-                "project. You might want to run spin with the'--provision'"
+                " project. You might want to run spin with the '--provision'"
                 " flag."
             )
     venv_init(cfg)
