@@ -4,7 +4,7 @@
 # All rights reserved.
 # https://www.contact-software.com/
 
-"""Fixtures for the integration testsuite"""
+"""Fixtures for all the tests"""
 
 import os
 

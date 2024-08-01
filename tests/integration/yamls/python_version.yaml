@@ -1,0 +1,7 @@
+minimum-spin: '0.2'
+plugin-packages:
+    - ../..
+plugins:
+    - spin_python.python
+python:
+    version: '3.9.6'
