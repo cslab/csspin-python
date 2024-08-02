@@ -20,9 +20,6 @@ behave:
         cov_config:
             type: path
             help: Filepath to the configuration that behave should respect.
-        services:
-            type: bool
-            help: Enable or disable services required for tests.
         opts:
             type: list
             help: Additional options for the behave command

@@ -1,7 +1,11 @@
 minimum-spin: '0.2'
 plugin-packages:
     - spin_ce
+    - spin_frontend
     - ../..
+node:
+    version: 18.17.1
+    mirror: https://nodejs-proxy.ops.contact.de/dist/
 plugins:
     - spin_python.behave
 python:

@@ -19,7 +19,6 @@ defaults = config(
         spin=[
             "spin_python.python",
             "spin_ce.mkinstance",
-            "spin_ce.ce_services",
         ],
         python=[
             "behave",
@@ -33,8 +32,6 @@ defaults = config(
     coverage=False,
     cov_report="python-at-coverage.xml",
     cov_config="setup.cfg",
-    # Startup CE services before executing the tests
-    services=True,
     # Default to concise and readable output
     opts=["--format=pretty", "--no-source"],
     # This is the default location of behave tests
@@ -111,8 +108,6 @@ def behave(
     args,
 ):
     # pylint: disable=missing-function-docstring
-    from spin_ce import ce_services
-
     inst = os.path.abspath(instance or cfg.mkinstance.dbms)
     if not os.path.isdir(inst):
         die(f"Cannot find the CE instance '{inst}'.")
@@ -120,11 +115,5 @@ def behave(
 
     coverage_enabled = coverage or cfg.behave.coverage
     coverage_context = with_coverage if coverage_enabled else noop
-    services_context = ce_services.with_ce_services if cfg.behave.services else noop
     with coverage_context(cfg):
-        # This is a fast and dirty solution which provides CE services
-        # for tests needing it.
-        # TODO: replace with something more sensible
-        # as soon as we've implemented it.
-        with services_context(cfg):
-            call_behave(cfg, instance, args)
+        call_behave(cfg, instance, args)
