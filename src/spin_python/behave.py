@@ -18,7 +18,6 @@ defaults = config(
     requires=config(
         spin=[
             "spin_python.python",
-            "spin_ce.mkinstance",
         ],
         python=[
             "behave",
@@ -86,20 +85,6 @@ def with_coverage(cfg: ConfigTree) -> Generator:
         sh("coverage", "xml", "-o", cfg.behave.cov_report, may_fail=True)
 
 
-@contextlib.contextmanager
-def noop(*args: str, **kwargs: dict) -> Generator:  # pylint: disable=unused-argument
-    """Noop"""
-    yield
-
-
-def call_behave(cfg, instance, args) -> None:  # pylint: disable=unused-argument
-    """Run the 'behave' command."""
-    opts = cfg.behave.opts
-    if not cfg.behave.flaky:
-        opts.append("--tags=~flaky")
-    sh("powerscript", "-m", "behave", *opts, *args, *cfg.behave.tests)
-
-
 @task(when="cept")
 def behave(
     cfg,
@@ -108,12 +93,18 @@ def behave(
     args,
 ):
     # pylint: disable=missing-function-docstring
-    inst = os.path.abspath(instance or cfg.mkinstance.dbms)
-    if not os.path.isdir(inst):
-        die(f"Cannot find the CE instance '{inst}'.")
-    setenv(CADDOK_BASE=inst)
-
     coverage_enabled = coverage or cfg.behave.coverage
-    coverage_context = with_coverage if coverage_enabled else noop
-    with coverage_context(cfg):
-        call_behave(cfg, instance, args)
+    coverage_context = with_coverage if coverage_enabled else contextlib.nullcontext
+    opts = cfg.behave.opts
+    if not cfg.behave.flaky:
+        opts.append("--tags=~flaky")
+    if cfg.loaded.get("spin_ce.mkinstance"):
+        inst = os.path.abspath(instance or cfg.mkinstance.dbms)
+        if not os.path.isdir(inst):
+            die(f"Cannot find the CE instance '{inst}'.")
+        setenv(CADDOK_BASE=inst)
+        with coverage_context(cfg):
+            sh("powerscript", "-m", "behave", *opts, *args, *cfg.behave.tests)
+    else:
+        with coverage_context(cfg):
+            sh("python", "-m", "behave", *opts, *args, *cfg.behave.tests)

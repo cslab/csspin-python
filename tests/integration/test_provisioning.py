@@ -39,10 +39,6 @@ def provision_env(spinfile, tmp_path, cwd="tests/integration"):
     """
     if spinfile == "python_use.yaml" and not PYTHON_EXISTS:
         pytest.skip("python not available")
-    elif spinfile == "behave.yaml" and sys.platform != "win32":
-        pytest.skip(
-            "Can't provision redis on Linux (required by behave's dependencies)"
-        )
 
     spinfile_path = os.path.join("tests", "integration", "yamls", spinfile)
     cache = tmp_path / ".cache"
@@ -116,6 +112,13 @@ TESTCASES = (
         "radon",
         "",
         id="radon.yaml",
+        marks=PYTHON_SKIP_MARK,
+    ),
+    pytest.param(  # pylint: disable=no-member
+        "playwright.yaml",
+        "playwright",
+        "",
+        id="playwright.yaml",
         marks=PYTHON_SKIP_MARK,
     ),
 )
