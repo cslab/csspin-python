@@ -51,3 +51,12 @@ tests/integration/testpkg/*linux.txt*
 # virtual and working environments
 .spin*
 venv*/
+
+# Documentation
+docs/_build
+*schemaref.rst
+
+# spin_python.piptools
+requirements-linux.txt
+spin-reqs-linux.txt
+spin-reqs-linux.txt.in

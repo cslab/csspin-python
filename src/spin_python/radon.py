@@ -12,8 +12,8 @@ from spin import config, info, option, sh, task
 
 defaults = config(
     exe="radon",
-    opts=["-n", "{radon.mi_treshold}"],
-    mi_treshold="B",
+    opts=["-n", "{radon.mi_threshold}"],
+    mi_threshold="B",
     requires=config(
         spin=[
             "spin_python.python",
@@ -23,7 +23,6 @@ defaults = config(
 )
 
 
-# TODO(wen): is this actually linting? Not sure
 @task()
 def radon(
     cfg,

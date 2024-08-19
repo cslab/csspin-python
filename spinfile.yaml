@@ -1,0 +1,38 @@
+# The spinfile.yaml for spin_python is required since building the documentation
+# requires a provisioned project.
+minimum-spin: '0.2'
+
+plugin-packages:
+    - spin_docs
+    - '../spin_python'
+
+plugins:
+    - spin_python:
+          - python
+          - behave
+          - pytest
+          #   - piptools
+          - radon
+          - devpi
+    - spin_docs.sphinx
+
+python:
+    version: '3.11.9'
+    requirements:
+        - sphinx-rtd-theme
+
+sphinx:
+    build_dir: _build
+
+build-rules:
+    task docs:
+        sources: docs/_schemaref.rst
+    docs/_schemaref.rst:
+        sources: [src/spin_python]
+        spin:
+            - schemadoc behave -o docs/plugins/behave_schemaref.rst
+            - schemadoc devpi -o docs/plugins/devpi_schemaref.rst
+            - schemadoc radon -o docs/plugins/radon_schemaref.rst
+            # - schemadoc piptools -o docs/plugins/piptools_schemaref.rst #  FIXME: piptools not ready for documentation
+            - schemadoc python -o docs/plugins/python_schemaref.rst
+            - schemadoc pytest -o docs/plugins/pytest_schemaref.rst
