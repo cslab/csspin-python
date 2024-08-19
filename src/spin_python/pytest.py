@@ -2,7 +2,7 @@
 #
 # Copyright (C) 2022 CONTACT Software GmbH
 # All rights reserved.
-# http://www.contact.de/
+# https://www.contact-software.com/
 
 """Module implementing the pytest plugin for cs.spin"""
 

@@ -24,9 +24,9 @@ To skip provisioning of Python and use an already installed version,
 :py:data:`python.use` can be set to the name or the full path of an
 interpreter:
 
-.. code-block:: sh
+.. code-block:: console
 
-   $ spin -p python.use=/usr/local/bin/python ...
+   spin -p python.use=/usr/local/bin/python ...
 
 Note: `spin` will install or update certain packages of that
 interpreter, thus write access is required.
@@ -34,12 +34,14 @@ interpreter, thus write access is required.
 Tasks
 -----
 
-.. click:: spin.builtin.python:python
+.. click:: spin_python:python
    :prog: spin python
 
-.. click:: spin.builtin.python:wheel
+.. click:: spin_python:python:wheel
    :prog: spin python:wheel
 
+.. click:: spin_python:env
+   :prog: spin env
 
 Properties
 ----------
