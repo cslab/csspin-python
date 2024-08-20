@@ -340,14 +340,15 @@ def provision(cfg):
 
 def configure(cfg):
     """Configure the python plugin"""
-    if not cfg.python.version:
+    if not cfg.python.version and not cfg.python.use:
         die(
-            "Spin's Python plugin no longer sets a default version.\n"
             "Please choose a version in spinfile.yaml by setting python.version"
+            " or pass a local interpreter via python.use."
         )
 
     if cfg.python.use:
-        warn("python.version will be ignored, using '{python.use}' instead")
+        if cfg.python.version:
+            warn("python.version will be ignored, using '{python.use}' instead.")
         cfg.python.interpreter = cfg.python.use
 
     elif cfg.python.user_pyenv:

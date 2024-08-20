@@ -4,7 +4,6 @@ plugin-packages:
 plugins:
     - spin_python.python
 python:
-    version: '3.11.9'
     use: python
     devpackages:
         - -e ../devpkg
