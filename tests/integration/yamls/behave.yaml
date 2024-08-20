@@ -9,7 +9,6 @@ node:
 plugins:
     - spin_python.behave
 python:
-    version: '3.11.9'
     use: python
     pipconf:
         # The PyPI index to get the cs-packages from

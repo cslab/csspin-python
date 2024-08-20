@@ -4,5 +4,4 @@ plugin-packages:
 plugins:
     - spin_python.playwright
 python:
-    version: '3.11.9'
     use: python
