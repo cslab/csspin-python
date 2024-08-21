@@ -35,8 +35,8 @@ dependencies can be done via the well-known ``spin --provision``-command.
 
 The plugin is now ready to use: ``spin radon --help``.
 
-How to execute the radon task?
-##############################
+How to execute the ``radon`` task?
+##################################
 
 After provision, the ``radon`` task can be executed as follows:
 

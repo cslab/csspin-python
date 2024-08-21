@@ -6,52 +6,53 @@
 
 """Module implementing the devpi plugin for cs.spin"""
 
-import os
 
-from spin import (
-    Command,
-    config,
-    exists,
-    get_tree,
-    interpolate1,
-    readyaml,
-    setenv,
-    sh,
-    task,
-)
+from spin import Command, config, die, exists, readyaml, setenv, sh, task
 
 defaults = config(
     formats=["bdist_wheel"],
+    url=None,
+    user=None,
     requires=config(
         spin=["spin_python.python"],
-        python=["devpi-client", "keyring"],
+        python=[
+            "devpi-client",
+            "keyring",
+        ],
     ),
 )
 
 
-def prepare_environment():
+def init(cfg):  # pylint: disable=unused-argument
     """Sets some environment variables"""
     setenv(DEVPI_VENV="{python.venv}", DEVPI_CLIENTDIR="{spin.spin_dir}/devpi")
 
 
 @task()
-def stage():
-    """Upload project wheel to the staging area."""
-    prepare_environment()
-    data = {}
-    devpi = Command("devpi")  # pylint: disable=redefined-outer-name
-    if exists("{spin.spin_dir}/devpi/current.json"):
-        data = readyaml("{spin.spin_dir}/devpi/current.json")
-    if data.get("index", "") != interpolate1("{devpi.stage}"):
-        devpi("use", "-t", "yes", "{devpi.stage}")
-    devpi("login", "{devpi.user}")
-    python = os.path.abspath(get_tree().python.python)
-    devpi(
+def stage(cfg):
+    """Upload project wheel to a package server."""
+    if not cfg.devpi.user:
+        die("devpi.user is required!")
+
+    if exists(current_json := f"{cfg.spin.spin_dir}/devpi/current.json"):
+        data = readyaml(current_json)
+    else:
+        data = {}
+
+    devpi_ = Command("devpi")
+
+    if data.get("index") != (url := cfg.devpi.url):
+        if url == "None":
+            die("devpi.url not provided!")
+        devpi_("use", "-t", "yes", url)
+
+    devpi_("login", cfg.devpi.user)
+    devpi_(
         "upload",
         "-p",
-        python,
+        cfg.python.python,
         "--no-vcs",
-        "--formats={','.join(devpi.formats)}",
+        f"--wheel={','.join(cfg.devpi.formats)}",
     )
 
 
@@ -62,10 +63,9 @@ def devpi(cfg, args):
     All command line arguments are simply passed through to 'devpi'.
 
     """
-    prepare_environment()
-    if hasattr(cfg.devpi, "url"):
+    if cfg.devpi.url:
         sh("devpi", "use", cfg.devpi.url)
-    if hasattr(cfg.devpi, "user"):
+    if cfg.devpi.user:
         sh("devpi", "login", cfg.devpi.user)
 
     sh("devpi", *args)

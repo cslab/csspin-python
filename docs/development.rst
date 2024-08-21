@@ -11,7 +11,7 @@ This section addresses the development of and with the ``spin_python``
 plugin-package.
 
 How does a plugin define Python dependencies?
-##############################################
+#############################################
 
 A plugin that depends on ``spin_python.python`` can depend on other Python
 packages. These plugin-specific dependencies can be defined using
