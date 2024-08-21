@@ -11,7 +11,6 @@ plugins:
           - python
           - behave
           - pytest
-          #   - piptools
           - radon
           - devpi
     - spin_docs.sphinx
@@ -33,6 +32,5 @@ build-rules:
             - schemadoc behave -o docs/plugins/behave_schemaref.rst
             - schemadoc devpi -o docs/plugins/devpi_schemaref.rst
             - schemadoc radon -o docs/plugins/radon_schemaref.rst
-            # - schemadoc piptools -o docs/plugins/piptools_schemaref.rst #  FIXME: piptools not ready for documentation
             - schemadoc python -o docs/plugins/python_schemaref.rst
             - schemadoc pytest -o docs/plugins/pytest_schemaref.rst
