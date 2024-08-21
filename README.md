@@ -8,7 +8,6 @@ https://code.contact.de/qs/spin/cs.spin/-/commit/a6cd9906504e9761a5b888add26dfe0
 
 -   spin_python.python
 -   spin_python.devpi
--   spin_python.piptools
 -   spin_python.radon
 
 The following plugins were copied from:

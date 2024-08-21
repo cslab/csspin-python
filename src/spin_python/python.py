@@ -623,8 +623,8 @@ class ProvisionerProtocol:
     """An implementation of this protocol is used to provision
     dependencies to a virtual environment.
 
-    Separate plugins, e.g. piptools, implement this interface and
-    overwrite cfg.python.provisioner.
+    Separate plugins, can implement this interface and overwrite
+    cfg.python.provisioner.
 
     """
 

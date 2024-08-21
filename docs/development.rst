@@ -55,19 +55,3 @@ The ``spin_python.python`` plugin implements a ``ProvisionerProtocol`` interface
 that forms the base of the default provisioner ``SimpleProvisioner``, which is
 using the Python package manager `pip <https://pip.pypa.io/en/stable/>`_ to
 install and manage Python dependencies.
-
-The interface also enables the use of custom provisioners, like the
-``spin_python.piptools`` plugin does. This one uses `pip-tools
-<https://pip-tools.readthedocs.io/en/stable/>`_ for managing dependencies by
-overriding the ``python.provisioner`` property within the ``configure()`` stage.
-
-
-
-
-
-
-
-
-
-
-..
