@@ -127,6 +127,38 @@ Activating the virtual environment can be done by sourcing the activate script:
     # Powershell 7:
     & (spin env)
 
+How to modify the behavior of the installation of the current package?
+######################################################################
+
+The behavior to install the current package can be modified in two ways.
+
+One is, to include optional dependencies (so called :emphasis:`extras`) of the current package.
+This can be done in the spinfile.yaml like this:
+
+.. code-block:: yaml
+    :caption: Include the extras ``postgres`` and ``s3`` during provisioning
+
+    ...
+    python:
+        current_package:
+            extras:
+                - postgres
+                - s3
+
+Please note, that this only ever works, when the current package has these extras defined.
+
+The other way is to not install the current package during provisioning. This could be handy
+if only tasks should be run, that don't need the current package installed in the venv.
+To do so, add the following to your ``spinfile.yaml``:
+
+.. code-block:: yaml
+    :caption: Suppress the installation of the current python package
+
+    ...
+    python:
+        current_package:
+            install: False
+
 ``spin_python.python`` schema reference
 #######################################
 
