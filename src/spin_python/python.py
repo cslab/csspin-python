@@ -131,8 +131,11 @@ defaults = config(
     wheelhouse="{spin.spin_dir}/wheelhouse",
     pipconf=config({"global": config({"find-links": WHEELHOUSE_MARKER})}),
     provisioner=None,
-    extras=[],
     devpackages=[],
+    current_package=config(
+        install=True,
+        extras=[],
+    ),
 )
 
 
@@ -686,10 +689,12 @@ class SimpleProvisioner(ProvisionerProtocol):
 
         # If there is a setup.py, make an editable install (which
         # transitively also installs runtime dependencies of the project).
-        if any((exists("setup.py"), exists("setup.cfg"), exists("pyproject.toml"))):
+        if cfg.python.current_package.install and any(
+            (exists("setup.py"), exists("setup.cfg"), exists("pyproject.toml"))
+        ):
             cmd = ["pip", "install", cfg.quietflag, "-e"]
-            if cfg.python.extras:
-                cmd.append(f".[{','.join(cfg.python.extras)}]")
+            if cfg.python.current_package.extras:
+                cmd.append(f".[{','.join(cfg.python.current_package.extras)}]")
             else:
                 cmd.append(".")
             sh(*cmd)

@@ -101,9 +101,16 @@ python:
         # provisioner:
         #   type:
         #   help: TODO
-        extras:
-            type: list
-            help: TODO
         devpackages:
             type: list
             help: TODO
+        current_package:
+            type: object
+            help: Install configuration of the current python project
+            properties:
+                install:
+                    type: bool
+                    help: Property to determine whether the current package should get installed or not.
+                extras:
+                    type: list
+                    help: The extras of the current package to install.
