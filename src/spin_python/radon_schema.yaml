@@ -12,13 +12,3 @@ radon:
         mi_threshold:
             type: str
             help: TODO
-        requires:
-            type: object
-            help: Dependencies of the radon plugin
-            properties:
-                spin:
-                    type: list
-                    help: Spin dependencies of the radon plugin
-                python:
-                    type: list
-                    help: Python dependencies of the radon plugin

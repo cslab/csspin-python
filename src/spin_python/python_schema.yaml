@@ -3,17 +3,12 @@
 # Schema for the python plugin for cs.spin
 
 python:
-    requirements:
-        type: list
-        help: |
-            The list of this project's external Python requirements, that
-            have to be installed into the project's virtual
-            environment. This excludes requirements stated as
-            'install_requires' in setup.py/setup.cfg.
     properties:
         pyenv:
             type: object
-            help: TODO
+            help: |
+                Configuration related to pyenv is used for provisioning the
+                Python interpreter
             properties:
                 url:
                     type: str
@@ -27,12 +22,17 @@ python:
                 python_build:
                     type: path
                     help: Path to the python-build builtin plugin of pyenv
+        # FIXME: Doesn't that belong to the pyenv sub tree?
         user_pyenv:
             type: bool
-            help: TODO
+            help: |
+                If ``False`` install pyenv from sources, otherwise use the pyenv
+                from PATH
         nuget:
             type: object
-            help: TODO
+            help: |
+                Configuration related to the Python provision on Windows using
+                nuget
             properties:
                 url:
                     type: str
@@ -46,14 +46,14 @@ python:
         version:
             type: str
             help: |
-                The Python version to use for the whole project when using in the
-                context of cs.spin
+                The Python version to use for the whole project when using in
+                the context of cs.spin
         use:
             type: str
             help: |
-                The use property can be used to specify an alternative Python source to
-                use. This is useful to rather use the system Python than the one defined
-                in spinfile.yaml
+                The use property can be used to specify an alternative Python
+                source to use. This is useful to rather use the system Python
+                than the one defined in spinfile.yaml
             default: ''
         inst_dir:
             type: path
@@ -64,26 +64,33 @@ python:
         venv:
             type: path
             help: |
-                Path to the virtual environment which is used exclusively for the
-                project spin is running on
+                Path to the virtual environment which is used exclusively for
+                the project spin is running on
         memo:
             type: path
-            help: TODO
+            help: Path to the memoizer used to list installed packages
         bindir:
             type: path
-            help: TODO
+            help: |
+                Path of the virtual environment's binary directory on Linux;
+                equals "{python.venv}" on Windows
         scriptdir:
             type: path
-            help: TODO
+            help: |
+                Directory containing the executables of the Python virtual
+                environment
         python:
             type: path
             help: |
-                The python property defines the path to the Python interpreter to use.
+                The python property defines the path to the Python interpreter
+                to use.
         wheelhouse:
             type: path
-            help: TODO
-        # NOTE: pipconf can't be defined in the schema here, since its data types
-        #       are to complex and can't be represented in YAML.
+            help: |
+                Path assigned to "find-links" within the "global" section of
+                pip.ini / pip.conf to define a local wheel cache directory.
+        # NOTE: pipconf can't be defined in the schema here, since its data
+        #       types are to complex and can't be represented in YAML.
         # pipconf:
         #   type: object
         #   help: TODO
@@ -100,17 +107,26 @@ python:
         # represent it in the schema.
         # provisioner:
         #   type:
-        #   help: TODO
+        #   help:
         devpackages:
             type: list
-            help: TODO
+            help: A list of packages that will be editable installed
+        requirements:
+            type: list
+            help: |
+                The list of this project's external Python requirements, that
+                have to be installed into the project's virtual environment.
+                This excludes requirements stated as 'install_requires' in
+                setup.py/setup.cfg.
         current_package:
             type: object
             help: Install configuration of the current python project
             properties:
                 install:
                     type: bool
-                    help: Property to determine whether the current package should get installed or not.
+                    help: |
+                        Property to determine whether the current package should
+                        get installed or not.
                 extras:
                     type: list
                     help: The extras of the current package to install.

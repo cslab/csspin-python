@@ -15,13 +15,3 @@ devpi:
         user:
             type: str
             help: The user to authenticate with the package server
-        requires:
-            type: object
-            help: Dependencies of the devpi plugin
-            properties:
-                spin:
-                    type: list
-                    help: Spin dependencies of the devpi plugin
-                python:
-                    type: list
-                    help: Python dependencies of the devpi plugin

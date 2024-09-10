@@ -674,18 +674,12 @@ class SimpleProvisioner(ProvisionerProtocol):
         if not self.m.check(req):
             lst = self.devpackages if devpackage else self.requirements
             lst.add(req)
-            self.m.add(req)
 
     def sync(self, cfg):
-        # Install missing requirements.
-        if self.requirements:
-            sh("pip", "install", cfg.quietflag, *self._split(self.requirements))
-            self.m.save()
+        self.__execute_installation(self.requirements, cfg.quietflag)
 
     def install(self, cfg):
-        if self.devpackages:
-            sh("pip", "install", cfg.quietflag, *self._split(self.devpackages))
-            self.m.save()
+        self.__execute_installation(self.devpackages, cfg.quietflag)
 
         # If there is a setup.py, make an editable install (which
         # transitively also installs runtime dependencies of the project).
@@ -710,6 +704,14 @@ class SimpleProvisioner(ProvisionerProtocol):
         for req in reqset:
             reqlist.extend(req.split())
         return reqlist
+
+    def __execute_installation(self, packages, quietflag):
+        """Install packages that are not yet memoized"""
+        if to_install := {package for package in packages if not self.m.check(package)}:
+            sh("pip", "install", quietflag, *self._split(to_install))
+            for package in to_install:
+                self.m.add(package)
+            self.m.save()
 
 
 # FIXME: Do we need that?
