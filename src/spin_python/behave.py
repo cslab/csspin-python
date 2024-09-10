@@ -32,7 +32,11 @@ defaults = config(
     cov_report="python-at-coverage.xml",
     cov_config="setup.cfg",
     # Default to concise and readable output
-    opts=["--format=pretty", "--no-source"],
+    opts=[
+        "--format=pretty",
+        "--no-source",
+        "--tags=~skip",
+    ],
     # This is the default location of behave tests
     tests=["tests/accepttests"],
 )
