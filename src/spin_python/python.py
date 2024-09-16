@@ -129,7 +129,7 @@ defaults = config(
     ),
     python="{python.scriptdir}/python",
     wheelhouse="{spin.spin_dir}/wheelhouse",
-    pipconf=config({"site": config({"find-links": WHEELHOUSE_MARKER})}),
+    pipconf=config({"global": config({"find-links": WHEELHOUSE_MARKER})}),
     provisioner=None,
     devpackages=[],
     current_package=config(
