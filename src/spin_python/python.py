@@ -93,9 +93,6 @@ from spin import (
     writetext,
 )
 
-WHEELHOUSE_MARKER = object()
-
-
 defaults = config(
     pyenv=config(
         url="https://github.com/pyenv/pyenv.git",
@@ -128,8 +125,6 @@ defaults = config(
         "{python.venv}/bin" if sys.platform != "win32" else "{python.venv}/Scripts"
     ),
     python="{python.scriptdir}/python",
-    wheelhouse="{spin.spin_dir}/wheelhouse",
-    pipconf=config({"global": config({"find-links": WHEELHOUSE_MARKER})}),
     provisioner=None,
     current_package=config(
         install=True,
@@ -771,22 +766,12 @@ def venv_provision(cfg):  # pylint: disable=too-many-branches,missing-function-d
     if cfg.python.provisioner is None:
         cfg.python.provisioner = SimpleProvisioner()
 
-    # Update pip.conf in the virtual environment
-    text = []
-    for section, settings in cfg.python.pipconf.items():
-        text.append(f"[{section}]")
-        for key, value in settings.items():
-            if value == WHEELHOUSE_MARKER:
-                if exists(cfg.python.wheelhouse):
-                    value = cfg.python.wheelhouse
-                else:
-                    continue
-            text.append(f"{key} = {interpolate1(value)}")
-    if sys.platform == "win32":
-        pipconf = cfg.python.venv / "pip.ini"
-    else:
-        pipconf = cfg.python.venv / "pip.conf"
-    writetext(pipconf, "\n".join(text))
+    if cfg.python.pipconf:
+        if sys.platform == "win32":
+            pipconf = cfg.python.venv / "pip.ini"
+        else:
+            pipconf = cfg.python.venv / "pip.conf"
+        writetext(pipconf, cfg.python.pipconf)
 
     # Establish the prerequisites
     if fresh_virtualenv:

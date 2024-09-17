@@ -84,25 +84,11 @@ python:
             help: |
                 The python property defines the path to the Python interpreter
                 to use.
-        wheelhouse:
-            type: path
+        pipconf:
+            type: str
             help: |
-                Path assigned to "find-links" within the "global" section of
-                pip.ini / pip.conf to define a local wheel cache directory.
-        # NOTE: pipconf can't be defined in the schema here, since its data
-        #       types are to complex and can't be represented in YAML.
-        # pipconf:
-        #   type: object
-        #   help: TODO
-        #   properties:
-        #     global:
-        #       type: object
-        #       help: TODO
-        #       properties:
-        #         find-links:
-        #           type: object
-        #           help: TODO
-        #           # properties
+                Content of the pip.conf/pip.ini configuration file that will be
+                written into the environment.
         # The provisioner type is evaluated during runtime and to complex to
         # represent it in the schema.
         # provisioner:

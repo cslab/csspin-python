@@ -155,6 +155,23 @@ To do so, add the following to your ``spinfile.yaml``:
         current_package:
             install: False
 
+How to inject a custom pip configuration within the scope of the environment?
+#############################################################################
+
+Adding a site-specific ``pip.conf`` / ``pip.ini`` into the Python virtual
+environment can be achieved by leveraging the ``python.pipconf`` property as
+follows:
+
+.. code-block:: yaml
+    :caption: Using a site-specific configuration for pip
+
+    ...
+    python:
+        pipconf: |
+            [global]
+            find-links = {HOME}/.custom_wheel_cache
+
+
 ``spin_python.python`` schema reference
 #######################################
 
