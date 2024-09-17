@@ -97,7 +97,6 @@ WHEELHOUSE_MARKER = object()
 
 
 defaults = config(
-    requirements=[],
     pyenv=config(
         url="https://github.com/pyenv/pyenv.git",
         path="{spin.cache}/pyenv",
@@ -132,11 +131,11 @@ defaults = config(
     wheelhouse="{spin.spin_dir}/wheelhouse",
     pipconf=config({"global": config({"find-links": WHEELHOUSE_MARKER})}),
     provisioner=None,
-    devpackages=[],
     current_package=config(
         install=True,
         extras=[],
     ),
+    index_url="https://pypi.org/simple",
 )
 
 
@@ -244,6 +243,7 @@ def python(args):
 @task("python:wheel", when="package")
 def wheel(cfg):
     """Build a wheel of the current project."""
+    setenv(PIP_INDEX_URL=cfg.python.index_url)
     try:
         echo("Building PEP 518 like wheel")
         sh("python", "-m", "build", "-w")
@@ -670,6 +670,8 @@ class SimpleProvisioner(ProvisionerProtocol):
             "-mpip",
             None if cfg.verbosity > Verbosity.NORMAL else "-q",
             "install",
+            "--index-url",
+            cfg.python.index_url,
             "-U",
             "pip",
         )
@@ -685,19 +687,28 @@ class SimpleProvisioner(ProvisionerProtocol):
 
     def sync(self, cfg):
         self.__execute_installation(
-            self.requirements, None if cfg.verbosity > Verbosity.NORMAL else "-q"
+            self.requirements,
+            None if cfg.verbosity > Verbosity.NORMAL else "-q",
+            cfg.python.index_url,
         )
 
     def install(self, cfg):
         quietflag = None if cfg.verbosity > Verbosity.NORMAL else "-q"
-        self.__execute_installation(self.devpackages, quietflag)
+        self.__execute_installation(self.devpackages, quietflag, cfg.python.index_url)
 
         # If there is a setup.py, make an editable install (which
         # transitively also installs runtime dependencies of the project).
         if cfg.python.current_package.install and any(
             (exists("setup.py"), exists("setup.cfg"), exists("pyproject.toml"))
         ):
-            cmd = ["pip", quietflag, "install", "-e"]
+            cmd = [
+                "pip",
+                quietflag,
+                "install",
+                "--index-url",
+                cfg.python.index_url,
+                "-e",
+            ]
             if cfg.python.current_package.extras:
                 cmd.append(f".[{','.join(cfg.python.current_package.extras)}]")
             else:
@@ -716,10 +727,17 @@ class SimpleProvisioner(ProvisionerProtocol):
             reqlist.extend(req.split())
         return reqlist
 
-    def __execute_installation(self, packages, quietflag):
+    def __execute_installation(self, packages, quietflag, index_url):
         """Install packages that are not yet memoized"""
         if to_install := {package for package in packages if not self.m.check(package)}:
-            sh("pip", "install", quietflag, *self._split(to_install))
+            sh(
+                "pip",
+                quietflag,
+                "install",
+                "--index-url",
+                index_url,
+                *self._split(to_install),
+            )
             for package in to_install:
                 self.m.add(package)
             self.m.save()

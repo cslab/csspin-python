@@ -40,11 +40,10 @@ dependencies can be done via the well-known ``spin --provision``-command.
 How to install packages from another package index and sources?
 ###############################################################
 
-The default index for installing Python packages is
-https://packages.contact.de/tools/stable ensuring to install packages provided
-by CONTACT first. To add another index, for example a dev-index for the
-development of CE16 components, the configuration of pip can be adjusted by
-extending the project's ``spinfile.yaml`` like this:
+The default index for installing Python packages is https://pypi.org/simple. To
+be able to install packages from another index, for example the dev-index for
+the development of CE16 components, the plugin's configuration can be adjusted
+by extending the project's ``spinfile.yaml`` like this:
 
 .. code-block:: yaml
     :caption: Using a custom index URL, e.g. for installing cs-packages
@@ -52,10 +51,7 @@ extending the project's ``spinfile.yaml`` like this:
     ...
     python:
         version: "3.11.9"
-        pipconf:
-            global:
-                # The PyPI index to get the cs-packages from
-                index-url: https://packages.contact.de/apps/16.0-dev/+simple/
+        index_url: https://packages.contact.de/apps/16.0-dev
 
         # Additional requirements can be used to install further Python-packages
         # into the virtual environment created by the spin_python.python plugin.
