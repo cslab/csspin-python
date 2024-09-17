@@ -1,0 +1,8 @@
+# NOTE: This requirements file requires the pip index-url to be set to
+#       https://packages.contact.de/tools/stable
+# EXAMPLE:
+#       pip install --index-url=https://packages.contact.de/tools/stable -r requirements-dev.txt
+-e .
+cs.spin
+pytest
+pytest-cov

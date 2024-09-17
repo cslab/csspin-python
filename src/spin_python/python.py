@@ -68,6 +68,7 @@ from spin import (
     Command,
     Memoizer,
     Path,
+    Verbosity,
     backtick,
     cd,
     config,
@@ -253,7 +254,7 @@ def wheel(cfg):
         sh(
             "python",
             "setup.py",
-            cfg.quietflag,
+            None if cfg.verbosity > Verbosity.NORMAL else "-q",
             "build",
             "-b",
             "{spin.spin_dir}/build",
@@ -320,8 +321,8 @@ def nuget_install(cfg):
     sh(
         cfg.python.interpreter,
         "-mpip",
+        None if cfg.verbosity > Verbosity.NORMAL else "-q",
         "install",
-        cfg.quietflag,
         "-U",
         "pip",
         "wheel",
@@ -360,7 +361,7 @@ def configure(cfg):
             cfg.python.interpreter = backtick(
                 "pyenv which python --nosystem",
                 may_fail=True,
-                silent=not cfg.verbose,
+                silent=not cfg.verbosity > Verbosity.NORMAL,
             ).strip()
         except Exception:  # pylint: disable=broad-exception-caught # nosec
             # FIXME: add some proper logging
@@ -606,7 +607,7 @@ def finalize_provision(cfg):
             "-c",
             'import sysconfig; print(sysconfig.get_path("purelib"))',
             capture_output=True,
-            silent=not cfg.verbose,
+            silent=not cfg.verbosity > Verbosity.NORMAL,
         )
         .stdout.decode()
         .strip()
@@ -664,7 +665,14 @@ class SimpleProvisioner(ProvisionerProtocol):
 
     def prerequisites(self, cfg):
         # We'll need pip
-        sh("python", "-mpip", cfg.quietflag, "install", "-U", "pip")
+        sh(
+            "python",
+            "-mpip",
+            None if cfg.verbosity > Verbosity.NORMAL else "-q",
+            "install",
+            "-U",
+            "pip",
+        )
 
     def lock(self, cfg):
         """Noop"""
@@ -676,17 +684,20 @@ class SimpleProvisioner(ProvisionerProtocol):
             lst.add(req)
 
     def sync(self, cfg):
-        self.__execute_installation(self.requirements, cfg.quietflag)
+        self.__execute_installation(
+            self.requirements, None if cfg.verbosity > Verbosity.NORMAL else "-q"
+        )
 
     def install(self, cfg):
-        self.__execute_installation(self.devpackages, cfg.quietflag)
+        quietflag = None if cfg.verbosity > Verbosity.NORMAL else "-q"
+        self.__execute_installation(self.devpackages, quietflag)
 
         # If there is a setup.py, make an editable install (which
         # transitively also installs runtime dependencies of the project).
         if cfg.python.current_package.install and any(
             (exists("setup.py"), exists("setup.cfg"), exists("pyproject.toml"))
         ):
-            cmd = ["pip", "install", cfg.quietflag, "-e"]
+            cmd = ["pip", quietflag, "install", "-e"]
             if cfg.python.current_package.extras:
                 cmd.append(f".[{','.join(cfg.python.current_package.extras)}]")
             else:
@@ -726,7 +737,11 @@ def venv_provision(cfg):  # pylint: disable=too-many-branches,missing-function-d
     if not exists(cfg.python.venv):
         # virtualenv is guaranteed to be available like this
         # as we declared it as one of spin's dependencies
-        cmd = [sys.executable, "-mvirtualenv", cfg.quietflag]
+        cmd = [
+            sys.executable,
+            "-mvirtualenv",
+            None if cfg.verbosity > Verbosity.NORMAL else "-q",
+        ]
         virtualenv = Command(*cmd)
         # do not download seeds, since we update pip later anyway
         virtualenv("-p", cfg.python.interpreter, cfg.python.venv)
