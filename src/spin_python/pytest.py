@@ -7,7 +7,7 @@
 """Module implementing the pytest plugin for cs.spin"""
 
 
-from spin import Path, config, die, option, setenv, sh, task
+from spin import Path, Verbosity, config, die, option, setenv, sh, task
 
 defaults = config(
     requires=config(
@@ -40,7 +40,7 @@ def pytest(  # pylint: disable=missing-function-docstring
 ):
     """Run the 'pytest' command."""
     opts = cfg.pytest.opts
-    if cfg.quiet:
+    if cfg.verbosity == Verbosity.QUIET:
         opts.append("-q")
     if coverage or cfg.pytest.coverage:
         opts.extend(cfg.pytest.coverage_opts)

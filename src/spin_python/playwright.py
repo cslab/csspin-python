@@ -7,7 +7,7 @@
 """Module implementing the playwright plugin for cs.spin"""
 
 
-from spin import Path, config, die, option, setenv, sh, task
+from spin import Path, Verbosity, config, die, option, setenv, sh, task
 
 defaults = config(
     requires=config(
@@ -48,7 +48,7 @@ def playwright(  # pylint: disable=missing-function-docstring
     setenv(PLAYWRIGHT_BROWSERS_PATH=cfg.playwright.browsers_path)
 
     opts = cfg.playwright.opts
-    if cfg.quiet:
+    if cfg.verbosity == Verbosity.QUIET:
         opts.append("-q")
     if coverage or cfg.playwright.coverage:
         opts.extend(cfg.playwright.coverage_opts)
