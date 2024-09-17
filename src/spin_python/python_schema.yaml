@@ -130,3 +130,8 @@ python:
                 extras:
                     type: list
                     help: The extras of the current package to install.
+        index_url:
+            type: str
+            help: |
+                The index url from where packages should get installed into the
+                venv.
