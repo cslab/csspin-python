@@ -664,6 +664,7 @@ class SimpleProvisioner(ProvisionerProtocol):
             "python",
             "-mpip",
             None if cfg.verbosity > Verbosity.NORMAL else "-q",
+            "--disable-pip-version-check",
             "install",
             "--index-url",
             cfg.python.index_url,
@@ -699,6 +700,7 @@ class SimpleProvisioner(ProvisionerProtocol):
             cmd = [
                 "pip",
                 quietflag,
+                "--disable-pip-version-check",
                 "install",
                 "--index-url",
                 cfg.python.index_url,
@@ -711,7 +713,13 @@ class SimpleProvisioner(ProvisionerProtocol):
             sh(*cmd)
 
         # Verify dependency compatibility of installed packages
-        pip_check = sh("pip", "check", may_fail=True, capture_output=True)
+        pip_check = sh(
+            "pip",
+            "--disable-pip-version-check",
+            "check",
+            may_fail=True,
+            capture_output=True,
+        )
         if pip_check.returncode:
             die(pip_check.stdout)
 
@@ -728,6 +736,7 @@ class SimpleProvisioner(ProvisionerProtocol):
             sh(
                 "pip",
                 quietflag,
+                "--disable-pip-version-check",
                 "install",
                 "--index-url",
                 index_url,
