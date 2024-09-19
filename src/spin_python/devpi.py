@@ -28,8 +28,8 @@ def init(cfg):  # pylint: disable=unused-argument
     setenv(DEVPI_VENV="{python.venv}", DEVPI_CLIENTDIR="{spin.spin_dir}/devpi")
 
 
-@task()
-def stage(cfg):
+@task("devpi:upload")
+def upload(cfg):
     """Upload project wheel to a package server."""
     if not cfg.devpi.user:
         die("devpi.user is required!")

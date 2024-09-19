@@ -49,13 +49,13 @@ After provision, the ``devpi`` task can be executed through spin via:
 How to upload a wheel to a package server?
 ##########################################
 
-The ``spin_python.devpi`` plugin provides a task named "stage" which builds and
+The ``spin_python.devpi`` plugin provides a task named "devpi:upload" which builds and
 uploads a wheel to a package index.
 
 .. code-block:: console
     :caption: Build and upload a wheel to a package server
 
-    spin -p devpi.user=xyz -p devpi.url=https://pypi.org/simple stage
+    spin -p devpi.user=xyz -p devpi.url=https://pypi.org/simple devpi:upload
     ...
     password for user xyz at https://pypi.org/simple: ************
 
