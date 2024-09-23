@@ -7,8 +7,11 @@ radon:
     help: Configuration of the radon plugin for cs.spin
     properties:
         exe:
-            type: str
-            help: TODO
+            type: path
+            help: Path to the executable radon file.
         mi_threshold:
             type: str
-            help: TODO
+            help: |
+                The maintainability threshold can be either A, B or C, where A
+                is the best and C the worst. Radon will fail if any file's
+                maintainability score is below the defined threshold.
