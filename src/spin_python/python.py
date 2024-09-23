@@ -78,7 +78,6 @@ from spin import (
     exists,
     get_requires,
     info,
-    interpolate,
     interpolate1,
     mkdir,
     namespaces,
@@ -198,7 +197,6 @@ def system_requirements(
             },
         ),
         (
-            # FIXME: no idea, whether this makes any sense
             lambda distro, version: re.match("opensuse", distro),
             {
                 "zypper": (
@@ -209,7 +207,6 @@ def system_requirements(
             },
         ),
         (
-            # FIXME: no idea, whether this makes any sense
             lambda distro, version: distro == "rhel",
             {
                 "yum": (
@@ -243,8 +240,6 @@ def wheel(cfg):
         echo("Building PEP 518 like wheel")
         sh("python", "-m", "build", "-w")
     except Abort:
-        # TODO: Maybe think of another way to support
-        # pyproject.toml _and_ setup.py style
         echo("Building does not seem to work, use legacy setup.py style")
         sh(
             "python",
@@ -359,8 +354,10 @@ def configure(cfg):
                 silent=not cfg.verbosity > Verbosity.NORMAL,
             ).strip()
         except Exception:  # pylint: disable=broad-exception-caught # nosec
-            # FIXME: add some proper logging
-            pass
+            warn(
+                "The desired interpreter is not available within the"
+                " user's pyenv installation."
+            )
 
 
 def init(cfg):
@@ -595,7 +592,6 @@ def finalize_provision(cfg):
     ):
         patch_activate(schema)
 
-    # TODO: this should be exported via the property tree
     site_packages = Path(
         sh(
             "python",
@@ -745,13 +741,6 @@ class SimpleProvisioner(ProvisionerProtocol):
             for package in to_install:
                 self.m.add(package)
             self.m.save()
-
-
-# FIXME: Do we need that?
-def install_to_venv(
-    cfg, *args
-):  # pylint: disable=missing-function-docstring,unused-argument
-    args = interpolate(args)
 
 
 def venv_provision(cfg):  # pylint: disable=too-many-branches,missing-function-docstring

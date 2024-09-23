@@ -23,7 +23,7 @@ repos:
     # ------------------Format Hooks--------------- #
     - repo: https://github.com/ambv/black
       # Black is a PEP 8 compliant opinionated code formatter.
-      rev: 24.4.1
+      rev: 24.8.0
       hooks:
           - id: black
             types: [file] # override `types: [python]`
@@ -31,7 +31,7 @@ repos:
             args: [--include, '\.(pyi?|ue)$', -v]
     - repo: https://github.com/asottile/blacken-docs
       # Runs black on Python code blocks in documentation files.
-      rev: 1.16.0
+      rev: 1.18.0
       hooks:
           - id: blacken-docs
     - repo: https://github.com/pycqa/isort
@@ -47,7 +47,7 @@ repos:
       hooks:
           - id: prettier
     - repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
-      rev: v2.12.0
+      rev: v2.14.0
       hooks:
           - id: pretty-format-toml
             args: [--autofix]
@@ -82,7 +82,7 @@ repos:
           # Trims trailing whitespace.
           - id: trailing-whitespace
     - repo: https://github.com/homebysix/pre-commit-macadmin
-      rev: v1.15.0
+      rev: v1.16.2
       hooks:
           # Checks, whether a correct identity is used to commit/ push
           - id: check-git-config-email
@@ -90,7 +90,7 @@ repos:
     - repo: https://github.com/PyCQA/flake8
       # Flake8 is a wrapper around PyFlakes, pycodestyle and Ned Batchelder's McCabe script
       # and runs these tools to lint files.
-      rev: 7.0.0
+      rev: 7.1.1
       hooks:
           - id: flake8
             args:
@@ -101,7 +101,7 @@ repos:
     # FIXME: pylint generates lots of issues that should get fixed prior proper releasing
     - repo: https://github.com/pycqa/pylint
       # Linting of Python 3 files
-      rev: v3.0.4
+      rev: v3.3.0
       hooks:
           - id: pylint
             args:
@@ -111,7 +111,7 @@ repos:
                 - -j=4
     - repo: https://github.com/PyCQA/bandit
       # Bandit is a tool designed to find common security issues in Python code.
-      rev: 1.7.8
+      rev: 1.7.9
       hooks:
           - id: bandit
             args: [-x=tests] # exclude tests from run

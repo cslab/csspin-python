@@ -22,7 +22,6 @@ python:
                 python_build:
                     type: path
                     help: Path to the python-build builtin plugin of pyenv
-        # FIXME: Doesn't that belong to the pyenv sub tree?
         user_pyenv:
             type: bool
             help: |

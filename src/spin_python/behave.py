@@ -52,8 +52,6 @@ def configure(cfg: ConfigTree) -> None:
 
 def create_coverage_pth(cfg: ConfigTree) -> str:  # pylint: disable=unused-argument
     """Creating the coverage path file and returning its path"""
-    # TODO: location of venv's site-packages should be available via
-    # the property tree.
     site_packages = (
         sh(
             "python",
