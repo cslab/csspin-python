@@ -57,12 +57,12 @@ point to the base installation.
 
 import logging
 import os
-import re
 import shutil
 import sys
 from textwrap import dedent
 
 from click.exceptions import Abort
+from spin import parse_version  # pylint: disable=unused-import # noqa: F401
 from spin import (
     EXPORTS,
     Command,
@@ -82,7 +82,6 @@ from spin import (
     mkdir,
     namespaces,
     normpath,
-    parse_version,
     readtext,
     rmtree,
     setenv,
@@ -139,89 +138,32 @@ def system_requirements(
     # This is our little database of system requirements for
     # provisioning Python; spin identifies platforms by a tuple
     # composed of the distro id and version e.g. ("debian", 10).
+    debian_requirements = [
+        "build-essential",
+        "curl",
+        "git",
+        "libbz2-dev",
+        "libffi-dev",
+        "libkrb5-dev",
+        "liblzma-dev",
+        "libncursesw5-dev",
+        "libreadline-dev",
+        "libsqlite3-dev",
+        "libssl-dev",
+        "libxml2-dev",
+        "libxmlsec1-dev",
+        "make",
+        "xz-utils",
+        "zlib1g-dev",
+    ]
     return [
         # We intentionally leave out Tk, as it pulls in a lot of
         # graphics and X packages
         (
             lambda distro, version: distro in ("debian", "mint", "ubuntu"),
             {
-                "apt-get": " ".join(
-                    [
-                        "build-essential",
-                        "curl",
-                        "git",
-                        "libbz2-dev",
-                        "libffi-dev",
-                        "libkrb5-dev",
-                        "liblzma-dev",
-                        "libncursesw5-dev",
-                        "libreadline-dev",
-                        "libsqlite3-dev",
-                        "libssl-dev",
-                        "libxml2-dev",
-                        "libxmlsec1-dev",
-                        "make",
-                        "xz-utils",
-                        "zlib1g-dev",
-                    ]
-                ),
+                "apt": " ".join(debian_requirements),
             },
-        ),
-        (
-            lambda distro, version: (
-                distro in ("centos", "fedora")
-                and not (distro == "fedora" and version >= parse_version("22"))
-            ),
-            {
-                "yum": (
-                    "git gcc zlib-devel bzip2 bzip2-devel readline-devel sqlite"
-                    " sqlite-devel openssl-devel libffi-devel xz-devel"
-                ),
-            },
-        ),
-        (
-            lambda distro, version: (
-                distro == "fedora" and version >= parse_version("22")
-            ),
-            {
-                "dnf": (
-                    "git make gcc zlib-devel bzip2 bzip2-devel readline-devel sqlite"
-                    " sqlite-devel openssl-devel libffi-devel xz-devel"
-                ),
-            },
-        ),
-        (
-            lambda distro, version: distro == "darwin",
-            {
-                "brew": "git openssl readline sqlite3 xz zlib",
-            },
-        ),
-        (
-            lambda distro, version: re.match("opensuse", distro),
-            {
-                "zypper": (
-                    "git gcc automake bzip2 libbz2-devel xz xz-devel openssl-devel"
-                    " ncurses-devel readline-devel zlib-devel libffi-devel"
-                    " sqlite3-devel"
-                ),
-            },
-        ),
-        (
-            lambda distro, version: distro == "rhel",
-            {
-                "yum": (
-                    "gcc zlib-devel bzip2 bzip2-devel readline-devel sqlite"
-                    " sqlite-devel openssl-devel libffi-devel xz-devel"
-                )
-            },
-        ),
-        (
-            # On Windows, we use binaries from nuget (and the nuget
-            # CLI is automatically installed into spin's cache, and
-            # not a system dependency), so we'll have no particular
-            # system dependencies.
-            lambda distro, version: distro == "windows",
-            {},
         ),
     ]
 

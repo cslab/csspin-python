@@ -16,6 +16,10 @@ https://code.contact.de/qs/tooling/spin-plugins/-/commit/87399f327a5979c3ef56192
 -   spin_python.pytest
 -   spin_python.behave
 
+Additional plugins:
+
+-   python.playwright
+
 ## Creating a New Release
 
 The version scheme used is `major.minor.patch` while following the well-known
