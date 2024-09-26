@@ -75,6 +75,7 @@ from spin import (
     die,
     download,
     echo,
+    error,
     exists,
     get_requires,
     info,
@@ -226,9 +227,14 @@ def pyenv_install(cfg):
             # we should set
             setenv(PYTHON_BUILD_CACHE_PATH=mkdir(cfg.python.pyenv.cache))
             setenv(PYTHON_CFLAGS="-DOPENSSL_NO_COMP")
-            sh(
-                f"{cfg.python.pyenv.python_build} {cfg.python.version} {cfg.python.inst_dir}"
-            )
+            try:
+                sh(
+                    f"{cfg.python.pyenv.python_build} {cfg.python.version} {cfg.python.inst_dir}"
+                )
+            except Abort:
+                error("Failed to build the Python interpreter - removing it")
+                rmtree(cfg.python.inst_dir)
+                raise
 
 
 def nuget_install(cfg):
