@@ -93,6 +93,9 @@ python:
         # provisioner:
         #   type:
         #   help:
+        site_packages:
+            type: path internal
+            help: The path to the virtual environments site-packages directory.
         devpackages:
             type: list
             help: A list of packages that will be editable installed

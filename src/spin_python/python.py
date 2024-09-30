@@ -307,6 +307,9 @@ def configure(cfg):
                 " user's pyenv installation."
             )
 
+    if exists(cfg.python.python):
+        cfg.python.site_packages = get_site_packages(interpreter=cfg.python.python)
+
 
 def init(cfg):
     """Initialize the python plugin"""
@@ -528,6 +531,21 @@ class PythonActivate:
     )
 
 
+def get_site_packages(interpreter="python", silent=True):
+    """Return the path to the virtual environments site-packages."""
+    return Path(
+        sh(
+            interpreter,
+            "-c",
+            'import sysconfig; print(sysconfig.get_path("purelib"))',
+            capture_output=True,
+            silent=silent,
+        )
+        .stdout.decode()
+        .strip()
+    )
+
+
 def finalize_provision(cfg):
     """Patching the activate scripts and preparing the site-packages"""
     cfg.python.provisioner.install(cfg)
@@ -540,18 +558,10 @@ def finalize_provision(cfg):
     ):
         patch_activate(schema)
 
-    site_packages = Path(
-        sh(
-            "python",
-            "-c",
-            'import sysconfig; print(sysconfig.get_path("purelib"))',
-            capture_output=True,
-            silent=not cfg.verbosity > Verbosity.NORMAL,
-        )
-        .stdout.decode()
-        .strip()
+    setenv_path = str(
+        get_site_packages(silent=not cfg.verbosity > Verbosity.NORMAL) / "_set_env.pth"
     )
-    info(f"Create {(setenv_path := str(site_packages / '_set_env.pth'))}")
+    info(f"Create {setenv_path}")
     pthline = interpolate1(
         "import os; "
         "bindir=r'{python.bindir}'; "
