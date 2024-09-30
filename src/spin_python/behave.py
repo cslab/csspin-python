@@ -52,18 +52,7 @@ def configure(cfg: ConfigTree) -> None:
 
 def create_coverage_pth(cfg: ConfigTree) -> str:  # pylint: disable=unused-argument
     """Creating the coverage path file and returning its path"""
-    site_packages = (
-        sh(
-            "python",
-            "-c",
-            'import sysconfig; print(sysconfig.get_path("purelib"))',
-            capture_output=True,
-            silent=True,
-        )
-        .stdout.decode()
-        .strip()
-    )
-    coverage_pth_path = os.path.join(site_packages, "coverage.pth")
+    coverage_pth_path = cfg.python.site_packages / "coverage.pth"
     info(f"Create {coverage_pth_path}")
     writetext(coverage_pth_path, "import coverage; coverage.process_startup()")
     return coverage_pth_path
