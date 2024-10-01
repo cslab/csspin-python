@@ -33,22 +33,22 @@ def provision_env(spinfile, tmp_path, cwd="tests/integration"):
     Helper function to provision a spin environment based on the spinfile provided by
     spinfile.
 
-    Returns a tuple (cache, cmd) where `cache` is the location of the
-    provisioned environments cache-dir and `cmd` is a commandline as a list to
+    Returns a tuple (data, cmd) where `data` is the location of the
+    provisioned environments data-dir and `cmd` is a commandline as a list to
     build commands to run subprocesses inside the provisioned env.
     """
     if spinfile == "python_use.yaml" and not PYTHON_EXISTS:
         pytest.skip("python not available")
 
     spinfile_path = os.path.join("tests", "integration", "yamls", spinfile)
-    cache = tmp_path / ".cache"
-    cache.mkdir(parents=True, exist_ok=True)
+    data = tmp_path / ".data"
+    data.mkdir(parents=True, exist_ok=True)
 
     base_cmd = [
         "spin",
         "-q",
         "-p",
-        f"spin.cache={cache}",
+        f"spin.data={data}",
         "-C",
         cwd,
         "--env",
@@ -174,7 +174,7 @@ def test_devpackage_provision(tmp_path):
         "spin",
         "-q",
         "-p",
-        f"spin.cache={tmp_path}",
+        f"spin.data={tmp_path}",
         "-C",
         "tests/integration/fixtures/testpkg",
         "--env",

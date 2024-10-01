@@ -20,7 +20,7 @@ defaults = config(
             "pytest-playwright",
         ],
     ),
-    browsers_path="{spin.cache}/playwright_browsers",
+    browsers_path="{spin.data}/playwright_browsers",
     browsers=[
         "chromium",
     ],
