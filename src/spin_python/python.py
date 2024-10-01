@@ -95,22 +95,22 @@ from spin import (
 defaults = config(
     pyenv=config(
         url="https://github.com/pyenv/pyenv.git",
-        path="{spin.cache}/pyenv",
-        cache="{spin.cache}/pyenv_cache",
+        path="{spin.data}/pyenv",
+        cache="{spin.data}/pyenv_cache",
         python_build="{python.pyenv.path}/plugins/python-build/bin/python-build",
     ),
     user_pyenv=False,
     nuget=config(
         url="https://dist.nuget.org/win-x86-commandline/latest/nuget.exe",
-        exe="{spin.cache}/nuget.exe",
+        exe="{spin.data}/nuget.exe",
         source="https://api.nuget.org/v3/index.json",
     ),
     version=None,
     use=None,
     inst_dir=(
-        "{spin.cache}/python/{python.version}"
+        "{spin.data}/python/{python.version}"
         if sys.platform != "win32"
-        else "{spin.cache}/python/python.{python.version}/tools"
+        else "{spin.data}/python/python.{python.version}/tools"
     ),
     interpreter=(
         "{python.inst_dir}/bin/python{platform.exe}"
@@ -241,14 +241,14 @@ def nuget_install(cfg):
     """Install the virtual environment using nuget"""
     if not exists(cfg.python.nuget.exe):
         download(cfg.python.nuget.url, cfg.python.nuget.exe)
-    setenv(NUGET_HTTP_CACHE_PATH=cfg.spin.cache / "nugetcache")
+    setenv(NUGET_HTTP_CACHE_PATH=cfg.spin.data / "nugetcache")
     sh(
         cfg.python.nuget.exe,
         "install",
         "-verbosity",
         "quiet",
         "-o",
-        cfg.spin.cache / "python",
+        cfg.spin.data / "python",
         "python",
         "-version",
         cfg.python.version,
