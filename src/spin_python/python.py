@@ -123,7 +123,7 @@ defaults = config(
     scriptdir=(
         "{python.venv}/bin" if sys.platform != "win32" else "{python.venv}/Scripts"
     ),
-    python="{python.scriptdir}/python",
+    python="{python.scriptdir}/python{platform.exe}",
     provisioner=None,
     current_package=config(
         install=True,
