@@ -22,7 +22,6 @@ least contain the following configuration.
 .. code-block:: yaml
     :caption: Basic configuration of ``spinfile.yaml`` to leverage ``spin_python.behave``
 
-    minimum-spin: "0.2"
     plugin-packages:
         - spin_python
     plugins:
@@ -31,7 +30,7 @@ least contain the following configuration.
         version: "3.11.9"
 
 The provisioning of the required virtual environment as well as the plugins
-dependencies can be done via the well-known ``spin --provision``-command.
+dependencies can be done via the well-known ``spin provision``-task.
 
 The plugin is now ready to use: ``spin behave --help``.
 
@@ -48,7 +47,6 @@ documentation of ``spin_ce.mkinstance``).
 .. code-block:: yaml
     :caption: Excerpt of ``spinfile.yaml`` for testing against a CE16 instance
 
-    ...
     plugin-packages:
         - spin_frontend
         - spin_ce
@@ -66,7 +64,8 @@ executing the ``behave`` task. Here we explicitly define the DBMS backend to be
 .. code-block:: console
     :caption: Creation an instance and running tests against it
 
-    spin --provision -p mkinstance.dbms=sqlite mkinstance
+    spin provision
+    spin -p mkinstance.dbms=sqlite mkinstance
     spin behave --instance sqlite
 
 How to run the behave plugin in order to collect coverage?
@@ -79,7 +78,7 @@ necessary flags and options to do so. For this reason, one just have to pass the
 
 .. code-block:: console
 
-    spin --provision
+    spin provision
     spin behave --coverage
 
 ``spin_python.behave`` schema reference

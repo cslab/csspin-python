@@ -318,8 +318,8 @@ def init(cfg):
         if not exists(cfg.python.interpreter):
             die(
                 f"Python {cfg.python.version} has not been provisioned for this"
-                " project. You might want to run spin with the '--provision'"
-                " flag."
+                " project. You might want to run spin with the 'provision'"
+                " task."
             )
     venv_init(cfg)
 
@@ -336,7 +336,7 @@ def venv_init(cfg):
         if not exists(activate_this):
             die(
                 f"{cfg.python.venv} does not exist. You may want to provision"
-                " it using spin --provision"
+                " it using 'spin provision'"
             )
         echo(f"activate {cfg.python.venv}", resolve=True)
         with open(activate_this, encoding="utf-8") as file:
