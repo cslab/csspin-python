@@ -32,7 +32,7 @@ executing the following command within the project's directory:
 
 .. code-block:: console
 
-    spin --provision
+    spin provision
 
 The plugins defined in the plugins section of the ``spinfile.yaml`` can now be
 used:

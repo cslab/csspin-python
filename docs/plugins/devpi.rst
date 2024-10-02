@@ -23,7 +23,6 @@ at least contain the following configuration.
 .. code-block:: yaml
     :caption: Minimal configuration of ``spinfile.yaml`` to leverage ``spin_python.devpi``
 
-    minimum-spin: "0.2"
     plugin-packages:
         - spin_python
     plugins:
@@ -32,7 +31,7 @@ at least contain the following configuration.
         version: "3.11.9"
 
 The provisioning of the required virtual environment as well as the plugins
-dependencies can be done via the well-known ``spin --provision``-command.
+dependencies can be done via the well-known ``spin provision``-task.
 
 The plugin is now ready to use: ``spin devpi --help``.
 

@@ -24,7 +24,6 @@ the ``spin_python.python`` plugin.
 .. code-block:: yaml
     :caption: Minimal configuration of ``spinfile.yaml`` to leverage ``spin_python.pytest``
 
-    minimum-spin: "0.2"
     plugin-packages:
         - spin_python
     plugins:
@@ -33,7 +32,7 @@ the ``spin_python.python`` plugin.
         version: "3.11.9"
 
 The provisioning of the required virtual environment as well as the plugins
-dependencies can be done via the well-known ``spin --provision``-command.
+dependencies can be done via the well-known ``spin provision``-task.
 
 The plugin is now ready to use: ``spin pytest --help``.
 
@@ -50,7 +49,6 @@ documentation of ``spin_ce.mkinstance``).
 .. code-block:: yaml
     :caption: Excerpt of ``spinfile.yaml`` for testing against a CE16 instance
 
-    ...
     plugin-packages:
         - spin_ce
         - spin_python
@@ -67,7 +65,8 @@ executing the ``pytest`` task. Here we explicitly define the DBMS backend to be
 .. code-block:: console
     :caption: Creating an instance and running tests against it
 
-    spin --provision -p mkinstance.dbms=sqlite mkinstance
+    spin provision
+    spin -p mkinstance.dbms=sqlite mkinstance
     spin pytest --instance sqlite
 
 How to run the pytest plugin in order to collect coverage?
@@ -80,7 +79,7 @@ necessary flags and options to do so. For this reason, one just have to pass the
 
 .. code-block:: console
 
-    spin --provision
+    spin provision
     spin pytest --coverage
 
 ``spin_python.pytest`` schema reference

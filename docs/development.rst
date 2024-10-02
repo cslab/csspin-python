@@ -17,7 +17,7 @@ A plugin that depends on ``spin_python.python`` can depend on other Python
 packages. These plugin-specific dependencies can be defined using
 ``requires.python``.
 
-Dependencies are installed while executing ``spin --provision`` and can then be
+Dependencies are installed while executing ``spin provision`` and can then be
 used within any function of the plugin.
 
 .. code-block:: python
