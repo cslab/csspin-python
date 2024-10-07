@@ -23,7 +23,7 @@ at least contain the following configuration.
 .. code-block:: yaml
     :caption: Minimal configuration of ``spinfile.yaml`` to leverage ``spin_python.devpi``
 
-    plugin-packages:
+    plugin_packages:
         - spin_python
     plugins:
         - spin_python.devpi

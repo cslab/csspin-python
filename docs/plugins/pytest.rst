@@ -24,7 +24,7 @@ the ``spin_python.python`` plugin.
 .. code-block:: yaml
     :caption: Minimal configuration of ``spinfile.yaml`` to leverage ``spin_python.pytest``
 
-    plugin-packages:
+    plugin_packages:
         - spin_python
     plugins:
         - spin_python.pytest
@@ -49,7 +49,7 @@ documentation of ``spin_ce.mkinstance``).
 .. code-block:: yaml
     :caption: Excerpt of ``spinfile.yaml`` for testing against a CE16 instance
 
-    plugin-packages:
+    plugin_packages:
         - spin_ce
         - spin_python
     plugins:

@@ -22,7 +22,7 @@ least contain the following configuration.
 .. code-block:: yaml
     :caption: Basic configuration of ``spinfile.yaml`` to leverage ``spin_python.behave``
 
-    plugin-packages:
+    plugin_packages:
         - spin_python
     plugins:
         - spin_python.behave
@@ -47,7 +47,7 @@ documentation of ``spin_ce.mkinstance``).
 .. code-block:: yaml
     :caption: Excerpt of ``spinfile.yaml`` for testing against a CE16 instance
 
-    plugin-packages:
+    plugin_packages:
         - spin_frontend
         - spin_ce
         - spin_python
