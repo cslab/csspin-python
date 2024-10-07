@@ -1,5 +1,5 @@
 minimum-spin: '0.2'
-plugin-packages:
+plugin_packages:
     - ../../../..
 plugins:
     - spin_python.python

@@ -18,7 +18,7 @@ within a project's ``spinfile.yaml``.
     :caption: Example: ``spinfile.yaml`` setup to enable the pytest and python plugins
 
     minimum-spin: "0.2"
-    plugin-packages:
+    plugin_packages:
         - spin_python
     plugins:
         - spin_python:

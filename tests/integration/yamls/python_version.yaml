@@ -1,4 +1,4 @@
-plugin-packages:
+plugin_packages:
     - ../..
 plugins:
     - spin_python.python
