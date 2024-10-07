@@ -45,13 +45,17 @@ def playwright(  # pylint: disable=missing-function-docstring
     args,
 ):
     """Run the playwright tests with pytest."""
-    setenv(PLAYWRIGHT_BROWSERS_PATH=cfg.playwright.browsers_path)
+    setenv(
+        PLAYWRIGHT_BROWSERS_PATH=cfg.playwright.browsers_path,
+        PACKAGE_NAME=cfg.spin.project_name,
+    )
 
     opts = cfg.playwright.opts
     if cfg.verbosity == Verbosity.QUIET:
         opts.append("-q")
     if coverage or cfg.playwright.coverage:
         opts.extend(cfg.playwright.coverage_opts)
+        setenv(PLAYWRIGHT_COVERAGE=1)
 
     for browser in cfg.playwright.browsers:
         opts.extend(["--browser", browser])
