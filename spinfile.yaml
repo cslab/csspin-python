@@ -21,7 +21,7 @@ python:
 sphinx:
     build_dir: _build
 
-build-rules:
+build_rules:
     task docs:
         sources: docs/_schemaref.rst
     docs/_schemaref.rst:
