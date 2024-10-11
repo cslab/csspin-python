@@ -50,5 +50,5 @@ pytest*.xml
 venv*/
 
 # Documentation
-docs/_build
+doc/_build
 *schemaref.rst

@@ -23,12 +23,12 @@ sphinx:
 
 build_rules:
     task docs:
-        sources: docs/_schemaref.rst
-    docs/_schemaref.rst:
+        sources: doc/_schemaref.rst
+    doc/_schemaref.rst:
         sources: [src/spin_python]
         spin:
-            - schemadoc behave -o docs/plugins/behave_schemaref.rst
-            - schemadoc devpi -o docs/plugins/devpi_schemaref.rst
-            - schemadoc radon -o docs/plugins/radon_schemaref.rst
-            - schemadoc python -o docs/plugins/python_schemaref.rst
-            - schemadoc pytest -o docs/plugins/pytest_schemaref.rst
+            - schemadoc behave --rst -o doc/plugins/behave_schemaref.rst
+            - schemadoc devpi --rst -o doc/plugins/devpi_schemaref.rst
+            - schemadoc radon --rst -o doc/plugins/radon_schemaref.rst
+            - schemadoc python --rst -o doc/plugins/python_schemaref.rst
+            - schemadoc pytest --rst -o doc/plugins/pytest_schemaref.rst
