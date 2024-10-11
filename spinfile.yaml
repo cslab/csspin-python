@@ -5,21 +5,19 @@ plugin_packages:
     - '../spin_python'
 
 plugins:
-    - spin_python:
-          - python
-          - behave
-          - pytest
-          - radon
-          - devpi
     - spin_docs.sphinx
+    - spin_python:
+          - behave
+          - devpi
+          - playwright
+          - pytest
+          - python
+          - radon
 
 python:
     version: '3.11.9'
     requirements:
         - sphinx-rtd-theme
-
-sphinx:
-    build_dir: _build
 
 build_rules:
     task docs:
@@ -30,5 +28,6 @@ build_rules:
             - schemadoc behave --rst -o doc/plugins/behave_schemaref.rst
             - schemadoc devpi --rst -o doc/plugins/devpi_schemaref.rst
             - schemadoc radon --rst -o doc/plugins/radon_schemaref.rst
+            - schemadoc playwright --rst -o doc/plugins/playwright_schemaref.rst
             - schemadoc python --rst -o doc/plugins/python_schemaref.rst
             - schemadoc pytest --rst -o doc/plugins/pytest_schemaref.rst
