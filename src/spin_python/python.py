@@ -346,12 +346,15 @@ def venv_init(cfg):
         ACTIVATED = True
 
 
-def patch_activate(schema):
+def patch_activate(cfg, schema):
     """Patch the activate script"""
     if exists(schema.activatescript):
         setters = []
         resetters = []
         for name, value in EXPORTS.items():
+            if name == "PATH" and cfg.python.scriptdir not in value:
+                # Ensure that the virtual environments scriptdir is in PATH.
+                value = cfg.python.scriptdir + os.pathsep + value
             if value:
                 setters.append(schema.setpattern.format(name=name, value=value))
                 resetters.append(schema.resetpattern.format(name=name, value=value))
@@ -556,7 +559,7 @@ def finalize_provision(cfg):
         PowershellActivate,
         PythonActivate,
     ):
-        patch_activate(schema)
+        patch_activate(cfg, schema)
 
     setenv_path = str(
         get_site_packages(silent=not cfg.verbosity > Verbosity.NORMAL) / "_set_env.pth"
