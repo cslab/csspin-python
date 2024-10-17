@@ -63,7 +63,8 @@ def with_coverage(cfg: ConfigTree) -> Generator:
     """Context-manager enabling to run coverage"""
     coverage_pth = ""
     try:
-        sh("coverage", "erase", may_fail=True)
+
+        sh("coverage", "erase", check=False)
         setenv(COVERAGE_PROCESS_START=cfg.behave.cov_config)
         coverage_pth = create_coverage_pth(cfg)
         yield
@@ -71,9 +72,10 @@ def with_coverage(cfg: ConfigTree) -> Generator:
         setenv(COVERAGE_PROCESS_START=None)
         if os.path.exists(coverage_pth):
             os.remove(coverage_pth)
-        sh("coverage", "combine", may_fail=True)
-        sh("coverage", "report", may_fail=True)
-        sh("coverage", "xml", "-o", cfg.behave.cov_report, may_fail=True)
+
+        sh("coverage", "combine", check=False)
+        sh("coverage", "report", check=False)
+        sh("coverage", "xml", "-o", cfg.behave.cov_report, check=False)
 
 
 @task(when="cept")

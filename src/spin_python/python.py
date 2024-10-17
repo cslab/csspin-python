@@ -298,7 +298,7 @@ def configure(cfg):
         try:
             cfg.python.interpreter = backtick(
                 "pyenv which python --nosystem",
-                may_fail=True,
+                check=False,
                 silent=not cfg.verbosity > Verbosity.NORMAL,
             ).strip()
         except Exception:  # pylint: disable=broad-exception-caught # nosec
@@ -674,7 +674,7 @@ class SimpleProvisioner(ProvisionerProtocol):
             "pip",
             "--disable-pip-version-check",
             "check",
-            may_fail=True,
+            check=False,
             capture_output=True,
         )
         if pip_check.returncode:
