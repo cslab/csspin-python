@@ -10,16 +10,6 @@
 from spin import Path, Verbosity, config, die, option, setenv, sh, task
 
 defaults = config(
-    requires=config(
-        spin=[
-            "spin_python.python",
-            "spin_python.pytest",
-        ],
-        python=[
-            "pytest-base-url",
-            "pytest-playwright",
-        ],
-    ),
     browsers_path="{spin.data}/playwright_browsers",
     browsers=[
         "chromium",
@@ -33,7 +23,18 @@ defaults = config(
         "--cov-report=xml",
     ],
     opts=["-m", "e2e"],
-    tests=["cs", "tests"],
+    tests=["cs", "tests"],  # Strong convention @CONTACT
+    requires=config(
+        spin=[
+            "spin_python.debugpy",
+            "spin_python.python",
+            "spin_python.pytest",
+        ],
+        python=[
+            "pytest-base-url",
+            "pytest-playwright",
+        ],
+    ),
 )
 
 
@@ -42,6 +43,7 @@ def playwright(  # pylint: disable=missing-function-docstring
     cfg,
     instance: option("-i", "--instance", default=None),  # noqa: F821
     coverage: option("-c", "--coverage", is_flag=True),  # noqa: F821
+    debug: option("--debug", is_flag=True),  # noqa: F821
     args,
 ):
     """Run the playwright tests with pytest."""
@@ -60,6 +62,11 @@ def playwright(  # pylint: disable=missing-function-docstring
     for browser in cfg.playwright.browsers:
         opts.extend(["--browser", browser])
 
+    if debug:
+        cmd = f"debugpy {' '.join(cfg.debugpy.opts)} -m pytest".split()
+    else:
+        cmd = ["pytest"]
+
     # Run the browser download again, so that changes for
     # cfg.playwright.browsers don't require a new provision call. If the
     # browsers are already present it's more or less a noop.
@@ -70,10 +77,10 @@ def playwright(  # pylint: disable=missing-function-docstring
             die(f"Cannot find CE instance '{inst}'.")
 
         setenv(CADDOK_BASE=inst)
-        sh("pytest", *opts, *args, *cfg.playwright.tests)
+        sh(*cmd, *opts, *args, *cfg.playwright.tests)
         setenv(CADDOK_BASE=None)
     else:
-        sh("pytest", *opts, *args, *cfg.playwright.tests)
+        sh(*cmd, *opts, *args, *cfg.playwright.tests)
 
 
 def _download_playwright_browsers(cfg):

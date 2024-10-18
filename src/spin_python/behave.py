@@ -7,23 +7,14 @@
 """Module implementing the behave plugin for cs.spin"""
 
 import contextlib
-import os
 import sys
 from typing import Generator
 
-from spin import config, die, info, option, setenv, sh, task, writetext
+from path import Path
+from spin import config, die, info, option, rmtree, setenv, sh, task, writetext
 from spin.tree import ConfigTree
 
 defaults = config(
-    requires=config(
-        spin=[
-            "spin_python.python",
-        ],
-        python=[
-            "behave",
-            "coverage",
-        ],
-    ),
     # Exclude the flaky tests in the defaults for now.
     # Will switch the default back to True as soon as
     # we have an easy way to set this in the CI.
@@ -39,6 +30,15 @@ defaults = config(
     ],
     # This is the default location of behave tests
     tests=["tests/accepttests"],
+    requires=config(
+        spin=[
+            "spin_python.python",
+        ],
+        python=[
+            "behave",
+            "coverage",
+        ],
+    ),
 )
 
 
@@ -70,9 +70,7 @@ def with_coverage(cfg: ConfigTree) -> Generator:
         yield
     finally:
         setenv(COVERAGE_PROCESS_START=None)
-        if os.path.exists(coverage_pth):
-            os.remove(coverage_pth)
-
+        rmtree(coverage_pth)
         sh("coverage", "combine", check=False)
         sh("coverage", "report", check=False)
         sh("coverage", "xml", "-o", cfg.behave.cov_report, check=False)
@@ -83,6 +81,7 @@ def behave(
     cfg,
     instance: option("-i", "--instance"),  # noqa: F821
     coverage: option("-c", "--coverage", is_flag=True),  # noqa: F821
+    debug: option("--debug", is_flag=True),  # noqa: F821
     args,
 ):
     # pylint: disable=missing-function-docstring
@@ -91,13 +90,23 @@ def behave(
     opts = cfg.behave.opts
     if not cfg.behave.flaky:
         opts.append("--tags=~flaky")
+
     if cfg.loaded.get("spin_ce.mkinstance"):
-        inst = os.path.abspath(instance or cfg.mkinstance.dbms)
-        if not os.path.isdir(inst):
+        inst = Path(instance or cfg.mkinstance.dbms).absolute()
+        if not (inst).is_dir():
             die(f"Cannot find the CE instance '{inst}'.")
         setenv(CADDOK_BASE=inst)
+
+        cmd = ["powerscript"]
+        if debug:
+            cmd.append("--debugpy")
+
         with coverage_context(cfg):
-            sh("powerscript", "-m", "behave", *opts, *args, *cfg.behave.tests)
+            sh(*cmd, "-m", "behave", *opts, *args, *cfg.behave.tests)
     else:
+        cmd = ["python"]
+        if debug:
+            cmd = ["debugpy"] + cfg.debugpy.opts
+
         with coverage_context(cfg):
-            sh("python", "-m", "behave", *opts, *args, *cfg.behave.tests)
+            sh(*cmd, "-m", "behave", *opts, *args, *cfg.behave.tests)

@@ -8,6 +8,7 @@ plugins:
     - spin_docs.sphinx
     - spin_python:
           - behave
+          - debugpy
           - devpi
           - playwright
           - pytest
@@ -19,6 +20,9 @@ python:
     requirements:
         - sphinx-rtd-theme
 
+pytest:
+    tests: [tests]
+
 build_rules:
     task docs:
         sources: doc/_schemaref.rst
@@ -26,6 +30,7 @@ build_rules:
         sources: [src/spin_python]
         spin:
             - schemadoc behave --rst -o doc/plugins/behave_schemaref.rst
+            - schemadoc debugpy --rst -o doc/plugins/debugpy_schemaref.rst
             - schemadoc devpi --rst -o doc/plugins/devpi_schemaref.rst
             - schemadoc radon --rst -o doc/plugins/radon_schemaref.rst
             - schemadoc playwright --rst -o doc/plugins/playwright_schemaref.rst

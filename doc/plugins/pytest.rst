@@ -9,8 +9,7 @@
 spin_python.pytest
 ==================
 
-The ``spin_python.pytest`` plugin is a thin wrapper around the `pytest
-<https://docs.pytest.org/en/stable/>`_ package for testing python-based
+The ``spin_python.pytest`` plugin is a thin wrapper around the `pytest`_ package for testing python-based
 projects. It makes use of cs.spin's configuration tree and thus allows the usage
 of pre-defined settings while keeping the possibility to fully adjust all
 options and flags passed to pytest.
@@ -81,6 +80,21 @@ necessary flags and options to do so. For this reason, one just have to pass the
 
     spin provision
     spin pytest --coverage
+
+How to debug tests?
+###################
+
+Debugging tests executed by the pytest plugin using `debugpy`_ can be achieved
+by passing the ``--debug`` option when calling ``pytest``. To diverge from the
+default configuration used to run debugpy, one can adjust the ``{debugpy.opts}``.
+
+.. code-block:: bash
+    :caption: Debugging tests using the pytest plugin
+
+    spin pytest --debug
+
+As soon as the debugpy server is listening, one can attach to it using the
+desired IDE or debugger.
 
 ``spin_python.pytest`` schema reference
 #######################################

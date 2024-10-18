@@ -9,9 +9,8 @@
 spin_python.radon
 =================
 
-The ``spin_python.radon`` plugin provides a way to run the `Radon
-<https://radon.readthedocs.io/en/latest/index.html>`_ tool to measure various
-code metrics of Python code.
+The ``spin_python.radon`` plugin provides a way to run the `Radon`_ tool to
+measure various code metrics of Python code.
 
 How to setup the ``spin_python.radon`` plugin?
 ##############################################

@@ -10,7 +10,7 @@ spin_python.playwright
 ======================
 
 The ``spin_python.playwright`` plugin provides a way to run the
-`pytest-playwright <https://playwright.dev/>`_ end-to-end testing tool to
+`pytest-playwright`_ end-to-end testing tool to
 execute pre-implemented tests against CONTACT Elements instances by adding the
 ``playwright`` task to spin's CLI.
 
@@ -85,6 +85,22 @@ and tested using the ``mkinstance`` and ``playwright`` tasks:
     spin provision
     spin mkinstance
     spin playwright
+
+How to debug tests?
+###################
+
+Debugging tests executed by the playwright plugin using `debugpy`_ can be
+achieved by passing the ``--debug`` option when calling ``playwright``. To
+diverge from the default configuration used to run debugpy, one can adjust the
+``{debugpy.opts}``.
+
+.. code-block:: bash
+    :caption: Debugging tests using the playwright plugin
+
+    spin playwright --debug
+
+As soon as the debugpy server is listening, one can attach to it using the
+desired IDE or debugger.
 
 ``spin_python.playwright`` schema reference
 ###########################################
