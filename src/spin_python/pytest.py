@@ -11,8 +11,12 @@ from spin import Path, Verbosity, config, die, option, setenv, sh, task
 
 defaults = config(
     requires=config(
-        spin=["spin_python.python"],
+        spin=[
+            "spin_python.debugpy",
+            "spin_python.python",
+        ],
         python=[
+            "debugpy",
             "pytest",
             "pytest-cov",
         ],
@@ -26,8 +30,7 @@ defaults = config(
         "--cov-report=html",
         "--cov-report=xml",
     ],
-    # Strong convention @CONTACT
-    tests=["cs", "tests"],
+    tests=["cs", "tests"],  # Strong convention @CONTACT
 )
 
 
@@ -36,6 +39,7 @@ def pytest(  # pylint: disable=missing-function-docstring
     cfg,
     instance: option("-i", "--instance", default=None),  # noqa: F821
     coverage: option("-c", "--coverage", is_flag=True),  # noqa: F821
+    debug: option("--debug", is_flag=True),  # noqa: F821
     args,
 ):
     """Run the 'pytest' command."""
@@ -44,13 +48,17 @@ def pytest(  # pylint: disable=missing-function-docstring
         opts.append("-q")
     if coverage or cfg.pytest.coverage:
         opts.extend(cfg.pytest.coverage_opts)
+    if debug:
+        cmd = f"debugpy {' '.join(cfg.debugpy.opts)} -m pytest".split()
+    else:
+        cmd = ["pytest"]
 
     if cfg.loaded.get("spin_ce.mkinstance"):
         if not (inst := Path(instance or cfg.mkinstance.dbms).absolute()).is_dir():
             die(f"Cannot find CE instance '{inst}'.")
 
         setenv(CADDOK_BASE=inst)
-        sh("pytest", *opts, *args, *cfg.pytest.tests)
+        sh(*cmd, *opts, *args, *cfg.pytest.tests)
         setenv(CADDOK_BASE=None)
     else:
-        sh("pytest", *opts, *args, *cfg.pytest.tests)
+        sh(*cmd, *opts, *args, *cfg.pytest.tests)

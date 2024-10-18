@@ -9,9 +9,9 @@
 spin_python.behave
 ==================
 
-The ``spin_python.behave`` plugin provides a way to run `behave
-<https://behave.readthedocs.io/en/latest/>`_ in the context of cs.spin, which is
-a great tool for those who want to run acceptance tests driven by behave.
+The ``spin_python.behave`` plugin provides a way to run `behave`_ in the context
+of cs.spin, which is a great tool for those who want to run acceptance tests
+driven by behave.
 
 How to setup the ``spin_python.behave`` plugin?
 ###############################################
@@ -80,6 +80,21 @@ necessary flags and options to do so. For this reason, one just have to pass the
 
     spin provision
     spin behave --coverage
+
+How to debug tests?
+###################
+
+Debugging tests executed by the behave plugin using `debugpy`_ can be achieved
+by passing the ``--debug`` option when calling ``behave``. To diverge from the
+default configuration used to run debugpy, one can adjust the ``{debugpy.opts}``.
+
+.. code-block:: bash
+    :caption: Debugging tests using the pytest plugin
+
+    spin behave --debug -i sqlite
+
+As soon as the debugpy server is listening, one can attach to it using the
+desired IDE or debugger.
 
 ``spin_python.behave`` schema reference
 #######################################

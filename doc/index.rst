@@ -26,6 +26,7 @@ https://packages.contact.de/tools/misc/spin-python.
 
    installation.rst
    plugins/behave.rst
+   plugins/debugpy.rst
    plugins/devpi.rst
    plugins/playwright.rst
    plugins/pytest.rst

@@ -10,9 +10,9 @@ spin_python.devpi
 =================
 
 The ``spin_python.devpi`` plugin provides integration with a package index
-server using the Python package `devpi <https://github.com/devpi/devpi>`_. The
-devpi package is useful for those who need to integrate their project with
-a package index server for managing and publishing Python packages.
+server using the Python package `devpi`_. The devpi package is useful for those
+who need to integrate their project with a package index server for managing and
+publishing Python packages.
 
 How to setup the ``spin_python.devpi`` plugin?
 ###############################################
