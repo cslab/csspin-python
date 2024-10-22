@@ -46,6 +46,6 @@ be added as a dependency and can be used as follows:
            sh("python", "-m", "something", args)
 
 ``spin_python.debugpy`` schema reference
-######################################
+########################################
 
 .. include:: debugpy_schemaref.rst
