@@ -24,10 +24,15 @@ defaults = config(
     cov_config="setup.cfg",
     # Default to concise and readable output
     opts=[
-        "--format=pretty",
         "--no-source",
         "--tags=~skip",
+        "--format=pretty",
+        "--no-skipped",
     ],
+    report=config(
+        name="cept_test_results.json",
+        format="json.pretty",
+    ),
     # This is the default location of behave tests
     tests=["tests/accepttests"],
     requires=config(
@@ -77,20 +82,26 @@ def with_coverage(cfg: ConfigTree) -> Generator:
 
 
 @task(when="cept")
-def behave(
+def behave(  # pylint: disable=too-many-arguments,too-many-positional-arguments
     cfg,
     instance: option("-i", "--instance"),  # noqa: F821
     coverage: option("-c", "--coverage", is_flag=True),  # noqa: F821
     debug: option("--debug", is_flag=True),  # noqa: F821
+    with_test_report: option("--with-test-report", is_flag=True),  # noqa: F821,F722
     args,
 ):
+    """Run Gherkin tests using behave."""
     # pylint: disable=missing-function-docstring
     coverage_enabled = coverage or cfg.behave.coverage
     coverage_context = with_coverage if coverage_enabled else contextlib.nullcontext
     opts = cfg.behave.opts
     if not cfg.behave.flaky:
         opts.append("--tags=~flaky")
-
+    if with_test_report and cfg.behave.report.name and cfg.behave.report.format:
+        opts = [
+            f"--format={cfg.behave.report.format}",
+            f"-o={cfg.behave.report.name}",
+        ] + opts
     if cfg.loaded.get("spin_ce.mkinstance"):
         inst = Path(instance or cfg.mkinstance.dbms).absolute()
         if not (inst).is_dir():

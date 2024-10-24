@@ -22,7 +22,18 @@ behave:
             help: Filepath to the configuration that behave should respect.
         opts:
             type: list
-            help: Additional options for the behave command
+            help: Additional options for the behave command.
         tests:
             type: list
             help: List of test files or directories to include.
+        report:
+            type: object
+            help: Configuration regarding the test report generation.
+            properties:
+                name:
+                    type: path
+                    help: Path to write the test report to.
+                format:
+                    type: str
+                    help: |
+                        A valid formatter of behave to use for the test report.

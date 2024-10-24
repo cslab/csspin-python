@@ -20,9 +20,15 @@ playwright:
         coverage_opts:
             type: list
             help: Additional options for the coverage run.
+        coverage_report:
+            type: str
+            help: File to write the coverage report to.
         opts:
             type: list
             help: Additional options for the pytest command.
+        test_report:
+            type: path
+            help: Path to write the test report to.
         tests:
             type: list
             help: List of test files or directories to include.
