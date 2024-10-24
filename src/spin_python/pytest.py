@@ -10,6 +10,18 @@
 from spin import Path, Verbosity, config, die, option, setenv, sh, task
 
 defaults = config(
+    coverage=False,
+    coverage_opts=[
+        "--cov-reset",
+        "--cov",
+        "--cov-report=term",
+        "--cov-report=html",
+        "--cov-report=xml:{pytest.coverage_report}",
+    ],
+    coverage_report="python-pytest-coverage.xml",
+    opts=[],
+    tests=["cs", "tests"],  # Strong convention @CONTACT
+    test_report="pytest.xml",
     requires=config(
         spin=[
             "spin_python.debugpy",
@@ -21,31 +33,24 @@ defaults = config(
             "pytest-cov",
         ],
     ),
-    coverage=False,
-    opts=[],
-    coverage_opts=[
-        "--cov-reset",
-        "--cov",
-        "--cov-report=term",
-        "--cov-report=html",
-        "--cov-report=xml",
-    ],
-    tests=["cs", "tests"],  # Strong convention @CONTACT
 )
 
 
 @task(when="test")
-def pytest(  # pylint: disable=missing-function-docstring
+def pytest(  # pylint: disable=too-many-arguments,too-many-positional-arguments
     cfg,
     instance: option("-i", "--instance", default=None),  # noqa: F821
     coverage: option("-c", "--coverage", is_flag=True),  # noqa: F821
     debug: option("--debug", is_flag=True),  # noqa: F821
+    with_test_report: option("--with-test-report", is_flag=True),  # noqa: F821,F722
     args,
 ):
     """Run the 'pytest' command."""
     opts = cfg.pytest.opts
     if cfg.verbosity == Verbosity.QUIET:
         opts.append("-q")
+    if with_test_report and cfg.pytest.test_report:
+        opts.append(f"--junitxml={cfg.pytest.test_report}")
     if coverage or cfg.pytest.coverage:
         opts.extend(cfg.pytest.coverage_opts)
     if debug:

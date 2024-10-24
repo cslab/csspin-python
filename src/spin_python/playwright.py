@@ -11,19 +11,19 @@ from spin import Path, Verbosity, config, die, option, setenv, sh, task
 
 defaults = config(
     browsers_path="{spin.data}/playwright_browsers",
-    browsers=[
-        "chromium",
-    ],
+    browsers=["chromium"],
     coverage=False,
     coverage_opts=[
         "--cov-reset",
         "--cov",
         "--cov-report=term",
         "--cov-report=html",
-        "--cov-report=xml",
+        "--cov-report=xml:{playwright.coverage_report}",
     ],
+    coverage_report="python-playwright-coverage.xml",
     opts=["-m", "e2e"],
     tests=["cs", "tests"],  # Strong convention @CONTACT
+    test_report="playwright.xml",
     requires=config(
         spin=[
             "spin_python.debugpy",
@@ -39,11 +39,12 @@ defaults = config(
 
 
 @task(when="cept")
-def playwright(  # pylint: disable=missing-function-docstring
+def playwright(  # pylint: disable=too-many-arguments,too-many-positional-arguments
     cfg,
     instance: option("-i", "--instance", default=None),  # noqa: F821
     coverage: option("-c", "--coverage", is_flag=True),  # noqa: F821
     debug: option("--debug", is_flag=True),  # noqa: F821
+    with_test_report: option("--with-test-report", is_flag=True),  # noqa: F821,F722
     args,
 ):
     """Run the playwright tests with pytest."""
@@ -55,6 +56,8 @@ def playwright(  # pylint: disable=missing-function-docstring
     opts = cfg.playwright.opts
     if cfg.verbosity == Verbosity.QUIET:
         opts.append("-q")
+    if with_test_report and cfg.playwright.test_report:
+        opts.append(f"--junitxml={cfg.playwright.test_report}")
     if coverage or cfg.playwright.coverage:
         opts.extend(cfg.playwright.coverage_opts)
         setenv(PLAYWRIGHT_COVERAGE=1)
