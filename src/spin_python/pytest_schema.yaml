@@ -25,6 +25,3 @@ pytest:
         tests:
             type: list
             help: List of test files or directories to include.
-        services:
-            type: bool
-            help: Enable or disable services required for tests.
