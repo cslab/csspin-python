@@ -2,7 +2,7 @@
 # requires a provisioned project.
 plugin_packages:
     - spin_docs
-    - '../spin_python'
+    - .
 
 plugins:
     - spin_docs.sphinx
