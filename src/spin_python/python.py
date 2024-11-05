@@ -279,6 +279,8 @@ def provision(cfg):
             pyenv_install(cfg)
     venv_provision(cfg)
 
+    cfg.python.site_packages = get_site_packages(interpreter=cfg.python.python)
+
 
 def configure(cfg):
     """Configure the python plugin"""
@@ -534,7 +536,7 @@ class PythonActivate:
     )
 
 
-def get_site_packages(interpreter="python", silent=True):
+def get_site_packages(interpreter):
     """Return the path to the virtual environments site-packages."""
     return Path(
         sh(
@@ -542,7 +544,6 @@ def get_site_packages(interpreter="python", silent=True):
             "-c",
             'import sysconfig; print(sysconfig.get_path("purelib"))',
             capture_output=True,
-            silent=silent,
         )
         .stdout.decode()
         .strip()
@@ -561,9 +562,7 @@ def finalize_provision(cfg):
     ):
         patch_activate(cfg, schema)
 
-    setenv_path = str(
-        get_site_packages(silent=not cfg.verbosity > Verbosity.NORMAL) / "_set_env.pth"
-    )
+    setenv_path = str(cfg.python.site_packages / "_set_env.pth")
     info(f"Create {setenv_path}")
     pthline = interpolate1(
         "import os; "
