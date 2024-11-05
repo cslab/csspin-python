@@ -521,7 +521,7 @@ class BatchDeactivate:
 
 class PythonActivate:
     patchmarker = "# Patched by spin.builtin.virtualenv\n"
-    activatescript = "{python.scriptdir}/activate_this.py"
+    activatescript = Path("{python.scriptdir}") / "activate_this.py"
     replacements = ()
     setpattern = 'os.environ["{name}"] = r"{value}"'
     resetpattern = ""
