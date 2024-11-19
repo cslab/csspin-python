@@ -130,6 +130,7 @@ defaults = config(
         extras=[],
     ),
     index_url="https://pypi.org/simple",
+    requires=config(python=["build", "wheel"]),
 )
 
 
@@ -715,7 +716,13 @@ def venv_provision(cfg):  # pylint: disable=too-many-branches,missing-function-d
         ]
         virtualenv = Command(*cmd)
         # do not download seeds, since we update pip later anyway
-        virtualenv("-p", cfg.python.interpreter, cfg.python.venv)
+        # add the plugins directory to the PYTHONPATH so that virtualenv will be found
+        virtualenv(
+            "-p",
+            cfg.python.interpreter,
+            cfg.python.venv,
+            env={"PYTHONPATH": cfg.spin.spin_dir / "plugins"},
+        )
         fresh_virtualenv = True
 
     # This sets PATH to the venv
