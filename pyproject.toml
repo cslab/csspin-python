@@ -4,7 +4,9 @@ requires = ["setuptools>=64", "setuptools_scm>=8"]
 
 [project]
 authors = [{name = "CONTACT Software GmbH"}]
-dependencies = []
+dependencies = [
+  "virtualenv"
+]
 description = "Plugin package for cs.spin providing Python related plugins"
 dynamic = ["version", "readme"]
 license = {text = "Copyright (C) 2024 CONTACT Software GmbH"}
