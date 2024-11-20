@@ -91,6 +91,7 @@ from spin import (
     warn,
     writetext,
 )
+from spin.tree import ConfigTree
 
 defaults = config(
     pyenv=config(
@@ -269,15 +270,16 @@ def nuget_install(cfg):
     )
 
 
-def provision(cfg):
+def provision(cfg: ConfigTree) -> None:
     """Provision the python plugin"""
-    info(f"Checking {cfg.python.interpreter}")
+    if cfg.python.provisioner is None:
+        cfg.python.provisioner = SimpleProvisioner()
+
+    info("Checking {python.interpreter}")
     if not shutil.which(cfg.python.interpreter):
-        if sys.platform == "win32":
-            nuget_install(cfg)
-        else:
-            # Everything else (Linux and macOS) uses pyenv
-            pyenv_install(cfg)
+        info("Provisioning '{python.interpreter}'")
+        cfg.python.provisioner.provision_python(cfg)
+
     venv_provision(cfg)
 
     cfg.python.site_packages = get_site_packages(interpreter=cfg.python.python)
@@ -584,23 +586,57 @@ class ProvisionerProtocol:
 
     """
 
-    def prerequisites(self, cfg):
+    # noinspection PyMethodMayBeStatic
+    def provision_python(self, cfg: ConfigTree) -> None:
+        """Provision the project's python interpreter"""
+        if sys.platform == "win32":
+            nuget_install(cfg)
+        else:
+            # Everything else (Linux and macOS) uses pyenv
+            pyenv_install(cfg)
+
+    # noinspection PyMethodMayBeStatic
+    def provision_venv(self, cfg: ConfigTree) -> None:
+        """Provision the virtual environment of the project"""
+        # virtualenv is guaranteed to be available like this
+        # as we declared it as one of spin's dependencies
+        cmd = [
+            sys.executable,
+            "-mvirtualenv",
+            None if cfg.verbosity > Verbosity.NORMAL else "-q",
+        ]
+        virtualenv = Command(*cmd)
+        # do not download seeds, since we update pip later anyway
+        # add the plugins directory to the PYTHONPATH so that virtualenv will be found
+        virtualenv(
+            "-p",
+            cfg.python.interpreter,
+            cfg.python.venv,
+            env={"PYTHONPATH": cfg.spin.spin_dir / "plugins"},
+        )
+
+    def prerequisites(self, cfg: ConfigTree) -> None:
         """Provide requirements for the provisioning strategy."""
 
-    def lock(self, cfg):
+    def lock(self, cfg: ConfigTree) -> None:
         """Lock the project's dependencies."""
 
-    def add(self, req, devpackage=False):
+    def add(self, req: str, devpackage: bool = False) -> None:
         """Add an extra dependency (incl. development ones)."""
 
-    def lock_extras(self, cfg):
+    def lock_extras(self, cfg: ConfigTree) -> None:
         """Lock the extra dependencies."""
 
-    def sync(self, cfg):
+    def sync(self, cfg: ConfigTree) -> None:
         """Synchronize the environment with the locked dependencies."""
 
-    def install(self, cfg):
+    def install(self, cfg: ConfigTree) -> None:
         """Install the project itself."""
+
+    # noinspection PyMethodMayBeStatic
+    def cleanup(self, cfg: ConfigTree) -> None:
+        """Cleanup the provisioned environment"""
+        rmtree(cfg.python.venv)
 
 
 class SimpleProvisioner(ProvisionerProtocol):
@@ -705,31 +741,16 @@ class SimpleProvisioner(ProvisionerProtocol):
 
 
 def venv_provision(cfg):  # pylint: disable=too-many-branches,missing-function-docstring
-    fresh_virtualenv = False
+    fresh_env = False
+
+    info("Checking venv '{python.venv}'")
     if not exists(cfg.python.venv):
-        # virtualenv is guaranteed to be available like this
-        # as we declared it as one of spin's dependencies
-        cmd = [
-            sys.executable,
-            "-mvirtualenv",
-            None if cfg.verbosity > Verbosity.NORMAL else "-q",
-        ]
-        virtualenv = Command(*cmd)
-        # do not download seeds, since we update pip later anyway
-        # add the plugins directory to the PYTHONPATH so that virtualenv will be found
-        virtualenv(
-            "-p",
-            cfg.python.interpreter,
-            cfg.python.venv,
-            env={"PYTHONPATH": cfg.spin.spin_dir / "plugins"},
-        )
-        fresh_virtualenv = True
+        info("Provisioning venv '{python.venv}'")
+        cfg.python.provisioner.provision_venv(cfg)
+        fresh_env = True
 
     # This sets PATH to the venv
     init(cfg)
-
-    if cfg.python.provisioner is None:
-        cfg.python.provisioner = SimpleProvisioner()
 
     if cfg.python.pipconf:
         if sys.platform == "win32":
@@ -739,7 +760,7 @@ def venv_provision(cfg):  # pylint: disable=too-many-branches,missing-function-d
         writetext(pipconf, cfg.python.pipconf)
 
     # Establish the prerequisites
-    if fresh_virtualenv:
+    if fresh_env:
         cfg.python.provisioner.prerequisites(cfg)
 
     # Plugins can define a 'venv_hook' function, to give them a
@@ -775,9 +796,9 @@ def venv_provision(cfg):  # pylint: disable=too-many-branches,missing-function-d
     cfg.python.provisioner.sync(cfg)
 
 
-def cleanup(cfg):
+def cleanup(cfg: ConfigTree) -> None:
     """Remove directories and files generated by the python plugin."""
     try:
-        rmtree(cfg.python.venv)
-    except Exception:  # pylint: disable=broad-exception-caught
-        warn("cleanup: no Python interpreter installed")
+        cfg.python.provisioner.cleanup(cfg)
+    except Exception as err:  # pylint: disable=broad-exception-caught
+        warn(f"cleaning up the python environment failed: {err}")
