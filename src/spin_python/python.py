@@ -131,44 +131,32 @@ defaults = config(
         extras=[],
     ),
     index_url="https://pypi.org/simple",
-    requires=config(python=["build", "wheel"]),
-)
-
-
-def system_requirements(
-    cfg,
-):  # pylint: disable=unused-argument,missing-function-docstring
-    # This is our little database of system requirements for
-    # provisioning Python; spin identifies platforms by a tuple
-    # composed of the distro id and version e.g. ("debian", 10).
-    debian_requirements = [
-        "build-essential",
-        "curl",
-        "git",
-        "libbz2-dev",
-        "libffi-dev",
-        "libkrb5-dev",
-        "liblzma-dev",
-        "libncursesw5-dev",
-        "libreadline-dev",
-        "libsqlite3-dev",
-        "libssl-dev",
-        "libxml2-dev",
-        "libxmlsec1-dev",
-        "make",
-        "xz-utils",
-        "zlib1g-dev",
-    ]
-    return [
-        # We intentionally leave out Tk, as it pulls in a lot of
-        # graphics and X packages
-        (
-            lambda distro, version: distro in ("debian", "mint", "ubuntu"),
-            {
-                "apt": " ".join(debian_requirements),
-            },
+    requires=config(
+        python=["build", "wheel"],
+        system=config(
+            debian=config(
+                apt=[
+                    "build-essential",
+                    "curl",
+                    "git",
+                    "libbz2-dev",
+                    "libffi-dev",
+                    "libkrb5-dev",
+                    "liblzma-dev",
+                    "libncursesw5-dev",
+                    "libreadline-dev",
+                    "libsqlite3-dev",
+                    "libssl-dev",
+                    "libxml2-dev",
+                    "libxmlsec1-dev",
+                    "make",
+                    "xz-utils",
+                    "zlib1g-dev",
+                ]
+            )
         ),
-    ]
+    ),
+)
 
 
 @task()
