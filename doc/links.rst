@@ -4,3 +4,4 @@
 .. _pytest: https://docs.pytest.org/en/stable/
 .. _pytest-playwright: https://playwright.dev/
 .. _Radon: https://radon.readthedocs.io/en/latest/index.html
+.. _spin_ce.mkinstance: http://qs.pages.contact.de/spin/spin_ce/plugins/mkinstance.html

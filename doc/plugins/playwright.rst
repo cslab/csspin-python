@@ -49,7 +49,6 @@ The ``playwright`` task will execute the tests defined in the
 ``tests/playwright`` directory of the project. These path can be customized
 using the playwright configuration within the ``spinfile.yaml``.
 
-
 How to run playwright tests against a CONTACT Elements instance?
 ################################################################
 
@@ -63,6 +62,7 @@ existence of it. A typical setup may require a
     plugin_packages:
         - spin_ce
         - spin_frontend
+        - spin_java
         - spin_python
     plugins:
         - spin_ce:
@@ -75,6 +75,8 @@ existence of it. A typical setup may require a
         index_url: <index url where to retrieve cs.* packages from>
     node:
         version: '18.17.1'
+    java:
+        version: '21'
 
 After provisioning the project, the CONTACT Elements instance can be created
 and tested using the ``mkinstance`` and ``playwright`` tasks:

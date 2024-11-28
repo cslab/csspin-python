@@ -76,7 +76,9 @@ def playwright(  # pylint: disable=too-many-arguments,too-many-positional-argume
     _download_playwright_browsers(cfg)
 
     if cfg.loaded.get("spin_ce.mkinstance"):
-        if not (inst := Path(instance or cfg.mkinstance.dbms).absolute()).is_dir():
+        if not (
+            inst := Path(instance or cfg.mkinstance.base.instance_location).absolute()
+        ).is_dir():
             die(f"Cannot find CE instance '{inst}'.")
 
         setenv(CADDOK_BASE=inst)

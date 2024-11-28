@@ -170,7 +170,6 @@ follows:
             [global]
             find-links = {HOME}/.custom_wheel_cache
 
-
 ``spin_python.python`` schema reference
 #######################################
 

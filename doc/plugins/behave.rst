@@ -37,19 +37,18 @@ The plugin is now ready to use: ``spin behave --help``.
 How to run tests against a CE16 instance using the pytest plugin?
 #################################################################
 
-.. TODO: Add link to spin_ce.mkinstance documentation
-
 Running tests against a CE16 instance requires this to exist. For the
 creation of an instance, the ``spin_ce.mkinstance`` plugin can be used. To do
 so, we have to define it within the project's ``spinfile.yaml`` (see
-documentation of ``spin_ce.mkinstance``).
+documentation of `spin_ce.mkinstance`_).
 
 .. code-block:: yaml
     :caption: Excerpt of ``spinfile.yaml`` for testing against a CE16 instance
 
     plugin_packages:
-        - spin_frontend
         - spin_ce
+        - spin_frontend
+        - spin_java
         - spin_python
     plugins:
         - spin_ce.mkinstance
@@ -78,7 +77,6 @@ necessary flags and options to do so. For this reason, one just have to pass the
 
 .. code-block:: console
 
-    spin provision
     spin behave --coverage
 
 How to debug tests?
