@@ -103,7 +103,7 @@ def behave(  # pylint: disable=too-many-arguments,too-many-positional-arguments
             f"-o={cfg.behave.report.name}",
         ] + opts
     if cfg.loaded.get("spin_ce.mkinstance"):
-        inst = Path(instance or cfg.mkinstance.dbms).absolute()
+        inst = Path(instance or cfg.mkinstance.base.instance_location).absolute()
         if not (inst).is_dir():
             die(f"Cannot find the CE instance '{inst}'.")
         setenv(CADDOK_BASE=inst)

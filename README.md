@@ -18,6 +18,7 @@ https://code.contact.de/qs/tooling/spin-plugins/-/commit/87399f327a5979c3ef56192
 
 Additional plugins:
 
+-   python.debugpy
 -   python.playwright
 
 ## Creating a New Release
