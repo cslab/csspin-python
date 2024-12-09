@@ -6,6 +6,8 @@
 
 """Fixtures for the integration testsuite"""
 
+import pathlib
+import sys
 
 import pytest
 
@@ -22,3 +24,12 @@ def tmp_dir_per_spinfile(request, tmp_path_factory):
     spinfile_name = parametrization[1:].split(":")[0]
     tmp_dir_name = f"{spinfile_name}.d"
     yield tmp_path_factory.getbasetemp() / tmp_dir_name
+
+
+@pytest.fixture()
+def test_script():
+    """
+    Fixture to return the right test script depending on the OS.
+    """
+    ext = ".ps1" if sys.platform == "win32" else ".sh"
+    return pathlib.Path(__file__).parent / f"fixtures/activation_script/test_env{ext}"
