@@ -1,0 +1,9 @@
+plugin_packages:
+    - ../..
+plugins:
+    - spin_python.python
+    - dummy
+plugin_paths:
+    - ../fixtures/activation_script/plugins
+python:
+    use: python

@@ -5,6 +5,7 @@
 # https://www.contact-software.com/
 #
 # pylint: disable=too-few-public-methods,missing-class-docstring
+# pylint: disable=too-many-lines # FIXME: Remove when the pre_spin_1_0_2 stuff gets removed
 
 """``python``
 ==========
@@ -55,14 +56,16 @@ point to the base installation.
 
 """
 
+import abc
 import logging
 import os
+import re
 import shutil
 import sys
-from textwrap import dedent
+from textwrap import dedent, indent
 
 from click.exceptions import Abort
-from spin import parse_version  # pylint: disable=unused-import # noqa: F401
+from packaging.version import Version
 from spin import (
     EXPORTS,
     Command,
@@ -339,7 +342,7 @@ def venv_init(cfg):
         ACTIVATED = True
 
 
-def patch_activate(cfg, schema):
+def patch_activate_pre_spin_1_0_2(cfg, schema):  # FIXME: Remove next Major Release
     """Patch the activate script"""
     if exists(schema.activatescript):
         setters = []
@@ -377,20 +380,327 @@ def patch_activate(cfg, schema):
         writetext(f"{schema.activatescript}", newscript)
 
 
-class BashActivate:
-    patchmarker = "\n## PATCHED BY spin.builtin.virtualenv\n"
+def patch_activate(
+    cfg, schema  # pylint: disable=unused-argument
+):  # FIXME: Remove cfg after patch_activate_pre_spin_1_0_2 has been removed
+    """Patch the activate script"""
+    if exists(schema.activatescript):
+        setters = []
+        resetters = set()
+        old_value_setters = set()
+        for name, value in EXPORTS:
+            value = schema.interpolate_environ_value(value)
+            setters.append(schema.setpattern.format(name=name, value=value))
+            resetters.add(schema.resetpattern.format(name=name))
+            old_value_setters.add(schema.old_env_pattern.format(name=name))
+        resetters = "\n".join(resetters)
+        setters = "\n".join(setters)
+        old_value_setters = "\n".join(old_value_setters)
+        original = readtext(schema.activatescript)
+        if schema.patchmarker not in original:
+            shutil.copyfile(
+                interpolate1(f"{schema.activatescript}"),
+                interpolate1(f"{schema.activatescript}.bak"),
+            )
+        info(f"Patching {schema.activatescript}")
+        # Removing the byte order marker (BOM) ensures the absence of those in
+        # the final scripts. BOMs in executables are not fully supported in
+        # Powershell.
+        original = (
+            readtext(f"{schema.activatescript}.bak").encode("utf-8").decode("utf-8-sig")
+        )
+        for repl in schema.replacements:
+            original = original.replace(repl[0], repl[1])
+        newscript = schema.script.format(
+            patchmarker=schema.patchmarker,
+            original=original,
+            resetters=resetters,
+            old_value_setters=old_value_setters,
+            setters=setters,
+        )
+        writetext(f"{schema.activatescript}", newscript)
+
+
+class ActivateScriptPatcher(abc.ABC):
+    @staticmethod
+    @abc.abstractmethod
+    def interpolate_environ_value(value):
+        """
+        Translate value so the script can handle uninterpolated "{ENVVAR}" literals in value
+
+        Example:
+        # Assume the following subset of os.environ
+        os.environ = {
+            "PATH": "/bin:/usr/bin",
+            "COMPILER_PATHS": "/compiler/A/bin:/compiler/B/bin",
+        }
+
+        # Now, setenv has been called with
+        # setenv(PATH="{python.scriptdir}:{COMPILER_PATHS}:{PATH}") thus the
+        # value of ``PATH`` in ``EXPORTS`` equals "/venv/bin:{COMPILER_PATHS}:{PATH}" as
+        # ``COMPILER_PATHS`` and ``PATH`` haven't been interpolated yet.
+        interpolate_environ_value(value) => /venv/bin:/compiler/A/bin:/compiler/B/bin:/bin:/usr/bin
+        """
+        return value
+
+
+class BashActivate(ActivateScriptPatcher):
+    patchmarker = "\n## Patched by spin_python.python\n"
     activatescript = Path("{python.scriptdir}") / "activate"
     replacements = [
         ("deactivate", "origdeactivate"),
     ]
+    old_env_pattern = dedent(
+        """
+        if [ -z ${{{name}+x}} ]; then
+            export _OLD_SPIN_UNSET{name}=""
+        else
+            export _OLD_SPIN_VALUE{name}="${name}"
+        fi
+        """
+    )
     setpattern = dedent(
+        """
+        {name}="{value}"
+        export {name}
+        """
+    )
+    resetpattern = indent(
+        dedent(
+            """
+            if ! [ -z "${{_OLD_SPIN_VALUE{name}+_}}" ] ; then
+                {name}="$_OLD_SPIN_VALUE{name}"
+                export {name}
+                unset _OLD_SPIN_VALUE{name}
+            fi
+            if ! [ -z "${{_OLD_SPIN_UNSET{name}+_}}" ] ; then
+                unset {name}
+                unset _OLD_SPIN_UNSET{name}
+            fi
+            """
+        ),
+        prefix="    ",
+    )
+    script = dedent(
+        """
+        {patchmarker}
+        {original}
+        deactivate () {{
+            {resetters}
+            if [ ! "${{1-}}" = "nondestructive" ] ; then
+                # Self destruct!
+                unset -f deactivate
+                origdeactivate
+            fi
+        }}
+
+        deactivate nondestructive
+        {old_value_setters}
+        {setters}
+
+        # The hash command must be called to get it to forget past
+        # commands. Without forgetting past commands the $PATH changes
+        # we made may not be respected
+        hash -r 2>/dev/null
+        """
+    )
+
+    @staticmethod
+    def interpolate_environ_value(value):
+        if not value:
+            return ""
+        keys = re.findall(r"{(?P<key>\w+?)}", value)
+        for key in keys:
+            if key in os.environ:
+                value = value.replace(f"{{{key}}}", f"${key}")
+        return value
+
+
+class PowershellActivate(ActivateScriptPatcher):
+    patchmarker = "\n## Patched by spin_python.python\n"
+    activatescript = Path("{python.scriptdir}") / "activate.ps1"
+    replacements = [
+        ("deactivate", "origdeactivate"),
+    ]
+    old_env_pattern = (
+        "New-Variable -Scope global -Name _OLD_SPIN_{name} -Value $env:{name}"
+    )
+    setpattern = dedent(
+        """
+        $env:{name} = "{value}"
+        """
+    )
+    resetpattern = indent(
+        dedent(
+            """
+                if (Test-Path variable:_OLD_SPIN_{name}) {{
+                    $env:{name} = $variable:_OLD_SPIN_{name}
+                    Remove-Variable "_OLD_SPIN_{name}" -Scope global
+                }}
+            """
+        ),
+        prefix="    ",
+    )
+    script = dedent(
+        """
+        {patchmarker}
+        {original}
+        function global:deactivate([switch] $NonDestructive) {{
+            {resetters}
+            if (!$NonDestructive) {{
+                Remove-Item function:deactivate
+                origdeactivate
+            }}
+        }}
+
+        deactivate -nondestructive
+        {old_value_setters}
+        {setters}
+        """
+    )
+
+    @staticmethod
+    def interpolate_environ_value(value):
+        if not value:
+            return ""
+        keys = re.findall(r"{(?P<key>\w+?)}", value)
+        for key in keys:
+            if key in os.environ:
+                value = value.replace(f"{{{key}}}", f"$env:{key}")
+        return value
+
+
+class BatchActivate(ActivateScriptPatcher):
+    patchmarker = "\nREM Patched by spin_python.python\n"
+    activatescript = Path("{python.scriptdir}") / "activate.bat"
+    replacements = ()
+    old_env_pattern = dedent(
+        """
+        if defined _OLD_SPIN_VALUE_{name} goto ENDIFSPIN{name}1
+        if defined _OLD_SPIN_UNSET_{name} goto ENDIFSPIN{name}2
+        if defined {name} goto ENDIFSPIN{name}3
+        goto ENDIFSPIN{name}4
+        :ENDIFSPIN{name}1
+            set "{name}=%_OLD_SPIN_VALUE_{name}%"
+            set "_OLD_SPIN_VALUE_{name}=%{name}%"
+            goto ENDIFSPIN{name}5
+        :ENDIFSPIN{name}2
+            set "{name}="
+            set "_OLD_SPIN_UNSET_{name}= "
+            goto ENDIFSPIN{name}5
+        :ENDIFSPIN{name}3
+            set "_OLD_SPIN_VALUE_{name}=%{name}%"
+            goto ENDIFSPIN{name}5
+        :ENDIFSPIN{name}4
+            set "_OLD_SPIN_UNSET_{name}= "
+            goto ENDIFSPIN{name}5
+        :ENDIFSPIN{name}5
+        """
+    )
+    setpattern = 'set "{name}={value}"'
+    resetpattern = ""
+    script = dedent(
+        """
+        @echo off
+        {patchmarker}
+        {original}
+        {old_value_setters}
+        {setters}
+        """
+    )
+
+    @staticmethod
+    def interpolate_environ_value(value):
+        if not value:
+            return ""
+        keys = re.findall(r"{(?P<key>\w+?)}", value)
+        for key in keys:
+            if key in os.environ:
+                value = value.replace(f"{{{key}}}", f"%{key}%")
+        return value
+
+
+class BatchDeactivate(ActivateScriptPatcher):
+    patchmarker = "\nREM Patched by spin_python.python\n"
+    activatescript = Path("{python.scriptdir}") / "deactivate.bat"
+    replacements = ()
+    old_env_pattern = ""
+    setpattern = ""
+    resetpattern = dedent(
+        """
+        if defined _OLD_SPIN_VALUE_{name} goto ENDIFVSPIN{name}1
+        if defined _OLD_SPIN_UNSET_{name} goto ENDIFVSPIN{name}2
+        :ENDIFVSPIN{name}1
+            set "{name}=%_OLD_SPIN_VALUE_{name}%"
+            set _OLD_SPIN_VALUE_{name}=
+            goto ENDIFVSPIN{name}0
+        :ENDIFVSPIN{name}2
+            set {name}=
+            set _OLD_SPIN_UNSET_{name}=
+            goto ENDIFVSPIN{name}0
+        :ENDIFVSPIN{name}0
+        """
+    )
+    script = dedent(
+        """
+        @echo off
+        {patchmarker}
+        {original}
+        {resetters}
+        """
+    )
+
+
+class PythonActivate(ActivateScriptPatcher):
+    patchmarker = "# Patched by spin_python.python\n"
+    activatescript = Path("{python.scriptdir}") / "activate_this.py"
+    replacements = ()
+    old_env_pattern = ""
+    setpattern = 'os.environ["{name}"] = fr"{value}"'
+    resetpattern = ""
+    script = dedent(
+        """
+        {patchmarker}
+        {original}
+        {setters}
+        """
+    )
+
+    @staticmethod
+    def interpolate_environ_value(value):
+        if not value:
+            return ""
+        keys = re.findall(r"{(?P<key>\w+?)}", value)
+        for key in keys:
+            if key in os.environ:
+                value = value.replace(f"{{{key}}}", f"{{os.environ['{key}']}}")
+        return value
+
+
+def get_site_packages(interpreter):
+    """Return the path to the virtual environments site-packages."""
+    return Path(
+        sh(
+            interpreter,
+            "-c",
+            'import sysconfig; print(sysconfig.get_path("purelib"))',
+            capture_output=True,
+        )
+        .stdout.decode()
+        .strip()
+    )
+
+
+def _apply_pre_spin_1_0_2_patches_to_activate_classes():  # FIXME: Remove next Major Release
+    """Patch the activation classes so they work with spin<=1.0.1"""
+    BashActivate.setpattern = dedent(
         """
         _OLD_SPIN_{name}="${name}"
         {name}="{value}"
         export {name}
         """
     )
-    resetpattern = dedent(
+    BashActivate.resetpattern = dedent(
         """
             if ! [ -z "${{_OLD_SPIN_{name}+_}}" ] ; then
                 {name}="$_OLD_SPIN_{name}"
@@ -399,7 +709,7 @@ class BashActivate:
             fi
         """
     )
-    script = dedent(
+    BashActivate.script = dedent(
         """
         {patchmarker}
         {original}
@@ -422,29 +732,13 @@ class BashActivate:
         hash -r 2>/dev/null
         """
     )
-
-
-class PowershellActivate:
-    patchmarker = "\n## PATCHED BY spin.builtin.virtualenv\n"
-    activatescript = Path("{python.scriptdir}") / "activate.ps1"
-    replacements = [
-        ("deactivate", "origdeactivate"),
-    ]
-    setpattern = dedent(
+    PowershellActivate.setpattern = dedent(
         """
         New-Variable -Scope global -Name _OLD_SPIN_{name} -Value $env:{name}
         $env:{name} = "{value}"
         """
     )
-    resetpattern = dedent(
-        """
-            if (Test-Path variable:_OLD_SPIN_{name}) {{
-                $env:{name} = $variable:_OLD_SPIN_{name}
-                Remove-Variable "_OLD_SPIN_{name}" -Scope global
-            }}
-        """
-    )
-    script = dedent(
+    PowershellActivate.script = dedent(
         """
         {patchmarker}
         {original}
@@ -461,13 +755,7 @@ class PowershellActivate:
         {setters}
         """
     )
-
-
-class BatchActivate:
-    patchmarker = "\nREM Patched by spin.builtin.virtualenv\n"
-    activatescript = Path("{python.scriptdir}") / "activate.bat"
-    replacements = ()
-    setpattern = dedent(
+    BatchActivate.setpattern = dedent(
         """
         if not defined _OLD_SPIN_{name} goto ENDIFSPIN{name}1
             set "{name}=%_OLD_SPIN_{name}%"
@@ -478,8 +766,7 @@ class BatchActivate:
         set "{name}={value}"
         """
     )
-    resetpattern = ""
-    script = dedent(
+    BatchActivate.script = dedent(
         """
         @echo off
         {patchmarker}
@@ -487,14 +774,7 @@ class BatchActivate:
         {setters}
         """
     )
-
-
-class BatchDeactivate:
-    patchmarker = "\nREM Patched by spin.builtin.virtualenv\n"
-    activatescript = Path("{python.scriptdir}") / "deactivate.bat"
-    replacements = ()
-    setpattern = ""
-    resetpattern = dedent(
+    BatchDeactivate.resetpattern = dedent(
         """
         if not defined _OLD_SPIN_{name} goto ENDIFVSPIN{name}
             set "{name}=%_OLD_SPIN_{name}%"
@@ -502,7 +782,7 @@ class BatchDeactivate:
         :ENDIFVSPIN{name}
         """
     )
-    script = dedent(
+    BatchDeactivate.script = dedent(
         """
         @echo off
         {patchmarker}
@@ -510,15 +790,8 @@ class BatchDeactivate:
         {resetters}
         """
     )
-
-
-class PythonActivate:
-    patchmarker = "# Patched by spin.builtin.virtualenv\n"
-    activatescript = Path("{python.scriptdir}") / "activate_this.py"
-    replacements = ()
-    setpattern = 'os.environ["{name}"] = r"{value}"'
-    resetpattern = ""
-    script = dedent(
+    PythonActivate.setpattern = 'os.environ["{name}"] = r"{value}"'
+    PythonActivate.script = dedent(
         """
         {patchmarker}
         {original}
@@ -527,23 +800,14 @@ class PythonActivate:
     )
 
 
-def get_site_packages(interpreter):
-    """Return the path to the virtual environments site-packages."""
-    return Path(
-        sh(
-            interpreter,
-            "-c",
-            'import sysconfig; print(sysconfig.get_path("purelib"))',
-            capture_output=True,
-        )
-        .stdout.decode()
-        .strip()
-    )
-
-
 def finalize_provision(cfg):
     """Patching the activate scripts and preparing the site-packages"""
     cfg.python.provisioner.install(cfg)
+    patch_func = patch_activate
+    if Version(cfg.spin.version) <= Version("1.0.1"):
+        _apply_pre_spin_1_0_2_patches_to_activate_classes()
+        patch_func = patch_activate_pre_spin_1_0_2
+
     for schema in (
         BashActivate,
         BatchActivate,
@@ -551,7 +815,7 @@ def finalize_provision(cfg):
         PowershellActivate,
         PythonActivate,
     ):
-        patch_activate(cfg, schema)
+        patch_func(cfg, schema)
 
     setenv_path = str(cfg.python.site_packages / "_set_env.pth")
     info(f"Create {setenv_path}")
@@ -787,6 +1051,7 @@ def venv_provision(cfg):  # pylint: disable=too-many-branches,missing-function-d
 def cleanup(cfg: ConfigTree) -> None:
     """Remove directories and files generated by the python plugin."""
     try:
+        # TODO: Klappt nicht mehr: https://code.contact.de/qs/spin/spin_python/-/issues/55
         cfg.python.provisioner.cleanup(cfg)
     except Exception as err:  # pylint: disable=broad-exception-caught
         warn(f"cleaning up the python environment failed: {err}")

@@ -7,13 +7,16 @@
 """Module implementing the integration tests for spin_python"""
 
 import functools
+import importlib.metadata as importlib_metadata
 import os
 import shutil
 import subprocess
 import sys
 from pathlib import Path
+from unittest.mock import patch
 
 import pytest
+from packaging.version import Version
 
 PYTHON_EXISTS = shutil.which("python")
 PYTHON_SKIP_MARK = pytest.mark.skipif(not PYTHON_EXISTS, reason="python not installed.")
@@ -192,3 +195,25 @@ def test_devpackage_provision(tmp_path):
     pip_list = run_command_in_env(["run", "pip", "list"], base_cmd)
     assert "testpkg" in pip_list
     assert "devpkg" in pip_list
+
+
+@PYTHON_SKIP_MARK
+@pytest.mark.skipif(
+    Version(importlib_metadata.version("cs.spin")) <= Version("1.0.1"),
+    reason="The test only runs with cs.spin > 1.0.1",
+)
+def test_patched_activation_scripts(tmp_path, test_script):
+    """
+    Make sure the patched activation scripts behave as expected regarding
+    setting environment variables.
+    """
+    spinfile = "python_activation_scripts.yaml"
+    with patch.dict(os.environ, {"FOO": "foo", "BAR": "bar"}):
+        tmp_path, _ = provision_env(spinfile, tmp_path, cwd="tests/integration")
+        if sys.platform == "win32":
+            activate_script = tmp_path / ".spin/venv/Scripts/activate.ps1"
+            test_cmd = f"pwsh.exe {test_script} {activate_script}"
+        else:
+            activate_script = tmp_path / ".spin/venv/bin/activate"
+            test_cmd = f"{test_script} {activate_script}"
+        subprocess.check_call(test_cmd, shell=True)
