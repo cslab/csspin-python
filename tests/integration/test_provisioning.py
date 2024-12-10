@@ -217,3 +217,27 @@ def test_patched_activation_scripts(tmp_path, test_script):
             activate_script = tmp_path / ".spin/venv/bin/activate"
             test_cmd = f"{test_script} {activate_script}"
         subprocess.check_call(test_cmd, shell=True)
+
+
+@pytest.mark.parametrize(
+    "spinfile, _tool, _version",
+    [
+        testcase
+        for testcase in TESTCASES
+        if testcase[0][0] in ("python_use.yaml", "python_version.yaml")
+    ],
+)
+def test_cleanup(spinfile, _tool, _version, tmp_dir_per_spinfile):
+    """
+    Test the cleanup of the python plugin.
+    """
+    tmp_path, env_cmd = provision_env(spinfile, tmp_dir_per_spinfile / "cleanup")
+
+    venv_dir = tmp_path / ".spin/venv"
+    provisioner_memo = tmp_path / ".spin/python_provisioner.memo"
+    assert venv_dir.exists()
+    assert provisioner_memo.exists()
+
+    run_command_in_env(["cleanup"], env_cmd)
+    assert not venv_dir.exists()
+    assert not provisioner_memo.exists()
