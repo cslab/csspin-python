@@ -39,10 +39,26 @@ defaults = config(
 @task(when="test")
 def pytest(  # pylint: disable=too-many-arguments,too-many-positional-arguments
     cfg,
-    instance: option("-i", "--instance", default=None),  # noqa: F821
-    coverage: option("-c", "--coverage", is_flag=True),  # noqa: F821
-    debug: option("--debug", is_flag=True),  # noqa: F821
-    with_test_report: option("--with-test-report", is_flag=True),  # noqa: F821,F722
+    instance: option(
+        "-i",  # noqa: F821
+        "--instance",  # noqa: F821
+        default=None,
+        help="Directory of the CONTACT Elements instance.",  # noqa: F722
+    ),
+    coverage: option(
+        "-c",  # noqa: F821
+        "--coverage",  # noqa: F821
+        is_flag=True,
+        help="Run the tests while collecting coverage.",  # noqa: F722
+    ),
+    debug: option(
+        "--debug", is_flag=True, help="Start debug server."  # noqa: F722,F821
+    ),
+    with_test_report: option(
+        "--with-test-report",  # noqa: F722
+        is_flag=True,
+        help="Create a test execution report.",  # noqa: F722
+    ),
     args,
 ):
     """Run the 'pytest' command."""

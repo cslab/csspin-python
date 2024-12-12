@@ -26,7 +26,12 @@ defaults = config(
 @task()
 def radon(
     cfg,
-    allsource: option("--all", "allsource", is_flag=True),  # noqa: F821
+    allsource: option(
+        "--all",  # noqa: F821
+        "allsource",  # noqa: F821
+        is_flag=True,
+        help="Run for all src- and test-files.",  # noqa: F722,F821
+    ),
     args,
 ):
     """Run radon to measure code complexity."""
