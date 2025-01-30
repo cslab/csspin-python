@@ -122,4 +122,5 @@ python:
             type: str
             help: |
                 The index url from where packages should get installed into the
-                venv.
+                venv. This value will also be put into cfg.python.pipconf, if
+                not already mentioned there.
