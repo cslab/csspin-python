@@ -57,6 +57,7 @@ point to the base installation.
 """
 
 import abc
+import configparser
 import logging
 import os
 import re
@@ -1011,12 +1012,13 @@ def venv_provision(cfg):  # pylint: disable=too-many-branches,missing-function-d
     # This sets PATH to the venv
     init(cfg)
 
-    if cfg.python.pipconf:
-        if sys.platform == "win32":
-            pipconf = cfg.python.venv / "pip.ini"
-        else:
-            pipconf = cfg.python.venv / "pip.conf"
-        writetext(pipconf, cfg.python.pipconf)
+    # Always create a pip conf with at least the packageserver index_url as content
+    if sys.platform == "win32":
+        pipconf = cfg.python.venv / "pip.ini"
+    else:
+        pipconf = cfg.python.venv / "pip.conf"
+
+    _create_pipconf(cfg, pipconf)
 
     # Establish the prerequisites
     if fresh_env:
@@ -1068,3 +1070,18 @@ def cleanup(cfg: ConfigTree) -> None:
                 )
         memo.clear()
     rmtree(cfg.python.provisioner_memo)
+
+
+def _create_pipconf(cfg, configfile):
+    # pip cannot handle a section being defined twice, so let's insert the
+    # index_url ourselves and create the configfile
+    config_parser = configparser.ConfigParser()
+    config_parser.read_string(cfg.python.pipconf)
+    if not config_parser.has_section("global"):
+        config_parser.add_section("global")
+    if not (
+        "index_url" in config_parser["global"] or "index-url" in config_parser["global"]
+    ):
+        config_parser["global"]["index_url"] = cfg.python.index_url
+    with open(configfile, mode="w", encoding="utf-8") as fd:
+        config_parser.write(fd)
