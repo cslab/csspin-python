@@ -73,6 +73,7 @@ from spin import (
     Memoizer,
     Path,
     Verbosity,
+    argument,
     backtick,
     cd,
     config,
@@ -99,6 +100,7 @@ from spin import (
 from spin.tree import ConfigTree
 
 defaults = config(
+    build_wheels=["{spin.project_root}"],
     pyenv=config(
         url="https://github.com/pyenv/pyenv.git",
         path="{spin.data}/pyenv",
@@ -172,25 +174,31 @@ def python(args):
 
 
 @task("python:wheel", when="package")
-def wheel(cfg):
-    """Build a wheel of the current project."""
+def wheel(
+    cfg,
+    paths: argument(type=str, nargs=-1, required=False),  # noqa: F722
+):
+    """Build a wheel of the current project and any additional wheels."""
     setenv(PIP_INDEX_URL=cfg.python.index_url)
-    try:
-        echo("Building PEP 518 like wheel")
-        sh("python", "-m", "build", "-w")
-    except Abort:
-        echo("Building does not seem to work, use legacy setup.py style")
-        sh(
-            "python",
-            "setup.py",
-            None if cfg.verbosity > Verbosity.NORMAL else "-q",
-            "build",
-            "-b",
-            "{spin.spin_dir}/build",
-            "bdist_wheel",
-            "-d",
-            "{spin.spin_dir}/dist",
-        )
+    search_paths = paths or cfg.python.build_wheels
+    for build_path in {Path(path).absolute() for path in search_paths}:
+        try:
+            echo("Building PEP 517-like wheel")
+            sh("python", "-m", "build", "-w", build_path)
+        except Abort:
+            echo("Building does not seem to work, use legacy setup.py style")
+            sh(
+                "python",
+                "setup.py",
+                None if cfg.verbosity > Verbosity.NORMAL else "-q",
+                "build",
+                "-b",
+                "{spin.spin_dir}/build",
+                "bdist_wheel",
+                "-d",
+                "{spin.spin_dir}/dist",
+                build_path,
+            )
 
 
 @task()

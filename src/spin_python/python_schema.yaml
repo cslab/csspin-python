@@ -124,3 +124,8 @@ python:
                 The index url from where packages should get installed into the
                 venv. This value will also be put into cfg.python.pipconf, if
                 not already mentioned there.
+        build_wheels:
+            type: list
+            help: |
+                A list of packages that will be built along with the current
+                project when executing python:wheel.

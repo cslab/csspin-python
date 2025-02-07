@@ -170,6 +170,34 @@ follows:
             [global]
             find-links = {HOME}/.custom_wheel_cache
 
+How to build a wheel?
+#####################
+
+Building a wheel for the current package can be done by using the following
+command:
+
+.. code-block:: console
+
+    spin python:wheel .
+
+If ``python.build_wheels`` is not specified within the ``spinfile.yaml``, the
+same could be achieved with ``spin python:wheel`` (without the path argument).
+
+``python.build_wheel`` allows building multiple wheels with a single ``spin
+python:wheel`` command:
+
+.. code-block:: yaml
+
+    # spinfile.yaml
+    ...
+    python:
+        ...
+        build_wheels:
+            - '{spin.project_root}' # for building the current package
+            - cs.componenttest
+            - path/to/another/package
+
+
 ``spin_python.python`` schema reference
 #######################################
 
