@@ -1085,6 +1085,13 @@ def cleanup(cfg: ConfigTree) -> None:
                 )
         memo.clear()
     rmtree(cfg.python.provisioner_memo)
+    for path in cfg.python.build_wheels:
+        current_path = Path(interpolate1(path))
+        rmtree(current_path / "build")
+        rmtree(current_path / "dist")
+        for filename in os.listdir(current_path):
+            if filename.endswith(".egg-info") or filename.endswith(".dist-info"):
+                rmtree(current_path / filename)
 
 
 def _create_pipconf(cfg, configfile):
