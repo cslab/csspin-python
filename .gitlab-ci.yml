@@ -2,5 +2,5 @@
 
 include:
     - project: qs/spin/spin_plugin_common
-      ref: v1.7.1
+      ref: v1.8.0
       file: ci/.gitlab-ci.yml

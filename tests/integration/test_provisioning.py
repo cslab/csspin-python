@@ -199,7 +199,7 @@ def test_devpackage_provision(tmp_path):
 
 @PYTHON_SKIP_MARK
 @pytest.mark.skipif(
-    Version(importlib_metadata.version("cs.spin")) <= Version("1.0.1"),
+    Version(importlib_metadata.version("cs-spin")) <= Version("1.0.1"),
     reason="The test only runs with cs.spin > 1.0.1",
 )
 def test_patched_activation_scripts(tmp_path, test_script):
