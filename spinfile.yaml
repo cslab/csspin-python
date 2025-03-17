@@ -7,6 +7,7 @@ plugin_packages:
 plugins:
     - spin_docs.sphinx
     - spin_python:
+          - aws_auth
           - behave
           - debugpy
           - devpi
@@ -14,6 +15,9 @@ plugins:
           - pytest
           - python
           - radon
+
+environment:
+    AWS_AUTH_DISABLE: true
 
 python:
     version: '3.11.9'
@@ -29,6 +33,7 @@ build_rules:
     doc/_schemaref.rst:
         sources: [src/spin_python]
         spin:
+            - schemadoc aws_auth --rst -o doc/plugins/aws_auth_schemaref.rst
             - schemadoc behave --rst -o doc/plugins/behave_schemaref.rst
             - schemadoc debugpy --rst -o doc/plugins/debugpy_schemaref.rst
             - schemadoc devpi --rst -o doc/plugins/devpi_schemaref.rst

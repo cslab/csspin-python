@@ -16,6 +16,9 @@ maintainers = [
 name = "spin_python"
 requires-python = ">=3.9"
 
+[project.optional-dependencies]
+aws_auth = ["boto3", "requests"]
+
 [project.urls]
 Issues = "https://code.contact.de/qs/spin/spin_python/-/issues"
 Repository = "https://code.contact.de/qs/spin/spin_python"
