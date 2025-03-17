@@ -20,6 +20,7 @@ Additional plugins:
 
 -   python.debugpy
 -   python.playwright
+-   python.aws_auth
 
 ## Creating a New Release
 

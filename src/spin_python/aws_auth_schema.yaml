@@ -1,0 +1,38 @@
+# -*- mode: yaml; coding: utf-8 -*-
+#
+# Schema of the aws_auth plugin for cs.spin
+
+aws_auth:
+    type: object
+    help: |
+        Configuration for the aws_auth plugin in cs.spin.
+        This plugin handles authentication with AWS and retrieves
+        secret keys from AWS CodeArtifact.
+    properties:
+        aws_role_arn:
+            type: str
+            help: The ARN of the AWS IAM role to assume for authentication.
+        aws_region:
+            type: str
+            help: The AWS region where the CodeArtifact repository is located.
+        role_session_name:
+            type: str
+            help: The name for the AWS STS session when assuming a role.
+        aws_codeartifact_domain:
+            type: str
+            help: The domain name of the AWS CodeArtifact repository.
+        aws_key_duration:
+            type: int
+            help: The duration in seconds for which the temporary key will be valid.
+        keycloak_url:
+            type: str
+            help: The URL of the Keycloak authentication server.
+        client_id:
+            type: str
+            help: The client ID for authentication with Keycloak.
+        client_secret:
+            type: str
+            help: The client secret for authentication with Keycloak.
+        codeartifact_auth_token:
+            type: str
+            help: The CodeArtifact auth token.
