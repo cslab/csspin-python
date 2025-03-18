@@ -144,7 +144,7 @@ def configure(cfg):  # pylint: disable=too-many-statements
         credentials, cfg.aws_auth.aws_codeartifact_domain, cfg.aws_auth.aws_region
     )
 
-    domain_owner = cfg.aws_auth.aws_role_arn.split(":")[3]
+    domain_owner = cfg.aws_auth.aws_role_arn.split(":")[4]
 
     cfg.aws_auth.codeartifact_auth_token = codeartifact_auth_token
     cfg.python.index_url = (
