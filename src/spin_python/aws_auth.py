@@ -19,6 +19,11 @@ defaults = config(
     aws_key_duration=3600,
     keycloak_url="https://login.contact-cloud.com/realms/contact/protocol/openid-connect/token",
     client_id="central1-auth-oidc-read",
+    requires=config(
+        spin=[
+            "spin_python.python",
+        ],
+    ),
 )
 
 
