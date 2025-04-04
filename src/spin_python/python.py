@@ -63,6 +63,7 @@ import os
 import re
 import shutil
 import sys
+from subprocess import check_output
 from textwrap import dedent, indent
 
 from click.exceptions import Abort
@@ -704,14 +705,15 @@ class PythonActivate(ActivateScriptPatcher):
 def get_site_packages(interpreter):
     """Return the path to the virtual environments site-packages."""
     return Path(
-        sh(
-            interpreter,
-            "-c",
-            'import sysconfig; print(sysconfig.get_path("purelib"))',
-            capture_output=True,
+        check_output(
+            [
+                interpolate1(interpreter),
+                "-c",
+                'import sysconfig; print(sysconfig.get_path("purelib"))',
+            ],
         )
-        .stdout.decode()
-        .strip()
+        .decode()
+        .strip(),
     )
 
 
