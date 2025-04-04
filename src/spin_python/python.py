@@ -355,7 +355,10 @@ def venv_init(cfg):
                 f"{cfg.python.venv} does not exist. You may want to provision"
                 " it using 'spin provision'"
             )
-        echo(f"activate {cfg.python.venv}", resolve=True)
+        if sys.platform == "win32":
+            echo(f"{cfg.python.scriptdir}\\activate.ps1")
+        else:
+            echo(f". {cfg.python.scriptdir}/activate")
         with open(activate_this, encoding="utf-8") as file:
             exec(  # pylint: disable=exec-used # nosec
                 file.read(), {"__file__": activate_this}
