@@ -114,7 +114,9 @@ repos:
       rev: 1.7.10
       hooks:
           - id: bandit
-            args: [-x=tests] # exclude tests from run
+            args:
+                - -x=tests # exclude tests from run
+                - --skip=B404,B603 # ignore subprocess-use and subprocess without shell=true
             types: [file] # override `types: [python]`
             files: \.(pyi?|ue)$
 default_language_version:
