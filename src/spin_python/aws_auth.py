@@ -45,7 +45,7 @@ def configure(cfg):  # pylint: disable=too-many-statements
     except ImportError:
         die(
             "Failed to import required modules. Please install them by setting:"
-            "\n\tplugin_packages:\n\t\t- python[aws_auth]\n"
+            "\n\tplugin_packages:\n\t\t- spin_python[aws_auth]\n"
             "in your project's spinfile.yaml"
         )
 
