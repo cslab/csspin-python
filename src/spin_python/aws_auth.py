@@ -9,7 +9,10 @@
 import configparser
 import os
 
-from spin import Path, config, debug, die, exists, info, interpolate1
+try:
+    from csspin import Path, config, debug, die, exists, info, interpolate1
+except ImportError:
+    from spin import Path, config, debug, die, exists, info, interpolate1
 
 defaults = config(
     aws_role_arn="arn:aws:iam::373369985286:role/cs-central1-codeartifact-ecr-read-role",

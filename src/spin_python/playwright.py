@@ -6,8 +6,10 @@
 
 """Module implementing the playwright plugin for cs.spin"""
 
-
-from spin import Path, Verbosity, config, die, option, setenv, sh, task
+try:
+    from csspin import Path, Verbosity, config, die, option, setenv, sh, task
+except ImportError:
+    from spin import Path, Verbosity, config, die, option, setenv, sh, task
 
 defaults = config(
     browsers_path="{spin.data}/playwright_browsers",
@@ -99,7 +101,6 @@ def playwright(  # pylint: disable=too-many-arguments,too-many-positional-argume
 
         setenv(CADDOK_BASE=inst)
         sh(*cmd, *opts, *args, *cfg.playwright.tests)
-        setenv(CADDOK_BASE=None)
     else:
         sh(*cmd, *opts, *args, *cfg.playwright.tests)
 

@@ -7,7 +7,10 @@
 """Module implementing the devpi plugin for cs.spin"""
 
 
-from spin import Command, config, die, exists, readyaml, setenv, sh, task
+try:
+    from csspin import Command, config, die, exists, readyaml, setenv, sh, task
+except ImportError:
+    from spin import Command, config, die, exists, readyaml, setenv, sh, task
 
 defaults = config(
     formats=["bdist_wheel"],
