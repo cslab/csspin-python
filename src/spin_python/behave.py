@@ -11,8 +11,13 @@ import sys
 from typing import Generator
 
 from path import Path
-from spin import config, die, info, option, rmtree, setenv, sh, task, writetext
-from spin.tree import ConfigTree
+
+try:
+    from csspin import config, die, info, option, rmtree, setenv, sh, task, writetext
+    from csspin.tree import ConfigTree
+except ImportError:
+    from spin import config, die, info, option, rmtree, setenv, sh, task, writetext
+    from spin.tree import ConfigTree
 
 defaults = config(
     # Exclude the flaky tests in the defaults for now.

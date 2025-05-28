@@ -8,7 +8,10 @@
 
 import logging
 
-from spin import config, info, option, sh, task
+try:
+    from csspin import config, info, option, sh, task
+except ImportError:
+    from spin import config, info, option, sh, task
 
 defaults = config(
     exe="radon",

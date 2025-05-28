@@ -6,7 +6,10 @@
 
 """Module providing configurations for the debugpy plugin for cs.spin"""
 
-from spin import config
+try:
+    from csspin import config
+except ImportError:
+    from spin import config
 
 defaults = config(
     opts=[

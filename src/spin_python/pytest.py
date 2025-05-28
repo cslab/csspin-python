@@ -7,7 +7,10 @@
 """Module implementing the pytest plugin for cs.spin"""
 
 
-from spin import Path, Verbosity, config, die, option, setenv, sh, task
+try:
+    from csspin import Path, Verbosity, config, die, option, setenv, sh, task
+except ImportError:
+    from spin import Path, Verbosity, config, die, option, setenv, sh, task
 
 defaults = config(
     coverage=False,
@@ -82,6 +85,5 @@ def pytest(  # pylint: disable=too-many-arguments,too-many-positional-arguments
 
         setenv(CADDOK_BASE=inst)
         sh(*cmd, *opts, *args, *cfg.pytest.tests)
-        setenv(CADDOK_BASE=None)
     else:
         sh(*cmd, *opts, *args, *cfg.pytest.tests)
