@@ -1,5 +1,9 @@
 # The spinfile.yaml for spin_python is required since building the documentation
 # requires a provisioned project.
+
+spin:
+    index_url: https://packages.contact.de/tools/stable
+
 plugin_packages:
     - spin_docs
     - -e .
