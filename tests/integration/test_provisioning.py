@@ -7,7 +7,6 @@
 """Module implementing the integration tests for spin_python"""
 
 import functools
-import importlib.metadata as importlib_metadata
 import os
 import shutil
 import subprocess
@@ -199,7 +198,7 @@ def test_devpackage_provision(tmp_path):
 
 @PYTHON_SKIP_MARK
 @pytest.mark.skipif(
-    Version(importlib_metadata.version("cs-spin")) <= Version("1.0.1"),
+    Version(run_command_in_env([], ["spin", "--version"])) <= Version("1.0.1"),
     reason="The test only runs with cs.spin > 1.0.1",
 )
 def test_patched_activation_scripts(tmp_path, test_script):
