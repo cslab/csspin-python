@@ -1,11 +1,11 @@
 # -*- mode: yaml; coding: utf-8 -*-
 #
-# Schema of the aws_auth plugin for cs.spin
+# Schema of the aws_auth plugin for spin
 
 aws_auth:
     type: object
     help: |
-        Configuration for the aws_auth plugin in cs.spin.
+        Configuration for the aws_auth plugin in spin.
         This plugin handles authentication with AWS and retrieves
         secret keys from AWS CodeArtifact.
     properties:

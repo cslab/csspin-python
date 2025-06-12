@@ -1,12 +1,12 @@
 # -*- mode: yaml; coding: utf-8 -*-
 #
-# Schema for the behave plugin for cs.spin
+# Schema for the behave plugin for spin
 
 behave:
     type: object
     help: |
-        The behave plugin for cs.spin enables running behave tests in the
-        context of cs.spin.
+        The behave plugin for spin enables running behave tests in the
+        context of spin.
     properties:
         flaky:
             type: bool

@@ -4,7 +4,7 @@
 # All rights reserved.
 # https://www.contact-software.com/
 
-"""Module implementing the integration tests for spin_python"""
+"""Module implementing the integration tests for csspin_python"""
 
 import functools
 import os
@@ -15,7 +15,6 @@ from pathlib import Path
 from unittest.mock import patch
 
 import pytest
-from packaging.version import Version
 
 PYTHON_EXISTS = shutil.which("python")
 PYTHON_SKIP_MARK = pytest.mark.skipif(not PYTHON_EXISTS, reason="python not installed.")
@@ -196,11 +195,6 @@ def test_devpackage_provision(tmp_path):
     assert "devpkg" in pip_list
 
 
-@PYTHON_SKIP_MARK
-@pytest.mark.skipif(
-    Version(run_command_in_env([], ["spin", "--version"])) <= Version("1.0.1"),
-    reason="The test only runs with cs.spin > 1.0.1",
-)
 def test_patched_activation_scripts(tmp_path, test_script):
     """
     Make sure the patched activation scripts behave as expected regarding

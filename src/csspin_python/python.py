@@ -1,11 +1,21 @@
 # -*- mode: python; coding: utf-8 -*-
 #
 # Copyright (C) 2020 CONTACT Software GmbH
-# All rights reserved.
 # https://www.contact-software.com/
 #
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
 # pylint: disable=too-few-public-methods,missing-class-docstring
-# pylint: disable=too-many-lines # FIXME: Remove when the pre_spin_1_0_2 stuff gets removed
 
 """``python``
 ==========
@@ -35,13 +45,13 @@ interpreter, thus write access is required.
 Tasks
 -----
 
-.. click:: spin_python:python
+.. click:: csspin_python:python
    :prog: spin python
 
-.. click:: spin_python:python:wheel
+.. click:: csspin_python:python:wheel
    :prog: spin python:wheel
 
-.. click:: spin_python:env
+.. click:: csspin_python:env
    :prog: spin env
 
 Properties
@@ -67,72 +77,37 @@ from subprocess import check_output
 from textwrap import dedent, indent
 
 from click.exceptions import Abort
-from packaging.version import Version
-
-try:
-    from csspin import (
-        EXPORTS,
-        Command,
-        Memoizer,
-        Path,
-        Verbosity,
-        argument,
-        backtick,
-        cd,
-        config,
-        die,
-        download,
-        echo,
-        error,
-        exists,
-        get_requires,
-        info,
-        interpolate1,
-        memoizer,
-        mkdir,
-        namespaces,
-        normpath,
-        readtext,
-        rmtree,
-        setenv,
-        sh,
-        task,
-        warn,
-        writetext,
-    )
-    from csspin.tree import ConfigTree
-except ImportError:
-    from spin import (
-        EXPORTS,
-        Command,
-        Memoizer,
-        Path,
-        Verbosity,
-        argument,
-        backtick,
-        cd,
-        config,
-        die,
-        download,
-        echo,
-        error,
-        exists,
-        get_requires,
-        info,
-        interpolate1,
-        memoizer,
-        mkdir,
-        namespaces,
-        normpath,
-        readtext,
-        rmtree,
-        setenv,
-        sh,
-        task,
-        warn,
-        writetext,
-    )
-    from spin.tree import ConfigTree
+from csspin import (
+    EXPORTS,
+    Command,
+    Memoizer,
+    Path,
+    Verbosity,
+    argument,
+    backtick,
+    cd,
+    config,
+    die,
+    download,
+    echo,
+    error,
+    exists,
+    get_requires,
+    info,
+    interpolate1,
+    memoizer,
+    mkdir,
+    namespaces,
+    normpath,
+    readtext,
+    rmtree,
+    setenv,
+    sh,
+    task,
+    warn,
+    writetext,
+)
+from csspin.tree import ConfigTree
 
 defaults = config(
     build_wheels=["{spin.project_root}"],
@@ -401,47 +376,7 @@ def venv_init(cfg):
         ACTIVATED = True
 
 
-def patch_activate_pre_spin_1_0_2(cfg, schema):  # FIXME: Remove next Major Release
-    """Patch the activate script"""
-    if exists(schema.activatescript):
-        setters = []
-        resetters = []
-        for name, value in EXPORTS.items():
-            if name == "PATH" and cfg.python.scriptdir not in value:
-                # Ensure that the virtual environments scriptdir is in PATH.
-                value = cfg.python.scriptdir + os.pathsep + value
-            if value:
-                setters.append(schema.setpattern.format(name=name, value=value))
-                resetters.append(schema.resetpattern.format(name=name, value=value))
-        resetters = "\n".join(resetters)
-        setters = "\n".join(setters)
-        original = readtext(schema.activatescript)
-        if schema.patchmarker not in original:
-            shutil.copyfile(
-                interpolate1(f"{schema.activatescript}"),
-                interpolate1(f"{schema.activatescript}.bak"),
-            )
-        info(f"Patching {schema.activatescript}")
-        # Removing the byte order marker (BOM) ensures the absence of those in
-        # the final scripts. BOMs in executables are not fully supported in
-        # Powershell.
-        original = (
-            readtext(f"{schema.activatescript}.bak").encode("utf-8").decode("utf-8-sig")
-        )
-        for repl in schema.replacements:
-            original = original.replace(repl[0], repl[1])
-        newscript = schema.script.format(
-            patchmarker=schema.patchmarker,
-            original=original,
-            resetters=resetters,
-            setters=setters,
-        )
-        writetext(f"{schema.activatescript}", newscript)
-
-
-def patch_activate(
-    cfg, schema  # pylint: disable=unused-argument
-):  # FIXME: Remove cfg after patch_activate_pre_spin_1_0_2 has been removed
+def patch_activate(schema):
     """Patch the activate script"""
     if exists(schema.activatescript):
         setters = []
@@ -504,7 +439,7 @@ class ActivateScriptPatcher(abc.ABC):
 
 
 class BashActivate(ActivateScriptPatcher):
-    patchmarker = "\n## Patched by spin_python.python\n"
+    patchmarker = "\n## Patched by csspin_python.python\n"
     activatescript = Path("{python.scriptdir}") / "activate"
     replacements = [
         ("deactivate", "origdeactivate"),
@@ -576,7 +511,7 @@ class BashActivate(ActivateScriptPatcher):
 
 
 class PowershellActivate(ActivateScriptPatcher):
-    patchmarker = "\n## Patched by spin_python.python\n"
+    patchmarker = "\n## Patched by csspin_python.python\n"
     activatescript = Path("{python.scriptdir}") / "activate.ps1"
     replacements = [
         ("deactivate", "origdeactivate"),
@@ -630,7 +565,7 @@ class PowershellActivate(ActivateScriptPatcher):
 
 
 class BatchActivate(ActivateScriptPatcher):
-    patchmarker = "\nREM Patched by spin_python.python\n"
+    patchmarker = "\nREM Patched by csspin_python.python\n"
     activatescript = Path("{python.scriptdir}") / "activate.bat"
     replacements = ()
     old_env_pattern = dedent(
@@ -680,7 +615,7 @@ class BatchActivate(ActivateScriptPatcher):
 
 
 class BatchDeactivate(ActivateScriptPatcher):
-    patchmarker = "\nREM Patched by spin_python.python\n"
+    patchmarker = "\nREM Patched by csspin_python.python\n"
     activatescript = Path("{python.scriptdir}") / "deactivate.bat"
     replacements = ()
     old_env_pattern = ""
@@ -711,7 +646,7 @@ class BatchDeactivate(ActivateScriptPatcher):
 
 
 class PythonActivate(ActivateScriptPatcher):
-    patchmarker = "# Patched by spin_python.python\n"
+    patchmarker = "# Patched by csspin_python.python\n"
     activatescript = Path("{python.scriptdir}") / "activate_this.py"
     replacements = ()
     old_env_pattern = ""
@@ -751,122 +686,9 @@ def get_site_packages(interpreter):
     )
 
 
-def _apply_pre_spin_1_0_2_patches_to_activate_classes():  # FIXME: Remove next Major Release
-    """Patch the activation classes so they work with spin<=1.0.1"""
-    BashActivate.setpattern = dedent(
-        """
-        _OLD_SPIN_{name}="${name}"
-        {name}="{value}"
-        export {name}
-        """
-    )
-    BashActivate.resetpattern = dedent(
-        """
-            if ! [ -z "${{_OLD_SPIN_{name}+_}}" ] ; then
-                {name}="$_OLD_SPIN_{name}"
-                export {name}
-                unset _OLD_SPIN_{name}
-            fi
-        """
-    )
-    BashActivate.script = dedent(
-        """
-        {patchmarker}
-        {original}
-        deactivate () {{
-            {resetters}
-            if [ ! "${{1-}}" = "nondestructive" ] ; then
-                # Self destruct!
-                unset -f deactivate
-                origdeactivate
-            fi
-        }}
-
-        deactivate nondestructive
-
-        {setters}
-
-        # The hash command must be called to get it to forget past
-        # commands. Without forgetting past commands the $PATH changes
-        # we made may not be respected
-        hash -r 2>/dev/null
-        """
-    )
-    PowershellActivate.setpattern = dedent(
-        """
-        New-Variable -Scope global -Name _OLD_SPIN_{name} -Value $env:{name}
-        $env:{name} = "{value}"
-        """
-    )
-    PowershellActivate.script = dedent(
-        """
-        {patchmarker}
-        {original}
-        function global:deactivate([switch] $NonDestructive) {{
-            {resetters}
-            if (!$NonDestructive) {{
-                Remove-Item function:deactivate
-                origdeactivate
-            }}
-        }}
-
-        deactivate -nondestructive
-
-        {setters}
-        """
-    )
-    BatchActivate.setpattern = dedent(
-        """
-        if not defined _OLD_SPIN_{name} goto ENDIFSPIN{name}1
-            set "{name}=%_OLD_SPIN_{name}%"
-        :ENDIFSPIN{name}1
-        if defined _OLD_SPIN_{name} goto ENDIFSPIN{name}2
-            set "_OLD_SPIN_{name}=%{name}%"
-        :ENDIFSPIN{name}2
-        set "{name}={value}"
-        """
-    )
-    BatchActivate.script = dedent(
-        """
-        @echo off
-        {patchmarker}
-        {original}
-        {setters}
-        """
-    )
-    BatchDeactivate.resetpattern = dedent(
-        """
-        if not defined _OLD_SPIN_{name} goto ENDIFVSPIN{name}
-            set "{name}=%_OLD_SPIN_{name}%"
-            set _OLD_SPIN_{name}=
-        :ENDIFVSPIN{name}
-        """
-    )
-    BatchDeactivate.script = dedent(
-        """
-        @echo off
-        {patchmarker}
-        {original}
-        {resetters}
-        """
-    )
-    PythonActivate.setpattern = 'os.environ["{name}"] = r"{value}"'
-    PythonActivate.script = dedent(
-        """
-        {patchmarker}
-        {original}
-        {setters}
-        """
-    )
-
-
 def finalize_provision(cfg):
     """Patching the activate scripts and preparing the site-packages"""
     cfg.python.provisioner.install(cfg)
-    patch_func = patch_activate
-    if Version(cfg.spin.version) <= Version("1.0.1"):
-        _apply_pre_spin_1_0_2_patches_to_activate_classes()
-        patch_func = patch_activate_pre_spin_1_0_2
 
     for schema in (
         BashActivate,
@@ -875,7 +697,7 @@ def finalize_provision(cfg):
         PowershellActivate,
         PythonActivate,
     ):
-        patch_func(cfg, schema)
+        patch_activate(schema)
 
     setenv_path = str(cfg.python.site_packages / "_set_env.pth")
     info(f"Create {setenv_path}")

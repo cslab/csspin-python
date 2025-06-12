@@ -1,6 +1,6 @@
 plugin_packages:
     - ../..
 plugins:
-    - spin_python.pytest
+    - csspin_python.pytest
 python:
     use: python

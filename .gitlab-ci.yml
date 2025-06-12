@@ -2,16 +2,5 @@
 
 include:
     - project: qs/spin/spin_plugin_common
-      ref: v1.8.2
+      ref: v2.0.0
       file: ci/.gitlab-ci.yml
-
-# TODO: Remove the following lines as soon as csspin is released on PyPI
-test_linux:
-    before_script:
-        - python3 -m pip install --index-url https://packages.contact.de/tools/stable cs.spin pytest pytest-cov -e .
-
-test_windows:
-    before_script:
-        - python -m venv venv
-        - venv\Scripts\activate.ps1
-        - python -m pip install --index-url https://packages.contact.de/tools/stable cs.spin pytest pytest-cov -e .

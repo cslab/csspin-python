@@ -1,35 +1,46 @@
 .. -*- coding: utf-8 -*-
    Copyright (C) 2024 CONTACT Software GmbH
-   All rights reserved.
    https://www.contact-software.com/
 
-.. _spin_python.python:
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
 
-==================
-spin_python.python
-==================
+       http://www.apache.org/licenses/LICENSE-2.0
 
-The ``spin_python.python`` plugin is the core plugin of the ``spin_python``
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+
+.. _csspin_python.python:
+
+====================
+csspin_python.python
+====================
+
+The ``python`` plugin is the core plugin of the ``csspin_python``
 plugin-package. It is not only used for creating a virtual environment which
 serves as location for all spin-related tooling and plugin-dependencies, it also
 enables the dynamic installation and access of/to tools.
 
-Please note that the ``spin_python.python`` plugin is required and used by all
-plugins within the ``spin_python`` plugin-package.
+Please note that the ``python`` plugin is required and used by all
+plugins within the ``csspin_python`` plugin-package.
 
-How to setup the ``spin_python.python`` plugin?
-###############################################
+How to setup the ``python`` plugin?
+###################################
 
-For using the ``spin_python.python`` plugin, a project's ``spinfile.yaml`` must
+For using the ``python`` plugin, a project's ``spinfile.yaml`` must
 at least contain the following configuration.
 
 .. code-block:: yaml
-    :caption: Minimal configuration of ``spinfile.yaml`` to leverage ``spin_python.python``
+    :caption: Minimal configuration of ``spinfile.yaml`` to leverage ``python``
 
     plugin_packages:
-        - spin_python
+        - csspin_python
     plugins:
-        - spin_python.python
+        - csspin_python.python
     python:
         version: "3.11.9"
 
@@ -53,7 +64,7 @@ by extending the project's ``spinfile.yaml`` like this:
         index_url: https://packages.contact.de/apps/16.0-dev
 
         # Additional requirements can be used to install further Python-packages
-        # into the virtual environment created by the spin_python.python plugin.
+        # into the virtual environment created by the python plugin.
         requirements:
             - cs.admin
             - cs.platform[postgres]
@@ -83,7 +94,7 @@ How to use an existing Python interpreter, instead of provisioning another one?
 
 Sometimes downloading and installing a Python interpreter can be annoying, in
 case there is already an existing interpreter that should be used in the context
-of cs.spin. For this case, the configuration tree property ``python.use`` can be
+of csspin. For this case, the configuration tree property ``python.use`` can be
 set via command-line, the environment or within ``spinfile.yaml`` to enforce the
 usage of the passed interpreter.
 
@@ -94,27 +105,27 @@ usage of the passed interpreter.
     ...
     spin -p python.use=/usr/bin/python <task>
 
-How to activate the virtual environment provisioned by cs.spin manually?
-########################################################################
+How to activate the virtual environment provisioned by csspin manually?
+#######################################################################
 
 Retrieving the path to activate the virtual environment created by the
-``spin_python.python`` plugin is as easy as follows:
+``python`` plugin is as easy as follows:
 
 .. code-block:: console
-    :caption: Retrieving the activate script of the virtual environment provisioned by cs.spin
+    :caption: Retrieving the activate script of the virtual environment provisioned by csspin
 
     # Unix-style shells:
     spin env
-    . /home/bts/src/qs/spin/spin_python/.spin/venv/bin/activate
+    . /home/developer/src/qs/spin/csspin_python/.spin/venv/bin/activate
 
     # Powershell 7:
     spin env
-    C:\Users\buildbot\Desktop\cs.spin\.spin\venv\Scripts\activate.ps1
+    C:\Users\developer\Desktop\csspin\.spin\venv\Scripts\activate.ps1
 
 Activating the virtual environment can be done by sourcing the activate script:
 
 .. code-block:: console
-    :caption: Activating the virtual environment provisioned by cs.spin
+    :caption: Activating the virtual environment provisioned by csspin
 
     # Unix-style shells:
     $(spin env)
@@ -198,7 +209,7 @@ python:wheel`` command:
             - path/to/another/package
 
 
-``spin_python.python`` schema reference
-#######################################
+``python`` schema reference
+###########################
 
 .. include:: python_schemaref.rst

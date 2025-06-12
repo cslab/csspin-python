@@ -1,10 +1,10 @@
 # -*- mode: yaml; coding: utf-8 -*-
 #
-# Schema for the debugpy plugin for cs.spin
+# Schema for the debugpy plugin for spin
 
 debugpy:
     type: object
-    help: Configuration of the debugpy plugin for cs.spin
+    help: Configuration of the debugpy plugin for spin
     properties:
         enabled:
             type: bool

@@ -2,7 +2,7 @@ minimum-spin: '0.2'
 plugin_packages:
     - ../../../..
 plugins:
-    - spin_python.python
+    - csspin_python.python
 python:
     use: python
     devpackages:

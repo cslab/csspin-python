@@ -1,6 +1,6 @@
 plugin_packages:
     - ../..
 plugins:
-    - spin_python.behave
+    - csspin_python.behave
 python:
     use: python

@@ -1,32 +1,43 @@
 .. -*- coding: utf-8 -*-
    Copyright (C) 2024 CONTACT Software GmbH
-   All rights reserved.
    https://www.contact-software.com/
 
-.. _spin_python.pytest:
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
 
-==================
-spin_python.pytest
-==================
+       http://www.apache.org/licenses/LICENSE-2.0
 
-The ``spin_python.pytest`` plugin is a thin wrapper around the `pytest`_ package for testing python-based
-projects. It makes use of cs.spin's configuration tree and thus allows the usage
-of pre-defined settings while keeping the possibility to fully adjust all
-options and flags passed to pytest.
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
 
-How to setup the ``spin_python.pytest`` plugin?
-###############################################
+.. _csspin_python.pytest:
 
-The configuration of the ``spin_python.pytest`` plugin is as easy as those of
-the ``spin_python.python`` plugin.
+====================
+csspin_python.pytest
+====================
+
+The ``pytest`` plugin is a thin wrapper around the `pytest`_ package for testing
+python-based projects. It makes use of csspin's configuration tree and thus
+allows the usage of pre-defined settings while keeping the possibility to fully
+adjust all options and flags passed to pytest.
+
+How to setup the ``pytest`` plugin?
+###################################
+
+The configuration of the ``pytest`` plugin is as easy as those of
+the ``python`` plugin.
 
 .. code-block:: yaml
-    :caption: Minimal configuration of ``spinfile.yaml`` to leverage ``spin_python.pytest``
+    :caption: Minimal configuration of ``spinfile.yaml`` to leverage ``pytest``
 
     plugin_packages:
-        - spin_python
+        - csspin_python
     plugins:
-        - spin_python.pytest
+        - csspin_python.pytest
     python:
         version: "3.11.9"
 
@@ -39,19 +50,19 @@ How to run tests against a CE16 instance using the pytest plugin?
 #################################################################
 
 Running tests against a CE16 instance requires the existence those. For the
-creation of an instance, the ``spin_ce.mkinstance`` plugin can be used. To do
+creation of an instance, the ``csspin_ce.mkinstance`` plugin can be used. To do
 so, we have to define it within the project's ``spinfile.yaml`` (see
-documentation of `spin_ce.mkinstance`_).
+documentation of `csspin_ce.mkinstance`_).
 
 .. code-block:: yaml
     :caption: Excerpt of ``spinfile.yaml`` for testing against a CE16 instance
 
     plugin_packages:
-        - spin_ce
-        - spin_python
+        - csspin_ce
+        - csspin_python
     plugins:
-        - spin_ce.mkinstance
-        - spin_python.pytest
+        - csspin_ce.mkinstance
+        - csspin_python.pytest
     ...
 
 With a proper configuration and the mandatory provision, tests can be run by
@@ -69,7 +80,7 @@ executing the ``pytest`` task. Here we explicitly define the DBMS backend to be
 How to run the pytest plugin in order to collect coverage?
 ##########################################################
 
-Running tests and collecting coverage using the ``spin_python.pytest`` plugin
+Running tests and collecting coverage using the ``pytest`` plugin
 can't be easier, since the plugin's default configuration already contains the
 necessary flags and options to do so. For this reason, one just have to pass the
 ``-c`` or ``--coverage`` flag, to run tests and generate coverage reports.
@@ -94,7 +105,7 @@ default configuration used to run debugpy, one can adjust the ``{debugpy.opts}``
 As soon as the debugpy server is listening, one can attach to it using the
 desired IDE or debugger.
 
-``spin_python.pytest`` schema reference
-#######################################
+``pytest`` schema reference
+###########################
 
 .. include:: pytest_schemaref.rst

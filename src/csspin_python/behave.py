@@ -1,23 +1,30 @@
 # -*- mode: python; coding: utf-8 -*-
 #
 # Copyright (C) 2022 CONTACT Software GmbH
-# All rights reserved.
 # https://www.contact-software.com
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
-"""Module implementing the behave plugin for cs.spin"""
+
+"""Module implementing the behave plugin for spin"""
 
 import contextlib
 import sys
 from typing import Generator
 
+from csspin import config, die, info, option, rmtree, setenv, sh, task, writetext
+from csspin.tree import ConfigTree
 from path import Path
-
-try:
-    from csspin import config, die, info, option, rmtree, setenv, sh, task, writetext
-    from csspin.tree import ConfigTree
-except ImportError:
-    from spin import config, die, info, option, rmtree, setenv, sh, task, writetext
-    from spin.tree import ConfigTree
 
 defaults = config(
     # Exclude the flaky tests in the defaults for now.
@@ -42,7 +49,7 @@ defaults = config(
     tests=["tests/accepttests"],
     requires=config(
         spin=[
-            "spin_python.python",
+            "csspin_python.python",
         ],
         python=[
             "behave",
@@ -122,7 +129,7 @@ def behave(  # pylint: disable=too-many-arguments,too-many-positional-arguments
             f"--format={cfg.behave.report.format}",
             f"-o={cfg.behave.report.name}",
         ] + opts
-    if cfg.loaded.get("spin_ce.mkinstance"):
+    if cfg.loaded.get("csspin_ce.mkinstance"):
         inst = Path(instance or cfg.mkinstance.base.instance_location).absolute()
         if not (inst).is_dir():
             die(f"Cannot find the CE instance '{inst}'.")
