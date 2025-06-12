@@ -4,24 +4,16 @@
 # All rights reserved.
 # https://www.contact-software.com/
 
-"""Module implementing the unit tests for spin_python"""
+"""Module implementing the unit tests for csspin_python"""
 
-import importlib.util
 import re
 from unittest import mock
 
 import pytest
 
-# FIXME: remove this once csspin is released and used by this project
-if importlib.util.find_spec("spin") is not None:
-    # Mock `spin.task` away as the import fails otherwise
-    with mock.patch("spin.task"):
-        from spin_python.python import _create_pipconf
-else:
-    # If spin is not found, try with csspin
-    # Mock `csspin.task` away as the import fails otherwise
-    with mock.patch("csspin.task"):
-        from spin_python.python import _create_pipconf
+# Mock `csspin.task` away as the import fails otherwise
+with mock.patch("csspin.task"):
+    from csspin_python.python import _create_pipconf
 
 
 @pytest.mark.parametrize(

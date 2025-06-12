@@ -1,6 +1,6 @@
 plugin_packages:
     - ../..
 plugins:
-    - spin_python.playwright
+    - csspin_python.playwright
 python:
     use: python

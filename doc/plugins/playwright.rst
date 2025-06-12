@@ -1,32 +1,43 @@
 .. -*- coding: utf-8 -*-
    Copyright (C) 2024 CONTACT Software GmbH
-   All rights reserved.
    https://www.contact-software.com/
 
-.. _spin_python.playwright:
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
 
-======================
-spin_python.playwright
-======================
+       http://www.apache.org/licenses/LICENSE-2.0
 
-The ``spin_python.playwright`` plugin provides a way to run the
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+
+.. _csspin_python.playwright:
+
+========================
+csspin_python.playwright
+========================
+
+The ``playwright`` plugin provides a way to run the
 `pytest-playwright`_ end-to-end testing tool to
 execute pre-implemented tests against CONTACT Elements instances by adding the
 ``playwright`` task to spin's CLI.
 
-How to setup the ``spin_python.playwright`` plugin?
-###################################################
+How to setup the ``playwright`` plugin?
+#######################################
 
-For using the ``spin_python.playwright`` plugin, a project's ``spinfile.yaml``
+For using the ``playwright`` plugin, a project's ``spinfile.yaml``
 must at least contain the following configuration.
 
 .. code-block:: yaml
-    :caption: Minimal configuration of ``spinfile.yaml`` to leverage ``spin_python.playwright``
+    :caption: Minimal configuration of ``spinfile.yaml`` to leverage ``playwright``
 
     plugin_packages:
-        - spin_python
+        - csspin_python
     plugins:
-        - spin_python.playwright
+        - csspin_python.playwright
     python:
         version: "3.11.9"
 
@@ -60,16 +71,16 @@ existence of it. A typical setup may require a
     :caption: Configuration of ``spinfile.yaml`` to run playwright tests against a CONTACT Elements instance
 
     plugin_packages:
-        - spin_ce
-        - spin_frontend
-        - spin_java
-        - spin_python
+        - csspin_ce
+        - csspin_frontend
+        - csspin_java
+        - csspin_python
     plugins:
-        - spin_ce:
+        - csspin_ce:
             - mkinstance # for creating a CE instance
             - ce_services # for starting/stopping CE services
-        - spin_frontend.node
-        - spin_python.playwright
+        - csspin_frontend.node
+        - csspin_python.playwright
     python:
         version: '3.11.9'
         index_url: <index url where to retrieve cs.* packages from>
@@ -104,7 +115,7 @@ diverge from the default configuration used to run debugpy, one can adjust the
 As soon as the debugpy server is listening, one can attach to it using the
 desired IDE or debugger.
 
-``spin_python.playwright`` schema reference
-###########################################
+``playwright`` schema reference
+###############################
 
 .. include:: playwright_schemaref.rst

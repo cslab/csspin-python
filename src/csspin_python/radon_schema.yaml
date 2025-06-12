@@ -1,10 +1,10 @@
 # -*- mode: yaml; coding: utf-8 -*-
 #
-# Schema for the radon plugin for cs.spin
+# Schema for the radon plugin for spin
 
 radon:
     type: object
-    help: Configuration of the radon plugin for cs.spin
+    help: Configuration of the radon plugin for spin
     properties:
         exe:
             type: path

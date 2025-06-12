@@ -1,18 +1,27 @@
 # -*- mode: python; coding: utf-8 -*-
 #
 # Copyright (C) 2025 CONTACT Software GmbH
-# All rights reserved.
 # https://www.contact-software.com/
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
-"""Module implementing the aws_auth plugin for cs.spin"""
+
+"""Module implementing the aws_auth plugin for spin"""
 
 import configparser
 import os
 
-try:
-    from csspin import Path, config, debug, die, exists, info, interpolate1
-except ImportError:
-    from spin import Path, config, debug, die, exists, info, interpolate1
+from csspin import Path, config, debug, die, exists, info, interpolate1
 
 defaults = config(
     aws_role_arn="arn:aws:iam::373369985286:role/cs-central1-codeartifact-ecr-read-role",
@@ -24,7 +33,7 @@ defaults = config(
     client_id="central1-auth-oidc-read",
     requires=config(
         spin=[
-            "spin_python.python",
+            "csspin_python.python",
         ],
     ),
 )
@@ -48,7 +57,7 @@ def configure(cfg):  # pylint: disable=too-many-statements
     except ImportError:
         die(
             "Failed to import required modules. Please install them by setting:"
-            "\n\tplugin_packages:\n\t\t- spin_python[aws_auth]\n"
+            "\n\tplugin_packages:\n\t\t- csspin_python[aws_auth]\n"
             "in your project's spinfile.yaml"
         )
 

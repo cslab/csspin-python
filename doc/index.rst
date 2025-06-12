@@ -1,24 +1,35 @@
 .. -*- coding: utf-8 -*-
    Copyright (C) 2024 CONTACT Software GmbH
-   All rights reserved.
    https://www.contact-software.com/
 
-spin_python documentation
-=========================
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
 
-The ``spin_python`` plugin-package for cs.spin serves to provide the necessary
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+
+csspin_python documentation
+===========================
+
+The ``csspin_python`` plugin-package for spin serves to provide the necessary
 plugins and tools for the development and testing of Python-based projects.
 
-It is the most-commonly used plugin-package for cs.spin, as it provides the
-``spin_python.python`` plugin, which creates and manages a virtual environment
+It is the most-commonly used plugin-package for spin, as it provides the
+``python`` plugin, which creates and manages a virtual environment
 in which the necessary Python as well as Node and other dependencies will be
 installed.
 
-The sources can be found at https://code.contact.de/qs/spin/spin_python, while
+The sources can be found at https://code.contact.de/qs/spin/csspin_python, while
 the released versions are available at
-https://packages.contact.de/tools/misc/spin-python.
+https://pypi.org.
 
-``spin_python`` requires at least Python 3.9.
+``csspin_python`` requires at least Python 3.9.
 
 .. toctree::
    :maxdepth: 2

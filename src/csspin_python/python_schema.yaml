@@ -1,6 +1,6 @@
 # -*- mode: yaml; coding: utf-8 -*-
 #
-# Schema for the python plugin for cs.spin
+# Schema for the python plugin for spin
 
 python:
     properties:
@@ -46,7 +46,7 @@ python:
             type: str
             help: |
                 The Python version to use for the whole project when using in
-                the context of cs.spin
+                the context of spin
         use:
             type: str
             help: |

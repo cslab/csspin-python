@@ -1,6 +1,6 @@
 plugin_packages:
     - ../..
 plugins:
-    - spin_python.devpi
+    - csspin_python.devpi
 python:
     use: python

@@ -1,6 +1,6 @@
 plugin_packages:
     - ../..
 plugins:
-    - spin_python.python
+    - csspin_python.python
 python:
     version: '3.9.6'

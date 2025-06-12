@@ -1,15 +1,23 @@
 # -*- mode: python; coding: utf-8 -*-
 #
 # Copyright (C) 2024 CONTACT Software GmbH
-# All rights reserved.
 # https://www.contact-software.com/
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
-"""Module implementing the playwright plugin for cs.spin"""
+"""Module implementing the playwright plugin for spin"""
 
-try:
-    from csspin import Path, Verbosity, config, die, option, setenv, sh, task
-except ImportError:
-    from spin import Path, Verbosity, config, die, option, setenv, sh, task
+from csspin import Path, Verbosity, config, die, option, setenv, sh, task
 
 defaults = config(
     browsers_path="{spin.data}/playwright_browsers",
@@ -28,9 +36,9 @@ defaults = config(
     test_report="playwright.xml",
     requires=config(
         spin=[
-            "spin_python.debugpy",
-            "spin_python.python",
-            "spin_python.pytest",
+            "csspin_python.debugpy",
+            "csspin_python.python",
+            "csspin_python.pytest",
         ],
         python=[
             "pytest-base-url",
@@ -93,7 +101,7 @@ def playwright(  # pylint: disable=too-many-arguments,too-many-positional-argume
     # browsers are already present it's more or less a noop.
     _download_playwright_browsers(cfg)
 
-    if cfg.loaded.get("spin_ce.mkinstance"):
+    if cfg.loaded.get("csspin_ce.mkinstance"):
         if not (
             inst := Path(instance or cfg.mkinstance.base.instance_location).absolute()
         ).is_dir():

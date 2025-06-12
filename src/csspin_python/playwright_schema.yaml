@@ -1,12 +1,11 @@
 # -*- mode: yaml; coding: utf-8 -*-
 #
-# Schema for the playwright plugin for cs.spin
+# Schema for the playwright plugin for spin
 
 playwright:
     type: object
     help: |
-        The pytest plugin provides the full pytest experience for
-        cs.spin.
+        The pytest plugin provides the full pytest experience for spin.
     properties:
         browsers_path:
             type: path

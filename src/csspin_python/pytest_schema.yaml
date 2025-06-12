@@ -1,11 +1,11 @@
 # -*- mode: yaml; coding: utf-8 -*-
 #
-# Schema for the pytest plugin for cs.spin
+# Schema for the pytest plugin for spin
 
 pytest:
     type: object
     help: |
-        The pytest plugin provides the full pytest experience for cs.spin.
+        The pytest plugin provides the full pytest experience for spin.
     properties:
         coverage:
             type: bool

@@ -19,7 +19,7 @@
 
 -   Testing
     -   [ ] Unit and integration tests are added/updated
-    -   [ ] Testing against latest cs.spin and plugin-packages (done in CI)
+    -   [ ] Testing against latest csspin and plugin-packages (done in CI)
     -   [ ] Tested the change using cs.template or another project
     -   [ ] Change integrates well with registry.contact.de/cetest
     -   [ ] Does the change radiates widely and could break e.g., project local

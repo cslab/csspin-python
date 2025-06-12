@@ -1,31 +1,42 @@
 .. -*- coding: utf-8 -*-
    Copyright (C) 2024 CONTACT Software GmbH
-   All rights reserved.
    https://www.contact-software.com/
 
-.. _spin_python.behave:
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
 
-==================
-spin_python.behave
-==================
+       http://www.apache.org/licenses/LICENSE-2.0
 
-The ``spin_python.behave`` plugin provides a way to run `behave`_ in the context
-of cs.spin, which is a great tool for those who want to run acceptance tests
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+
+.. _csspin_python.behave:
+
+====================
+csspin_python.behave
+====================
+
+The ``behave`` plugin provides a way to run `behave`_ in the context
+of spin, which is a great tool for those who want to run acceptance tests
 driven by behave.
 
-How to setup the ``spin_python.behave`` plugin?
-###############################################
+How to setup the ``behave`` plugin?
+###################################
 
-To use the ``spin_python.behave`` plugin, a project's ``spinfile.yaml`` must at
+To use the ``behave`` plugin, a project's ``spinfile.yaml`` must at
 least contain the following configuration.
 
 .. code-block:: yaml
-    :caption: Basic configuration of ``spinfile.yaml`` to leverage ``spin_python.behave``
+    :caption: Basic configuration of ``spinfile.yaml`` to leverage ``behave``
 
     plugin_packages:
-        - spin_python
+        - csspin_python
     plugins:
-        - spin_python.behave
+        - csspin_python.behave
     python:
         version: "3.11.9"
 
@@ -38,21 +49,21 @@ How to run tests against a CE16 instance using the pytest plugin?
 #################################################################
 
 Running tests against a CE16 instance requires this to exist. For the
-creation of an instance, the ``spin_ce.mkinstance`` plugin can be used. To do
+creation of an instance, the ``csspin_ce.mkinstance`` plugin can be used. To do
 so, we have to define it within the project's ``spinfile.yaml`` (see
-documentation of `spin_ce.mkinstance`_).
+documentation of `csspin_ce.mkinstance`_).
 
 .. code-block:: yaml
     :caption: Excerpt of ``spinfile.yaml`` for testing against a CE16 instance
 
     plugin_packages:
-        - spin_ce
-        - spin_frontend
-        - spin_java
-        - spin_python
+        - csspin_ce
+        - csspin_frontend
+        - csspin_java
+        - csspin_python
     plugins:
-        - spin_ce.mkinstance
-        - spin_python.behave
+        - csspin_ce.mkinstance
+        - csspin_python.behave
     ...
 
 With a proper configuration and the mandatory provision, tests can be run by
@@ -70,7 +81,7 @@ executing the ``behave`` task. Here we explicitly define the DBMS backend to be
 How to run the behave plugin in order to collect coverage?
 ##########################################################
 
-Running tests and collecting coverage using the ``spin_python.behave`` plugin
+Running tests and collecting coverage using the ``behave`` plugin
 can't be easier, since the plugin's default configuration already contains the
 necessary flags and options to do so. For this reason, one just have to pass the
 ``-c`` or ``--coverage`` flag, to run tests and generate coverage reports.
@@ -94,7 +105,7 @@ default configuration used to run debugpy, one can adjust the ``{debugpy.opts}``
 As soon as the debugpy server is listening, one can attach to it using the
 desired IDE or debugger.
 
-``spin_python.behave`` schema reference
-#######################################
+``behave`` schema reference
+###########################
 
 .. include:: behave_schemaref.rst

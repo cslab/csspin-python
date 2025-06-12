@@ -8,7 +8,7 @@
 
 import sys
 
-from spin import setenv
+from csspin import setenv
 
 
 def provision(cfg):

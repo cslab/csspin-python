@@ -1,7 +1,7 @@
-# The spinfile.yaml for spin_python is required since building the documentation
-# requires a provisioned project.
-
+# The spinfile.yaml for csspin_python is required since building the
+# documentation requires a provisioned project.
 spin:
+    project_name: csspin_python
     index_url: https://packages.contact.de/tools/stable
 
 plugin_packages:
@@ -10,7 +10,7 @@ plugin_packages:
 
 plugins:
     - spin_docs.sphinx
-    - spin_python:
+    - csspin_python:
           - aws_auth
           - behave
           - debugpy
@@ -24,7 +24,7 @@ environment:
     AWS_AUTH_DISABLE: true
 
 python:
-    version: '3.11.9'
+    version: 3.11.10
     requirements:
         - sphinx-rtd-theme
 
@@ -35,7 +35,7 @@ build_rules:
     task docs:
         sources: doc/_schemaref.rst
     doc/_schemaref.rst:
-        sources: [src/spin_python]
+        sources: [src/csspin_python]
         spin:
             - schemadoc aws_auth --rst -o doc/plugins/aws_auth_schemaref.rst
             - schemadoc behave --rst -o doc/plugins/behave_schemaref.rst

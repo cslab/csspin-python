@@ -1,10 +1,10 @@
 # -*- mode: yaml; coding: utf-8 -*-
 #
-# Schema for the devpi plugin for cs.spin
+# Schema for the devpi plugin for spin
 
 devpi:
     type: object
-    help: Configuration of the devpi plugin for cs.spin
+    help: Configuration of the devpi plugin for spin
     properties:
         formats:
             type: list
