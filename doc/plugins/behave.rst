@@ -57,10 +57,10 @@ documentation of `csspin_ce.mkinstance`_).
     :caption: Excerpt of ``spinfile.yaml`` for testing against a CE16 instance
 
     plugin_packages:
-        - csspin_ce
-        - csspin_frontend
-        - csspin_java
-        - csspin_python
+        - csspin-ce
+        - csspin-frontend
+        - csspin-java
+        - csspin-python
     plugins:
         - csspin_ce.mkinstance
         - csspin_python.behave

@@ -18,18 +18,17 @@
 Installation and setup
 ======================
 
-spin must be installed beforehand, this can be done as documented at
-http://qs.pages.contact.de/spin/csspin/installation.html.
+`spin`_ must be installed.
 
-For leveraging plugins from within the ``csspin_python`` plugin-package for
-``spin``,  ``csspin_python`` must be added to the list of plugin-packages
+For leveraging plugins from within the ``csspin-python`` plugin-package for
+``csspin``,  ``csspin-python`` must be added to the list of plugin-packages
 within a project's ``spinfile.yaml``.
 
 .. code-block:: yaml
     :caption: Example: ``spinfile.yaml`` setup to enable the pytest and python plugins
 
     plugin_packages:
-        - csspin_python
+        - csspin-python
     plugins:
         - csspin_python:
             - python

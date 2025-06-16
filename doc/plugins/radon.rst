@@ -33,7 +33,7 @@ at least contain the following configuration.
     :caption: Minimal configuration of ``spinfile.yaml`` to leverage ``radon``
 
     plugin_packages:
-        - csspin_python
+        - csspin-python
     plugins:
         - csspin_python.radon
     python:

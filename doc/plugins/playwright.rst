@@ -35,7 +35,7 @@ must at least contain the following configuration.
     :caption: Minimal configuration of ``spinfile.yaml`` to leverage ``playwright``
 
     plugin_packages:
-        - csspin_python
+        - csspin-python
     plugins:
         - csspin_python.playwright
     python:
@@ -71,10 +71,10 @@ existence of it. A typical setup may require a
     :caption: Configuration of ``spinfile.yaml`` to run playwright tests against a CONTACT Elements instance
 
     plugin_packages:
-        - csspin_ce
-        - csspin_frontend
-        - csspin_java
-        - csspin_python
+        - csspin-ce
+        - csspin-frontend
+        - csspin-java
+        - csspin-python
     plugins:
         - csspin_ce:
             - mkinstance # for creating a CE instance

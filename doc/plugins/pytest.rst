@@ -21,7 +21,7 @@ csspin_python.pytest
 ====================
 
 The ``pytest`` plugin is a thin wrapper around the `pytest`_ package for testing
-python-based projects. It makes use of csspin's configuration tree and thus
+python-based projects. It makes use of `csspin`_'s configuration tree and thus
 allows the usage of pre-defined settings while keeping the possibility to fully
 adjust all options and flags passed to pytest.
 
@@ -35,7 +35,7 @@ the ``python`` plugin.
     :caption: Minimal configuration of ``spinfile.yaml`` to leverage ``pytest``
 
     plugin_packages:
-        - csspin_python
+        - csspin-python
     plugins:
         - csspin_python.pytest
     python:
@@ -58,8 +58,8 @@ documentation of `csspin_ce.mkinstance`_).
     :caption: Excerpt of ``spinfile.yaml`` for testing against a CE16 instance
 
     plugin_packages:
-        - csspin_ce
-        - csspin_python
+        - csspin-ce
+        - csspin-python
     plugins:
         - csspin_ce.mkinstance
         - csspin_python.pytest

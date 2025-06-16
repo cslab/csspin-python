@@ -25,7 +25,7 @@ from pathlib import Path
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = "csspin_python"
+project = "csspin-python"
 copyright = "2024, CONTACT Software GmbH"  # pylint: disable=redefined-builtin
 author = "CONTACT Software GmbH"
 
@@ -42,10 +42,12 @@ with Path("links.rst").open(encoding="utf-8") as f:
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = [
     "_build",
-    "Thumbs.db",
     ".DS_Store",
-    "plugins/*_schemaref.rst",
+    ".spin",
+    ".venv",
     "links.rst",
+    "plugins/*_schemaref.rst",
+    "Thumbs.db",
 ]
 
 # -- Options for HTML output -------------------------------------------------
