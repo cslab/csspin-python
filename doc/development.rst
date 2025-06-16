@@ -18,7 +18,7 @@
 Plugin development
 ==================
 
-This section addresses the development of and with the ``csspin_python``
+This section addresses the development of and with the ``csspin-python``
 plugin-package.
 
 How does a plugin define Python dependencies?

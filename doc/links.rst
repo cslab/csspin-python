@@ -20,4 +20,7 @@
 .. _pytest: https://docs.pytest.org/en/stable/
 .. _pytest-playwright: https://playwright.dev/
 .. _Radon: https://radon.readthedocs.io/en/latest/index.html
+.. _csspin: https://pypi.org/project/csspin
+
+.. FIXME: This reference must be updated as soon as csspin-ce's documentation is published.
 .. _csspin_ce.mkinstance: http://qs.pages.contact.de/spin/csspin_ce/plugins/mkinstance.html

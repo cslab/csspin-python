@@ -1,7 +1,7 @@
 # The spinfile.yaml for csspin_python is required since building the
 # documentation requires a provisioned project.
 spin:
-    project_name: csspin_python
+    project_name: csspin-python
     index_url: https://packages.contact.de/tools/stable
 
 plugin_packages:

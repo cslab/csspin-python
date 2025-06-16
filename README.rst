@@ -1,6 +1,6 @@
 |Latest Version| |Python| |License|
 
-`csspin_python` is maintained and published by `CONTACT Software GmbH`_ and
+`csspin-python` is maintained and published by `CONTACT Software GmbH`_ and
 serves Python-based plugins for the `csspin`_ task runner.
 
 The following plugins are available:
@@ -28,10 +28,10 @@ Python package manager, e.g.:
 
    python -m pip install csspin
 
-Using csspin_python
+Using csspin-python
 -------------------
 
-The `csspin_python` package and its plugins can be installed by defining those
+The `csspin-python` package and its plugins can be installed by defining those
 within the `spinfile.yaml` configuration file of your project.
 
 .. code-block:: yaml
@@ -42,7 +42,7 @@ within the `spinfile.yaml` configuration file of your project.
     # To develop plugins comfortably, install the packages editable as
     # follows and add the relevant plugins to the list 'plugins' below
     plugin_packages:
-      - csspin_python
+      - csspin-python
 
     # The list of plugins to be used for this project.
     plugins:
@@ -65,13 +65,13 @@ environment and install the required dependencies. After that, you can run
 tests using ``spin pytest`` and do other great things.
 
 .. _`CONTACT Software GmbH`: https://contact-software.com
-.. |Python| image:: https://img.shields.io/pypi/pyversions/csspin_python.svg?style=flat
-    :target: https://pypi.python.org/pypi/csspin_python/
+.. |Python| image:: https://img.shields.io/pypi/pyversions/csspin-python.svg?style=flat
+    :target: https://pypi.python.org/pypi/csspin-python/
     :alt: Supported Python Versions
-.. |Latest Version| image:: http://img.shields.io/pypi/v/csspin_python.svg?style=flat
+.. |Latest Version| image:: http://img.shields.io/pypi/v/csspin-python.svg?style=flat
     :target: https://pypi.python.org/pypi/csspin/
     :alt: Latest Package Version
-.. |License| image:: http://img.shields.io/pypi/l/csspin_python.svg?style=flat
+.. |License| image:: http://img.shields.io/pypi/l/csspin-python.svg?style=flat
     :target: https://www.apache.org/licenses/LICENSE-2.0.txt
     :alt: License
 .. _`csspin`: https://pypi.org/project/csspin

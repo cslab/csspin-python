@@ -35,7 +35,7 @@ at least contain the following configuration.
     :caption: Minimal configuration of ``spinfile.yaml`` to leverage ``devpi``
 
     plugin_packages:
-        - csspin_python
+        - csspin-python
     plugins:
         - csspin_python.devpi
     python:

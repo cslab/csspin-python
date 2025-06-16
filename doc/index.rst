@@ -14,10 +14,10 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 
-csspin_python documentation
+csspin-python documentation
 ===========================
 
-The ``csspin_python`` plugin-package for spin serves to provide the necessary
+The ``csspin-python`` plugin-package for spin serves to provide the necessary
 plugins and tools for the development and testing of Python-based projects.
 
 It is the most-commonly used plugin-package for spin, as it provides the
@@ -25,11 +25,11 @@ It is the most-commonly used plugin-package for spin, as it provides the
 in which the necessary Python as well as Node and other dependencies will be
 installed.
 
-The sources can be found at https://code.contact.de/qs/spin/csspin_python, while
-the released versions are available at
-https://pypi.org.
+.. The sources can be found at https://code.contact.de/qs/spin/csspin_python, while
+.. the released versions are available at
+.. https://pypi.org.
 
-``csspin_python`` requires at least Python 3.9.
+``csspin-python`` requires at least Python 3.9.
 
 .. toctree::
    :maxdepth: 2

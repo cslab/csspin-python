@@ -20,13 +20,13 @@
 csspin_python.python
 ====================
 
-The ``python`` plugin is the core plugin of the ``csspin_python``
+The ``python`` plugin is the core plugin of the ``csspin-python``
 plugin-package. It is not only used for creating a virtual environment which
 serves as location for all spin-related tooling and plugin-dependencies, it also
 enables the dynamic installation and access of/to tools.
 
 Please note that the ``python`` plugin is required and used by all
-plugins within the ``csspin_python`` plugin-package.
+plugins within the ``csspin-python`` plugin-package.
 
 How to setup the ``python`` plugin?
 ###################################
@@ -38,7 +38,7 @@ at least contain the following configuration.
     :caption: Minimal configuration of ``spinfile.yaml`` to leverage ``python``
 
     plugin_packages:
-        - csspin_python
+        - csspin-python
     plugins:
         - csspin_python.python
     python:
@@ -61,7 +61,7 @@ by extending the project's ``spinfile.yaml`` like this:
     ...
     python:
         version: "3.11.9"
-        index_url: https://packages.contact.de/apps/16.0-dev
+        index_url: <URL to retrieve the CE packages from>
 
         # Additional requirements can be used to install further Python-packages
         # into the virtual environment created by the python plugin.
@@ -138,8 +138,8 @@ How to modify the behavior of the installation of the current package?
 
 The behavior to install the current package can be modified in two ways.
 
-One is, to include optional dependencies (so called :emphasis:`extras`) of the current package.
-This can be done in the spinfile.yaml like this:
+One is, to include optional dependencies (so called :emphasis:`extras`) of the
+current package. This can be done in the ``spinfile.yaml`` like this:
 
 .. code-block:: yaml
     :caption: Include the extras ``postgres`` and ``s3`` during provisioning
@@ -209,7 +209,7 @@ python:wheel`` command:
             - path/to/another/package
 
 
-``python`` schema reference
-###########################
+``csspin_python.python`` schema reference
+#########################################
 
 .. include:: python_schemaref.rst
