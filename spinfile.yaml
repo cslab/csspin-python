@@ -1,15 +1,15 @@
-# The spinfile.yaml for csspin_python is required since building the
+# The spinfile.yaml for csspin-python is required since building the
 # documentation requires a provisioned project.
 spin:
     project_name: csspin-python
     index_url: https://packages.contact.de/tools/stable
 
 plugin_packages:
-    - spin_docs
+    - csspin-docs
     - -e .
 
 plugins:
-    - spin_docs.sphinx
+    - csspin_docs.sphinx
     - csspin_python:
           - aws_auth
           - behave
