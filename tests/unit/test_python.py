@@ -7,13 +7,14 @@
 """Module implementing the unit tests for csspin_python"""
 
 import re
+import sys
 from unittest import mock
 
 import pytest
 
 # Mock `csspin.task` away as the import fails otherwise
 with mock.patch("csspin.task"):
-    from csspin_python.python import _create_pipconf
+    from csspin_python.python import _configure_pipconf
 
 
 @pytest.mark.parametrize(
@@ -31,17 +32,20 @@ with mock.patch("csspin.task"):
         ),
     ),
 )
-def test__create_pipconf(tmp_path, pipconf, expected_index):
+def test__configure_pipconf(tmp_path, pipconf, expected_index):
     """
-    Test whether _create_pip_conf handles the index_url properly.
+    Test whether _configure_pipconf handles the index_url properly.
     """
-    config_file = tmp_path / "pip.conf"
+    config_file = (
+        tmp_path / "pip.conf" if sys.platform != "win32" else tmp_path / "pip.ini"
+    )
     config_file.touch()
     cfg_mock = mock.MagicMock()
     cfg_mock.python.index_url = "https://pypi.org/simple"
     cfg_mock.python.pipconf = pipconf
+    cfg_mock.python.venv = tmp_path
 
-    _create_pipconf(cfg_mock, config_file)
+    _configure_pipconf(cfg_mock)
 
     with open(config_file, encoding="utf-8") as fd:
         content = fd.read()

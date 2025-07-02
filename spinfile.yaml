@@ -6,12 +6,11 @@ spin:
 
 plugin_packages:
     - csspin-docs
-    - -e .
+    - -e .[aws_auth]
 
 plugins:
     - csspin_docs.sphinx
     - csspin_python:
-          - aws_auth
           - behave
           - debugpy
           - devpi
@@ -19,9 +18,6 @@ plugins:
           - pytest
           - python
           - radon
-
-environment:
-    AWS_AUTH_DISABLE: true
 
 python:
     version: 3.11.10
@@ -37,7 +33,6 @@ build_rules:
     doc/_schemaref.rst:
         sources: [src/csspin_python]
         spin:
-            - schemadoc aws_auth --rst -o doc/plugins/aws_auth_schemaref.rst
             - schemadoc behave --rst -o doc/plugins/behave_schemaref.rst
             - schemadoc debugpy --rst -o doc/plugins/debugpy_schemaref.rst
             - schemadoc devpi --rst -o doc/plugins/devpi_schemaref.rst

@@ -129,3 +129,31 @@ python:
             help: |
                 A list of packages that will be built along with the current
                 project when executing python:wheel.
+        aws_auth:
+            type: object
+            help: Configuration for the 'aws_auth' extra.
+            properties:
+                enabled:
+                    type: bool
+                    help: |
+                        Whether to enable AWS authentication for retrieving
+                        packages from CodeArtifact.
+                memo:
+                    type: path
+                    help: |
+                        Path to the memoized information regarding the aws_auth
+                        extra.
+                key_duration:
+                    type: int
+                    help: |
+                        Time in seconds defining how long the plugin should
+                        consider the authentication token as valid before
+                        issuing a new one.
+                static_oidc:
+                    type: bool
+                    help: |
+                        Whether to static OIDC when authenticating with AWS
+                        CodeArtifact.
+                index:
+                    type: str
+                    help: The Codeartifact repository index (e.g. "16.0/simple").

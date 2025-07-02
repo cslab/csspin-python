@@ -29,11 +29,11 @@ maintainers = [
   {name = "Benjamin Thomas Schwertfeger", email = "benjaminthomas.schwertfeger@contact-software.com"},
   {name = "Fabian Hafer", email = "fabian.hafer@contact-software.com"}
 ]
-name = "csspin_python"
+name = "csspin-python"
 requires-python = ">=3.9"
 
 [project.optional-dependencies]
-aws_auth = ["boto3", "requests"]
+aws_auth = ["csaccess>=0.1.0"]
 
 [project.urls]
 Homepage = "https://contact-software.com"
@@ -147,7 +147,7 @@ notes = ["FIXME", "XXX", "TODO", "TBC", "TBD"]
 score = "no"
 
 [tool.pytest.ini_options]
-markers = ["integration"]
+markers = ["acceptance", "integration", "wip"]
 
 [tool.setuptools.dynamic]
 readme = {file = "README.rst", content-type = "text/x-rst"}

@@ -50,6 +50,9 @@ dependencies can be done via the well-known ``spin provision``-task.
 How to install packages from another package index and sources?
 ###############################################################
 
+Using a static index URL
+~~~~~~~~~~~~~~~~~~~~~~~~
+
 The default index for installing Python packages is https://pypi.org/simple. To
 be able to install packages from another index, for example the dev-index for
 the development of CE16 components, the plugin's configuration can be adjusted
@@ -68,6 +71,51 @@ by extending the project's ``spinfile.yaml`` like this:
         requirements:
             - cs.admin
             - cs.platform[postgres]
+
+Using AWS Codeartifact Repository
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+csspin-python provides an extra named ``aws_auth`` that installs the
+command-line tool `csaccess`_ to authenticate with the AWS
+Codeartifact Python package index for CONTACT Software GmbH.
+
+To install csspin-python using this extra make sure it is enabled in the project's
+``spinfile.yaml``:
+
+.. code-block:: yaml
+    :caption: ``spinfile.yaml`` enabling csspin-python[aws_auth]
+
+    ...
+    plugin_packages:
+        - csspin-python[aws_auth]
+
+    python:
+        aws_auth:
+            enabled: True
+    ...
+
+When provisioning a project using the extra installed *and* enabled, make sure
+to have the following environment variables in place:
+
+- ``CS_AWS_OIDC_CLIENT_ID``
+- ``CS_AWS_OIDC_CLIENT_SECRET``
+
+`CONTACT Software GmbH`_ will provide every customer with OIDC credentials
+during onboarding and the Cloud team can be contacted in case there are any
+questions.
+
+Provisioning the project will result in a modified ``python.index_url`` that
+allows to install packages from the CodeArtifact registry.
+
+.. code-block:: console
+    :caption: Running ``spin provision`` with enabled aws_auth
+
+    spin provision
+    spin: mkdir /home/developer/src/my_project/.spin
+    spin: mkdir /home/developer/src/my_project/.spin/plugins
+    ...
+    spin: python -mpip -q --disable-pip-version-check install --index-url https://aws:*******@contact-373369985286.d.codeartifact.eu-central-1.amazonaws.com/pypi/16.0/simple/ -U pip
+    ...
 
 How to install packages from other sources instead from the package server?
 ###########################################################################

@@ -4,3 +4,47 @@ include:
     - project: qs/spin/spin_plugin_common
       ref: v2.0.0
       file: ci/.gitlab-ci.yml
+
+# ==============================================================================
+# The following customizations are required to ensure pip>=24 is installed,
+# which is required for installing extras with constraints (see
+# https://code.contact.de/qs/spin/cs.spin/-/issues/177).
+
+test_linux:
+    before_script:
+        - python3 -m pip install -U pip
+        - pip install -r requirements-dev.txt
+
+test_windows:
+    before_script:
+        - python -m venv venv
+        - venv\Scripts\activate.ps1
+        - venv\Scripts\python.exe -m pip install -U pip
+        - pip install -r requirements-dev.txt
+
+triggered_integration_tests_linux:
+    before_script:
+        - apt update
+        - apt install -y jq
+        # retrieve the Job ID of the wheel job to download the artifacts
+        - |
+            export WHEEL_JOB_ID=$( \
+              curl -s \
+              "${CI_API_V4_URL}/projects/1065/pipelines/${PARENT_PIPELINE_ID}/jobs?scope=success" \
+              | jq -S '.[] | select (.name == "wheel") | {id}' | jq -rj '.[]' \
+            )
+        - curl -O ${CI_API_V4_URL}/projects/1065/jobs/${WHEEL_JOB_ID}/artifacts.zip
+        - unzip artifacts.zip "dist/*"
+        - python3 -m pip install -U pip
+        - pip install dist/csspin-*.whl -r requirements-dev.txt
+
+triggered_integration_tests_windows:
+    before_script:
+        # retrieve the Job ID of the wheel job to download the artifacts
+        - $WHEEL_JOB_ID=(curl -s "${CI_API_V4_URL}/projects/1065/pipelines/${PARENT_PIPELINE_ID}/jobs?scope=success" | ConvertFrom-Json | Where-Object {$_.name -eq "wheel"}).id
+        - curl -O ${CI_API_V4_URL}/projects/1065/jobs/$WHEEL_JOB_ID/artifacts.zip
+        - Expand-Archive artifacts.zip .
+        - python -m venv venv
+        - venv\Scripts\activate.ps1
+        - venv\Scripts\python.exe -m pip install -U pip
+        - pip install ("dist\" + (Get-ChildItem dist\csspin-*.whl).name) -r requirements-dev.txt

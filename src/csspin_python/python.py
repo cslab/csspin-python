@@ -15,7 +15,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# pylint: disable=too-few-public-methods,missing-class-docstring
+# pylint: disable=too-few-public-methods,missing-class-docstring,too-many-lines
 
 """``python``
 ==========
@@ -147,6 +147,13 @@ defaults = config(
     current_package=config(
         install=True,
         extras=[],
+    ),
+    aws_auth=config(
+        enabled=False,
+        memo="{spin.spin_dir}/aws_auth.memo",
+        key_duration=3600 * 10,  # 10 hours
+        static_oidc=False,
+        index="16.0/simple",
     ),
     index_url="https://pypi.org/simple",
     requires=config(
@@ -336,6 +343,9 @@ def configure(cfg):
 
     if exists(cfg.python.python):
         cfg.python.site_packages = get_site_packages(interpreter=cfg.python.python)
+
+    if cfg.python.aws_auth.enabled:
+        _check_aws_token_validity(cfg)
 
 
 def init(cfg):
@@ -888,13 +898,7 @@ def venv_provision(cfg):  # pylint: disable=too-many-branches,missing-function-d
     # This sets PATH to the venv
     init(cfg)
 
-    # Always create a pip conf with at least the packageserver index_url as content
-    if sys.platform == "win32":
-        pipconf = cfg.python.venv / "pip.ini"
-    else:
-        pipconf = cfg.python.venv / "pip.conf"
-
-    _create_pipconf(cfg, pipconf)
+    _configure_pipconf(cfg)
 
     # Establish the prerequisites
     if fresh_env:
@@ -945,7 +949,9 @@ def cleanup(cfg: ConfigTree) -> None:
                     f"'{provisioner.__class__.__name__}' failed: {err}"
                 )
         memo.clear()
+
     rmtree(cfg.python.provisioner_memo)
+    rmtree(cfg.python.aws_auth.memo)
     for path in cfg.python.build_wheels:
         current_path = Path(interpolate1(path))
         rmtree(current_path / "build")
@@ -955,16 +961,89 @@ def cleanup(cfg: ConfigTree) -> None:
                 rmtree(current_path / filename)
 
 
-def _create_pipconf(cfg, configfile):
-    # pip cannot handle a section being defined twice, so let's insert the
-    # index_url ourselves and create the configfile
+def _get_pipconf(cfg):
+    """Retrieve the pipconf configuration file path."""
+    if sys.platform == "win32":
+        pipconf = interpolate1(Path(cfg.python.venv)) / "pip.ini"
+    else:
+        pipconf = interpolate1(Path(cfg.python.venv)) / "pip.conf"
+
+    return pipconf
+
+
+def _configure_pipconf(cfg, update=False):
+    """Configure the pip configuration file"""
     config_parser = configparser.ConfigParser()
     config_parser.read_string(cfg.python.pipconf)
     if not config_parser.has_section("global"):
         config_parser.add_section("global")
-    if not (
+    if update or not (
         "index_url" in config_parser["global"] or "index-url" in config_parser["global"]
     ):
-        config_parser["global"]["index_url"] = cfg.python.index_url
-    with open(configfile, mode="w", encoding="utf-8") as fd:
+        config_parser["global"]["index_url"] = interpolate1(cfg.python.index_url)
+    with open(_get_pipconf(cfg), mode="w", encoding="utf-8") as fd:
         config_parser.write(fd)
+
+
+def _obfuscate_index_url(index_url):
+    """Add the CodeArtifact token to the secrets."""
+
+    from csspin import secrets
+
+    secrets.add(index_url.split(":")[2].split("@")[0])  # Codeartifact token
+
+
+def _check_aws_token_validity(cfg):
+    """
+    If csspin-python[aws_auth] is installed, we can use csaccess to get the
+    CodeArtifact authentication token.
+    """
+
+    try:
+        from csaccess import get_ca_pypi_url_programmatic
+    except ImportError:
+        die(
+            "The 'aws_auth' feature requires the 'aws_auth' extra being"
+            " installed (e.g. via csspin-python[aws_auth] in spinfile.yaml)."
+        )
+
+    import time
+
+    current_time = int(time.time())
+    timestamp_key = "aws_auth_timestamp"
+
+    with memoizer(cfg.python.aws_auth.memo) as memo:
+        for item in memo.items():
+            if isinstance(item, str) and item.startswith(f"{timestamp_key}:"):
+                last_time = int(item.split(":", 1)[1])
+                if current_time - last_time < cfg.python.aws_auth.key_duration:
+                    pipconf = _get_pipconf(cfg)
+                    config_parser = configparser.ConfigParser()
+                    config_parser.read(pipconf)
+                    info(f"Using existing index URL from {pipconf}.")
+
+                    if index_url := (
+                        config_parser["global"].get("index_url")
+                        or config_parser["global"].get("index-url")
+                    ):
+                        cfg.python.index_url = index_url
+                        _obfuscate_index_url(index_url)
+                    break
+                memo.items().remove(item)
+        else:
+            info("Updating Codeartifact token.")
+            from urllib.parse import urljoin
+
+            index_url = urljoin(
+                get_ca_pypi_url_programmatic(
+                    static_oidc=cfg.python.aws_auth.static_oidc
+                )
+                + "/",
+                cfg.python.aws_auth.index,
+            )
+            cfg.python.index_url = index_url
+            _obfuscate_index_url(index_url)
+
+            if exists(cfg.python.venv):
+                _configure_pipconf(cfg, update=True)
+            memo.add(f"{timestamp_key}:{current_time}")
