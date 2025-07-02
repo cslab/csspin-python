@@ -1,0 +1,9 @@
+plugin_packages:
+    - ../../..[aws_auth]
+plugins:
+    - csspin_python.python
+python:
+    use: python
+    aws_auth:
+        enabled: True
+        static_oidc: True

@@ -18,7 +18,7 @@
 Installation and setup
 ======================
 
-`spin`_ must be installed.
+`csspin`_ must be installed.
 
 For leveraging plugins from within the ``csspin-python`` plugin-package for
 ``csspin``,  ``csspin-python`` must be added to the list of plugin-packages

@@ -5,8 +5,6 @@ serves Python-based plugins for the `csspin`_ task runner.
 
 The following plugins are available:
 
-- `csspin_python.aws_auth`: A plugin for authenticating to CONTACT Elements
-  instances hosted on AWS.
 - `csspin_python.behave`: A plugin for running tests using Behave.
 - `csspin_python.debugpy`: A plugin for debugging Python code using `debugpy`_.
 - `csspin_python.devpi`: A plugin for simplified usage of `devpi`_.
@@ -17,6 +15,9 @@ The following plugins are available:
 - `csspin_python.radon`: A plugin for running `radon`_ to analyze code
   complexity.
 - `csspin_python.sphinx`: A plugin for building Sphinx documentation.
+
+The package provides an ``aws_auth`` extra, that, if enabled, can
+authenticate to `CONTACT Software GmbH`_'s AWS Codeartifact.
 
 Prerequisites
 -------------
