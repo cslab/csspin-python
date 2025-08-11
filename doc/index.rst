@@ -37,6 +37,7 @@ installed.
 
    installation.rst
    development.rst
+   virtual_environment.rst
    plugins/behave.rst
    plugins/debugpy.rst
    plugins/devpi.rst

@@ -227,7 +227,12 @@ def wheel(
 
 @task()
 def env():
-    """Generate command to activate the virtual environment"""
+    """
+    Generate command to activate the virtual environment
+
+    NOTE: spin itself should not be run from within the activated virtual
+          environment!
+    """
     if sys.platform == "win32":
         # Don't care about cmd
         print(normpath("{python.scriptdir}", "activate.ps1"))

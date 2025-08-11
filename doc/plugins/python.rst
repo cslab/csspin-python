@@ -153,8 +153,16 @@ usage of the passed interpreter.
     ...
     spin -p python.use=/usr/bin/python <task>
 
+.. _section-label-spin-env:
+
 How to activate the virtual environment provisioned by csspin manually?
 #######################################################################
+
+.. Attention:: The activation script presented by ``spin env`` doesn't lead to
+               same environment in which ``spin run <command>`` is executed,
+               since plugins' hooks are not run through when activating an
+               environment by hand! For more information, please refer to
+               :ref:`python_virtual_environment`.
 
 Retrieving the path to activate the virtual environment created by the
 ``python`` plugin is as easy as follows:
