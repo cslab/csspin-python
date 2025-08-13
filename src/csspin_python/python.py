@@ -245,7 +245,7 @@ def pyenv_install(cfg):
     with namespaces(cfg.python):
         if cfg.python.user_pyenv:
             info("Using your existing pyenv installation ...")
-            sh(f"pyenv install --skip-existing {cfg.python.version}")
+            sh("pyenv", "install", "--skip-existing", {cfg.python.version})
             cfg.python.interpreter = backtick("pyenv which python --nosystem").strip()
         else:
             info("Installing Python {version} to {inst_dir}")
@@ -253,16 +253,18 @@ def pyenv_install(cfg):
             # pyenv is by far the most robust way to install a
             # version of Python.
             if not exists("{pyenv.path}"):
-                sh(f"git clone {cfg.python.pyenv.url} {cfg.python.pyenv.path}")
+                sh("git", "clone", cfg.python.pyenv.url, cfg.python.pyenv.path)
             else:
                 with cd(cfg.python.pyenv.path):
-                    sh("git pull")
+                    sh("git", "pull")
             # we should set
             setenv(PYTHON_BUILD_CACHE_PATH=mkdir(cfg.python.pyenv.cache))
             setenv(PYTHON_CFLAGS="-DOPENSSL_NO_COMP")
             try:
                 sh(
-                    f"{cfg.python.pyenv.python_build} {cfg.python.version} {cfg.python.inst_dir}"
+                    cfg.python.pyenv.python_build,
+                    cfg.python.version,
+                    cfg.python.inst_dir,
                 )
             except Abort:
                 error("Failed to build the Python interpreter - removing it")
@@ -288,7 +290,7 @@ def nuget_install(cfg):
         "-source",
         cfg.python.nuget.source,
     )
-    sh(f"{cfg.python.interpreter} -m ensurepip --upgrade")
+    sh(cfg.python.interpreter, "-m", "ensurepip", "--upgrade")
     sh(
         cfg.python.interpreter,
         "-mpip",
