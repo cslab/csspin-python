@@ -53,6 +53,50 @@ known_first_party = ["cs", "cdb*"]
 multi_line_output = 3
 profile = "black"
 
+[tool.mypy]
+# ===== Untyped definitions and calls
+#
+check_untyped_defs = true
+color_output = true
+disallow_any_decorated = false
+disallow_any_explicit = false
+disallow_any_expr = false
+disallow_any_generics = false
+# ===== Disallow dynamic typing
+#
+disallow_any_unimported = false
+disallow_incomplete_defs = true
+disallow_subclassing_any = false
+disallow_untyped_calls = true
+disallow_untyped_decorators = false  # since click's decorators are untyped
+disallow_untyped_defs = true
+error_summary = true
+files = ["*.py"]
+hide_error_codes = false
+# ===== Suppressing errors
+#
+ignore_errors = false
+ignore_missing_imports = true  # TODO: Should be false but need csspin stubs:
+# ===== None and Optional handling
+#
+implicit_optional = false
+pretty = true
+python_version = "3.9"
+show_absolute_path = true
+show_column_numbers = true
+# ===== Configuring error messages
+#
+show_error_context = true
+strict_optional = true
+warn_no_return = true
+# ===== Configuring warnings
+#
+warn_redundant_casts = true
+warn_return_any = true
+warn_unreachable = true
+warn_unused_configs = true
+warn_unused_ignores = true
+
 [tool.pylint.imports]
 # Deprecated modules which should not be used, separated by a comma.
 deprecated-modules = ["regsub", "TERMIOS", "Bastion", "rexec", "cgi"]

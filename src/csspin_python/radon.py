@@ -18,8 +18,10 @@
 """Module implementing the radon plugin for spin"""
 
 import logging
+from typing import Iterable
 
 from csspin import config, info, option, sh, task
+from csspin.tree import ConfigTree
 
 defaults = config(
     exe="radon",
@@ -36,20 +38,20 @@ defaults = config(
 
 @task()
 def radon(
-    cfg,
-    allsource: option(
+    cfg: ConfigTree,
+    allsource: option(  # type: ignore[valid-type]
         "--all",  # noqa: F821
         "allsource",  # noqa: F821
         is_flag=True,
         help="Run for all src- and test-files.",  # noqa: F722,F821
     ),
-    args,
-):
+    args: Iterable[str],
+) -> None:
     """Run radon to measure code complexity."""
     if allsource:
-        files = ("{spin.project_root}/src", "{spin.project_root}/tests")
+        files = ["{spin.project_root}/src", "{spin.project_root}/tests"]
     else:
-        files = args
+        files = list(args)
         if not files and hasattr(cfg, "vcs") and hasattr(cfg.vcs, "modified"):
             info("Found modified files.")
             files = cfg.vcs.modified

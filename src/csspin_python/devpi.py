@@ -18,7 +18,10 @@
 """Module implementing the devpi plugin for spin"""
 
 
+from typing import Iterable
+
 from csspin import Command, config, die, exists, readyaml, setenv, sh, task
+from csspin.tree import ConfigTree
 
 defaults = config(
     formats=["bdist_wheel"],
@@ -34,13 +37,13 @@ defaults = config(
 )
 
 
-def init(cfg):  # pylint: disable=unused-argument
+def init(cfg: ConfigTree) -> None:  # pylint: disable=unused-argument
     """Sets some environment variables"""
     setenv(DEVPI_VENV="{python.venv}", DEVPI_CLIENTDIR="{spin.spin_dir}/devpi")
 
 
 @task("devpi:upload")
-def upload(cfg):
+def upload(cfg: ConfigTree) -> None:
     """Upload project wheel to a package server."""
     if not cfg.devpi.user:
         die("devpi.user is required!")
@@ -68,7 +71,7 @@ def upload(cfg):
 
 
 @task()
-def devpi(cfg, args):
+def devpi(cfg: ConfigTree, args: Iterable[str]) -> None:
     """Run the 'devpi' command inside the project's virtual environment.
 
     All command line arguments are simply passed through to 'devpi'.

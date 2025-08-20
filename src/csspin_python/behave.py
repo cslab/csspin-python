@@ -20,7 +20,7 @@
 
 import contextlib
 import sys
-from typing import Generator
+from typing import Generator, Iterable
 
 from csspin import config, die, info, option, rmtree, setenv, sh, task, writetext
 from csspin.tree import ConfigTree
@@ -67,16 +67,16 @@ def configure(cfg: ConfigTree) -> None:
         cfg.behave.opts.append("--tags=~windows")
 
 
-def create_coverage_pth(cfg: ConfigTree) -> str:  # pylint: disable=unused-argument
+def create_coverage_pth(cfg: ConfigTree) -> Path:  # pylint: disable=unused-argument
     """Creating the coverage path file and returning its path"""
-    coverage_pth_path = cfg.python.site_packages / "coverage.pth"
+    coverage_pth_path: Path = cfg.python.site_packages / "coverage.pth"
     info(f"Create {coverage_pth_path}")
     writetext(coverage_pth_path, "import coverage; coverage.process_startup()")
     return coverage_pth_path
 
 
 @contextlib.contextmanager
-def with_coverage(cfg: ConfigTree) -> Generator:
+def with_coverage(cfg: ConfigTree) -> Generator[None, None, None]:
     """Context-manager enabling to run coverage"""
     coverage_pth = ""
     try:
@@ -95,28 +95,28 @@ def with_coverage(cfg: ConfigTree) -> Generator:
 
 @task(when="cept")
 def behave(  # pylint: disable=too-many-arguments,too-many-positional-arguments
-    cfg,
-    instance: option(
+    cfg: ConfigTree,
+    instance: option(  # type: ignore[valid-type]
         "-i",  # noqa: F821
         "--instance",  # noqa: F821
         help="Directory of the CONTACT Elements instance.",  # noqa: F722
     ),
-    coverage: option(
+    coverage: option(  # type: ignore[valid-type]
         "-c",  # noqa: F821
         "--coverage",  # noqa: F821
         is_flag=True,
         help="Run the tests while collecting coverage.",  # noqa: F722
     ),
-    debug: option(
+    debug: option(  # type: ignore[valid-type]
         "--debug", is_flag=True, help="Start debug server."  # noqa: F722,F821
     ),
-    with_test_report: option(
+    with_test_report: option(  # type: ignore[valid-type]
         "--with-test-report",  # noqa: F722
         is_flag=True,
         help="Create a test execution report.",  # noqa: F722
     ),
-    args,
-):
+    args: Iterable[str],
+) -> None:
     """Run Gherkin tests using behave."""
     # pylint: disable=missing-function-docstring
     coverage_enabled = coverage or cfg.behave.coverage

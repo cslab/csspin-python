@@ -17,7 +17,10 @@
 
 """Module implementing the playwright plugin for spin"""
 
+from typing import Iterable
+
 from csspin import Path, Verbosity, config, die, option, setenv, sh, task
+from csspin.tree import ConfigTree
 
 defaults = config(
     browsers_path="{spin.data}/playwright_browsers",
@@ -50,29 +53,29 @@ defaults = config(
 
 @task(when="cept")
 def playwright(  # pylint: disable=too-many-arguments,too-many-positional-arguments
-    cfg,
-    instance: option(
+    cfg: ConfigTree,
+    instance: option(  # type: ignore[valid-type]
         "-i",  # noqa: F821
         "--instance",  # noqa: F821
         default=None,
         help="Directory of the CONTACT Elements instance.",  # noqa: F722
     ),
-    coverage: option(
+    coverage: option(  # type: ignore[valid-type]
         "-c",  # noqa: F821
         "--coverage",  # noqa: F821
         is_flag=True,
         help="Run the tests while collecting coverage.",  # noqa: F722
     ),
-    debug: option(
+    debug: option(  # type: ignore[valid-type]
         "--debug", is_flag=True, help="Start debug server."  # noqa: F722,F821
     ),
-    with_test_report: option(
+    with_test_report: option(  # type: ignore[valid-type]
         "--with-test-report",  # noqa: F722
         is_flag=True,
         help="Create a test execution report.",  # noqa: F722
     ),
-    args,
-):
+    args: Iterable[str],
+) -> None:
     """Run the playwright tests with pytest."""
     setenv(
         PLAYWRIGHT_BROWSERS_PATH=cfg.playwright.browsers_path,
@@ -113,7 +116,7 @@ def playwright(  # pylint: disable=too-many-arguments,too-many-positional-argume
         sh(*cmd, *opts, *args, *cfg.playwright.tests)
 
 
-def _download_playwright_browsers(cfg):
+def _download_playwright_browsers(cfg: ConfigTree) -> None:
     """Let playwright install the browsers"""
     sh(
         f"playwright install {' '.join(cfg.playwright.browsers)}",
@@ -121,6 +124,6 @@ def _download_playwright_browsers(cfg):
     )
 
 
-def provision(cfg):
+def provision(cfg: ConfigTree) -> None:
     """Install playwright browsers during provisioning"""
     _download_playwright_browsers(cfg)
