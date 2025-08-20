@@ -18,7 +18,10 @@
 """Module implementing the pytest plugin for spin"""
 
 
+from typing import Iterable
+
 from csspin import Path, Verbosity, config, die, option, setenv, sh, task
+from csspin.tree import ConfigTree
 
 defaults = config(
     coverage=False,
@@ -49,29 +52,29 @@ defaults = config(
 
 @task(when="test")
 def pytest(  # pylint: disable=too-many-arguments,too-many-positional-arguments
-    cfg,
-    instance: option(
+    cfg: ConfigTree,
+    instance: option(  # type: ignore[valid-type]
         "-i",  # noqa: F821
         "--instance",  # noqa: F821
         default=None,
         help="Directory of the CONTACT Elements instance.",  # noqa: F722
     ),
-    coverage: option(
+    coverage: option(  # type: ignore[valid-type]
         "-c",  # noqa: F821
         "--coverage",  # noqa: F821
         is_flag=True,
         help="Run the tests while collecting coverage.",  # noqa: F722
     ),
-    debug: option(
+    debug: option(  # type: ignore[valid-type]
         "--debug", is_flag=True, help="Start debug server."  # noqa: F722,F821
     ),
-    with_test_report: option(
+    with_test_report: option(  # type: ignore[valid-type]
         "--with-test-report",  # noqa: F722
         is_flag=True,
         help="Create a test execution report.",  # noqa: F722
     ),
-    args,
-):
+    args: Iterable[str],
+) -> None:
     """Run the 'pytest' command."""
     opts = cfg.pytest.opts
     if cfg.verbosity == Verbosity.QUIET:

@@ -119,5 +119,12 @@ repos:
                 - --skip=B404,B603 # ignore subprocess-use and subprocess without shell=true
             types: [file] # override `types: [python]`
             files: \.(pyi?|ue)$
+    # Mypy for type assurance
+    - repo: https://github.com/pre-commit/mirrors-mypy
+      rev: v1.17.1
+      hooks:
+          - id: mypy
+            exclude: ^tests/
+            args: [--config-file=pyproject.toml]
 default_language_version:
     python: python3

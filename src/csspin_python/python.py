@@ -75,6 +75,14 @@ import shutil
 import sys
 from subprocess import check_output
 from textwrap import dedent, indent
+from typing import Iterable, Type, Union
+
+try:
+    from typing import Self  # type: ignore[attr-defined]
+except ImportError:
+    from typing import TypeVar
+
+    Self = TypeVar("Self")  # type: ignore[misc]
 
 from click.exceptions import Abort
 from csspin import (
@@ -185,16 +193,16 @@ defaults = config(
 
 
 @task()
-def python(args):
+def python(args: Iterable[object]) -> None:
     """Run the Python interpreter used for this projects."""
     sh("python", *args)
 
 
 @task("python:wheel", when="package")
 def wheel(
-    cfg,
-    paths: argument(type=str, nargs=-1, required=False),  # noqa: F722
-):
+    cfg: ConfigTree,
+    paths: argument(type=str, nargs=-1, required=False),  # type: ignore[valid-type]
+) -> None:
     """Build a wheel of the current project and any additional wheels."""
     setenv(PIP_INDEX_URL=cfg.python.index_url)
     search_paths = paths or cfg.python.build_wheels
@@ -226,7 +234,7 @@ def wheel(
 
 
 @task()
-def env():
+def env() -> None:
     """
     Generate command to activate the virtual environment
 
@@ -240,7 +248,7 @@ def env():
         print(f". {normpath('{python.scriptdir}', 'activate')}")
 
 
-def pyenv_install(cfg):
+def pyenv_install(cfg: ConfigTree) -> None:
     """Install and setup the virtual environment using pyenv"""
     with namespaces(cfg.python):
         if cfg.python.user_pyenv:
@@ -272,7 +280,7 @@ def pyenv_install(cfg):
                 raise
 
 
-def nuget_install(cfg):
+def nuget_install(cfg: ConfigTree) -> None:
     """Install the virtual environment using nuget"""
     if not exists(cfg.python.nuget.exe):
         download(cfg.python.nuget.url, cfg.python.nuget.exe)
@@ -321,7 +329,7 @@ def provision(cfg: ConfigTree) -> None:
     cfg.python.site_packages = get_site_packages(interpreter=cfg.python.python)
 
 
-def configure(cfg):
+def configure(cfg: ConfigTree) -> None:
     """Configure the python plugin"""
     if not cfg.python.version and not cfg.python.use:
         die(
@@ -355,7 +363,7 @@ def configure(cfg):
         _check_aws_token_validity(cfg)
 
 
-def init(cfg):
+def init(cfg: ConfigTree) -> None:
     """Initialize the python plugin"""
     if not cfg.python.use:
         logging.debug("Checking for %s", cfg.python.interpreter)
@@ -372,7 +380,7 @@ def init(cfg):
 ACTIVATED = False
 
 
-def venv_init(cfg):
+def venv_init(cfg: ConfigTree) -> None:
     """Activate the virtual environment"""
     global ACTIVATED  # pylint: disable=global-statement
     if os.environ.get("VIRTUAL_ENV", "") != cfg.python.venv and not ACTIVATED:
@@ -393,7 +401,38 @@ def venv_init(cfg):
         ACTIVATED = True
 
 
-def patch_activate(schema):
+class ActivateScriptPatcher(abc.ABC):
+    activatescript: Union[str, Path]
+    setpattern: str
+    resetpattern: str
+    old_env_pattern: str
+    patchmarker: str
+    replacements: list[tuple[str, str]]
+    script: str
+
+    @staticmethod
+    @abc.abstractmethod
+    def interpolate_environ_value(value: str) -> str:
+        """
+        Translate value so the script can handle uninterpolated "{ENVVAR}" literals in value
+
+        Example:
+        # Assume the following subset of os.environ
+        os.environ = {
+            "PATH": "/bin:/usr/bin",
+            "COMPILER_PATHS": "/compiler/A/bin:/compiler/B/bin",
+        }
+
+        # Now, setenv has been called with
+        # setenv(PATH="{python.scriptdir}:{COMPILER_PATHS}:{PATH}") thus the
+        # value of ``PATH`` in ``EXPORTS`` equals "/venv/bin:{COMPILER_PATHS}:{PATH}" as
+        # ``COMPILER_PATHS`` and ``PATH`` haven't been interpolated yet.
+        interpolate_environ_value(value) => /venv/bin:/compiler/A/bin:/compiler/B/bin:/bin:/usr/bin
+        """
+        return value
+
+
+def patch_activate(schema: Type[ActivateScriptPatcher]) -> None:
     """Patch the activate script"""
     if exists(schema.activatescript):
         setters = []
@@ -404,9 +443,9 @@ def patch_activate(schema):
             setters.append(schema.setpattern.format(name=name, value=value))
             resetters.add(schema.resetpattern.format(name=name))
             old_value_setters.add(schema.old_env_pattern.format(name=name))
-        resetters = "\n".join(resetters)
-        setters = "\n".join(setters)
-        old_value_setters = "\n".join(old_value_setters)
+        resetters_string = "\n".join(resetters)
+        setters_string = "\n".join(setters)
+        old_value_setters_string = "\n".join(old_value_setters)
         original = readtext(schema.activatescript)
         if schema.patchmarker not in original:
             shutil.copyfile(
@@ -425,34 +464,11 @@ def patch_activate(schema):
         newscript = schema.script.format(
             patchmarker=schema.patchmarker,
             original=original,
-            resetters=resetters,
-            old_value_setters=old_value_setters,
-            setters=setters,
+            resetters=resetters_string,
+            old_value_setters=old_value_setters_string,
+            setters=setters_string,
         )
         writetext(f"{schema.activatescript}", newscript)
-
-
-class ActivateScriptPatcher(abc.ABC):
-    @staticmethod
-    @abc.abstractmethod
-    def interpolate_environ_value(value):
-        """
-        Translate value so the script can handle uninterpolated "{ENVVAR}" literals in value
-
-        Example:
-        # Assume the following subset of os.environ
-        os.environ = {
-            "PATH": "/bin:/usr/bin",
-            "COMPILER_PATHS": "/compiler/A/bin:/compiler/B/bin",
-        }
-
-        # Now, setenv has been called with
-        # setenv(PATH="{python.scriptdir}:{COMPILER_PATHS}:{PATH}") thus the
-        # value of ``PATH`` in ``EXPORTS`` equals "/venv/bin:{COMPILER_PATHS}:{PATH}" as
-        # ``COMPILER_PATHS`` and ``PATH`` haven't been interpolated yet.
-        interpolate_environ_value(value) => /venv/bin:/compiler/A/bin:/compiler/B/bin:/bin:/usr/bin
-        """
-        return value
 
 
 class BashActivate(ActivateScriptPatcher):
@@ -517,7 +533,7 @@ class BashActivate(ActivateScriptPatcher):
     )
 
     @staticmethod
-    def interpolate_environ_value(value):
+    def interpolate_environ_value(value: str) -> str:
         if not value:
             return ""
         keys = re.findall(r"{(?P<key>\w+?)}", value)
@@ -571,7 +587,7 @@ class PowershellActivate(ActivateScriptPatcher):
     )
 
     @staticmethod
-    def interpolate_environ_value(value):
+    def interpolate_environ_value(value: str) -> str:
         if not value:
             return ""
         keys = re.findall(r"{(?P<key>\w+?)}", value)
@@ -584,7 +600,7 @@ class PowershellActivate(ActivateScriptPatcher):
 class BatchActivate(ActivateScriptPatcher):
     patchmarker = "\nREM Patched by csspin_python.python\n"
     activatescript = Path("{python.scriptdir}") / "activate.bat"
-    replacements = ()
+    replacements = []
     old_env_pattern = dedent(
         """
         if defined _OLD_SPIN_VALUE_{name} goto ENDIFSPIN{name}1
@@ -621,7 +637,7 @@ class BatchActivate(ActivateScriptPatcher):
     )
 
     @staticmethod
-    def interpolate_environ_value(value):
+    def interpolate_environ_value(value: str) -> str:
         if not value:
             return ""
         keys = re.findall(r"{(?P<key>\w+?)}", value)
@@ -634,7 +650,7 @@ class BatchActivate(ActivateScriptPatcher):
 class BatchDeactivate(ActivateScriptPatcher):
     patchmarker = "\nREM Patched by csspin_python.python\n"
     activatescript = Path("{python.scriptdir}") / "deactivate.bat"
-    replacements = ()
+    replacements = []
     old_env_pattern = ""
     setpattern = ""
     resetpattern = dedent(
@@ -665,7 +681,7 @@ class BatchDeactivate(ActivateScriptPatcher):
 class PythonActivate(ActivateScriptPatcher):
     patchmarker = "# Patched by csspin_python.python\n"
     activatescript = Path("{python.scriptdir}") / "activate_this.py"
-    replacements = ()
+    replacements = []
     old_env_pattern = ""
     setpattern = 'os.environ["{name}"] = fr"{value}"'
     resetpattern = ""
@@ -678,7 +694,7 @@ class PythonActivate(ActivateScriptPatcher):
     )
 
     @staticmethod
-    def interpolate_environ_value(value):
+    def interpolate_environ_value(value: str) -> str:
         if not value:
             return ""
         keys = re.findall(r"{(?P<key>\w+?)}", value)
@@ -688,7 +704,7 @@ class PythonActivate(ActivateScriptPatcher):
         return value
 
 
-def get_site_packages(interpreter):
+def get_site_packages(interpreter: Path) -> Path:
     """Return the path to the virtual environments site-packages."""
     return Path(
         check_output(
@@ -703,7 +719,7 @@ def get_site_packages(interpreter):
     )
 
 
-def finalize_provision(cfg):
+def finalize_provision(cfg: ConfigTree) -> None:
     """Patching the activate scripts and preparing the site-packages"""
     cfg.python.provisioner.install(cfg)
 
@@ -739,8 +755,11 @@ class ProvisionerProtocol:
     The provisioner will be memoized, so make sure it works with ``pickle.dumps``.
     """
 
+    requirements: set[str]
+    devpackages: set[str]
+
     # noinspection PyMethodMayBeStatic
-    def provision_python(self, cfg: ConfigTree) -> None:
+    def provision_python(self: Self, cfg: ConfigTree) -> None:
         """Provision the project's python interpreter"""
         if sys.platform == "win32":
             nuget_install(cfg)
@@ -749,7 +768,7 @@ class ProvisionerProtocol:
             pyenv_install(cfg)
 
     # noinspection PyMethodMayBeStatic
-    def provision_venv(self, cfg: ConfigTree) -> None:
+    def provision_venv(self: Self, cfg: ConfigTree) -> None:
         """Provision the virtual environment of the project"""
         # virtualenv is guaranteed to be available like this
         # as we declared it as one of spin's dependencies
@@ -768,26 +787,26 @@ class ProvisionerProtocol:
             env={"PYTHONPATH": cfg.spin.spin_dir / "plugins"},
         )
 
-    def prerequisites(self, cfg: ConfigTree) -> None:
+    def prerequisites(self: Self, cfg: ConfigTree) -> None:
         """Provide requirements for the provisioning strategy."""
 
-    def lock(self, cfg: ConfigTree) -> None:
+    def lock(self: Self, cfg: ConfigTree) -> None:
         """Lock the project's dependencies."""
 
-    def add(self, cfg: ConfigTree, req: str, devpackage: bool = False) -> None:
+    def add(self: Self, cfg: ConfigTree, req: str, devpackage: bool = False) -> None:
         """Add an extra dependency (incl. development ones)."""
 
-    def lock_extras(self, cfg: ConfigTree) -> None:
+    def lock_extras(self: Self, cfg: ConfigTree) -> None:
         """Lock the extra dependencies."""
 
-    def sync(self, cfg: ConfigTree) -> None:
+    def sync(self: Self, cfg: ConfigTree) -> None:
         """Synchronize the environment with the locked dependencies."""
 
-    def install(self, cfg: ConfigTree) -> None:
+    def install(self: Self, cfg: ConfigTree) -> None:
         """Install the project itself."""
 
     # noinspection PyMethodMayBeStatic
-    def cleanup(self, cfg: ConfigTree) -> None:
+    def cleanup(self: Self, cfg: ConfigTree) -> None:
         """Cleanup the provisioned environment"""
         rmtree(cfg.python.venv)
 
@@ -799,12 +818,12 @@ class SimpleProvisioner(ProvisionerProtocol):
     longer required.
     """
 
-    def __init__(self):
+    def __init__(self: Self) -> None:
         self.requirements = set()
         self.devpackages = set()
         self.m = Memoizer("{python.memo}")
 
-    def prerequisites(self, cfg):
+    def prerequisites(self: Self, cfg: ConfigTree) -> None:
         # We'll need pip
         sh(
             "python",
@@ -818,23 +837,23 @@ class SimpleProvisioner(ProvisionerProtocol):
             "pip",
         )
 
-    def lock(self, cfg):
+    def lock(self: Self, cfg: ConfigTree) -> None:
         """Noop"""
 
-    def add(self, cfg, req, devpackage=False):
+    def add(self: Self, cfg: ConfigTree, req: str, devpackage: bool = False) -> None:
         # Add the requirement or devpackage if not already there.
         if not self.m.check(req):
             lst = self.devpackages if devpackage else self.requirements
             lst.add(req)
 
-    def sync(self, cfg):
+    def sync(self: Self, cfg: ConfigTree) -> None:
         self.__execute_installation(
             self.requirements,
             None if cfg.verbosity > Verbosity.NORMAL else "-q",
             cfg.python.index_url,
         )
 
-    def install(self, cfg):
+    def install(self: Self, cfg: ConfigTree) -> None:
         quietflag = None if cfg.verbosity > Verbosity.NORMAL else "-q"
         self.__execute_installation(self.devpackages, quietflag, cfg.python.index_url)
 
@@ -869,14 +888,16 @@ class SimpleProvisioner(ProvisionerProtocol):
         if pip_check.returncode:
             die(pip_check.stdout)
 
-    def _split(self, reqset):
+    def _split(self: Self, reqset: set[str]) -> list[str]:
         """to pass whitespace-less args to sh()"""
         reqlist = []
         for req in reqset:
             reqlist.extend(req.split())
         return reqlist
 
-    def __execute_installation(self, packages, quietflag, index_url):
+    def __execute_installation(
+        self: Self, packages: set[str], quietflag: Union[str, None], index_url: str
+    ) -> None:
         """Install packages that are not yet memoized"""
         if to_install := {package for package in packages if not self.m.check(package)}:
             sh(
@@ -893,7 +914,9 @@ class SimpleProvisioner(ProvisionerProtocol):
             self.m.save()
 
 
-def venv_provision(cfg):  # pylint: disable=too-many-branches,missing-function-docstring
+def venv_provision(  # pylint: disable=too-many-branches,missing-function-docstring
+    cfg: ConfigTree,
+) -> None:
     fresh_env = False
 
     info("Checking venv '{python.venv}'")
@@ -968,7 +991,7 @@ def cleanup(cfg: ConfigTree) -> None:
                 rmtree(current_path / filename)
 
 
-def _get_pipconf(cfg):
+def _get_pipconf(cfg: ConfigTree) -> Path:
     """Retrieve the pipconf configuration file path."""
     if sys.platform == "win32":
         pipconf = interpolate1(Path(cfg.python.venv)) / "pip.ini"
@@ -978,7 +1001,7 @@ def _get_pipconf(cfg):
     return pipconf
 
 
-def _configure_pipconf(cfg, update=False):
+def _configure_pipconf(cfg: ConfigTree, update: bool = False) -> None:
     """Configure the pip configuration file"""
     config_parser = configparser.ConfigParser()
     config_parser.read_string(cfg.python.pipconf)
@@ -992,7 +1015,7 @@ def _configure_pipconf(cfg, update=False):
         config_parser.write(fd)
 
 
-def _obfuscate_index_url(index_url):
+def _obfuscate_index_url(index_url: str) -> None:
     """Add the CodeArtifact token to the secrets."""
 
     from csspin import secrets
@@ -1000,7 +1023,7 @@ def _obfuscate_index_url(index_url):
     secrets.add(index_url.split(":")[2].split("@")[0])  # Codeartifact token
 
 
-def _check_aws_token_validity(cfg):
+def _check_aws_token_validity(cfg: ConfigTree) -> None:
     """
     If csspin-python[aws_auth] is installed, we can use csaccess to get the
     CodeArtifact authentication token.

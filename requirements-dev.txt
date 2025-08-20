@@ -2,3 +2,4 @@
 csspin
 pytest
 pytest-cov
+mypy
