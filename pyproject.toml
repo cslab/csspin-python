@@ -19,7 +19,13 @@ classifiers = [
   "Programming Language :: Python :: 3.13",
   "Topic :: Software Development"
 ]
-dependencies = ["virtualenv"]
+dependencies = [
+  # TODO: Remove the platformdirs dependency as soon as we found a solution to
+  # the problem of plugin-package dependencies conflicting with csspin
+  # dependencies.
+  "platformdirs~=4.3.8",
+  "virtualenv"
+]
 description = "Plugin-package for csspin providing Python related plugins"
 dynamic = ["version", "readme"]
 license = "Apache-2.0"
