@@ -2,7 +2,6 @@
 # documentation requires a provisioned project.
 spin:
     project_name: csspin-python
-    index_url: https://packages.contact.de/tools/stable
 
 plugin_packages:
     - csspin-docs
