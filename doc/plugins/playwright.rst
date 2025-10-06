@@ -25,6 +25,12 @@ The ``playwright`` plugin provides a way to run the
 execute pre-implemented tests against CONTACT Elements instances by adding the
 ``playwright`` task to spin's CLI.
 
+.. important::
+    The ``csspin_python.playwright`` plugin has been deprecated and will be
+    removed with ``csspin_python`` 4.0.0. Please use the plugin
+    ``csspin_python.pytest`` with the ``pytest.playwright.enabled=True`` setting
+    instead.
+
 How to setup the ``playwright`` plugin?
 #######################################
 

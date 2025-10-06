@@ -8,13 +8,15 @@ The following plugins are available:
 - `csspin_python.behave`: A plugin for running tests using Behave.
 - `csspin_python.debugpy`: A plugin for debugging Python code using `debugpy`_.
 - `csspin_python.devpi`: A plugin for simplified usage of `devpi`_.
-- `csspin_python.playwright`: A plugin for running tests using `playwright`_.
 - `csspin_python.pytest`: A plugin for running tests using pytest.
 - `csspin_python.python`: A plugin for provisioning Python environments  and
   installing dependencies.
 - `csspin_python.radon`: A plugin for running `radon`_ to analyze code
   complexity.
 - `csspin_python.sphinx`: A plugin for building Sphinx documentation.
+- `csspin_python.playwright`: A plugin for running tests using `playwright`_.
+  This plugin is deprecated, use the pytest plugin with the
+  'pytest.playwright.enabled=true' setting instead.
 
 The package provides an ``aws_auth`` extra, that, if enabled, can
 authenticate to `CONTACT Software GmbH`_'s AWS Codeartifact.

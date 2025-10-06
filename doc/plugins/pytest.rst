@@ -105,6 +105,31 @@ default configuration used to run debugpy, one can adjust the ``{debugpy.opts}``
 As soon as the debugpy server is listening, one can attach to it using the
 desired IDE or debugger.
 
+How to use playwright?
+######################
+
+The ``pytest`` plugin can also run end to end tests by using
+`pytest-playwright`_. Note, that the usage of playwright must be enabled
+explicitly. This can be done with the following spinfile.yaml
+
+.. code-block:: yaml
+    :caption: Minimal configuration of ``spinfile.yaml`` to leverage ``playwright``
+
+    plugin_packages:
+        - csspin-python
+    plugins:
+        - csspin_python.pytest
+    python:
+        version: "3.11.9"
+    pytest:
+        playwright:
+            enabled: True
+
+Doing so will make sure that the required python packages to use ``pytest`` and
+``playwright`` together will be installed during ``spin provision``. Since the
+installed packages contain a pytest plugin, executing the tests for playwright
+is as easy as calling ``spin pytest``.
+
 ``pytest`` schema reference
 ###########################
 
