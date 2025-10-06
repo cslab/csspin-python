@@ -19,7 +19,7 @@
 
 from typing import Iterable
 
-from csspin import Path, Verbosity, config, die, option, setenv, sh, task
+from csspin import Path, Verbosity, config, die, option, setenv, sh, task, warn
 from csspin.tree import ConfigTree
 
 defaults = config(
@@ -77,6 +77,16 @@ def playwright(  # pylint: disable=too-many-arguments,too-many-positional-argume
     args: Iterable[str],
 ) -> None:
     """Run the playwright tests with pytest."""
+    if cfg.pytest.playwright.enabled:
+        # This prevents the playwright tests from being run twice.
+        warn(
+            (
+                "The 'playwright' task has been skipped, as the playwright tests"
+                " are already being run by the csspin_python.pytest plugin."
+                " Please stop using the csspin_python.playwright plugin."
+            )
+        )
+        return
     setenv(
         PLAYWRIGHT_BROWSERS_PATH=cfg.playwright.browsers_path,
         PACKAGE_NAME=cfg.spin.project_name,
@@ -127,3 +137,14 @@ def _download_playwright_browsers(cfg: ConfigTree) -> None:
 def provision(cfg: ConfigTree) -> None:
     """Install playwright browsers during provisioning"""
     _download_playwright_browsers(cfg)
+
+
+def init(cfg: ConfigTree) -> None:  # pylint: disable=unused-argument
+    """Show deprecation notice in every spin call"""
+    warn(
+        (
+            "The csspin_python.playwright plugin will be removed with the next major release."
+            " Please use csspin_python.pytest with the 'pytest.playwright.enabled=True' setting"
+            " instead and stop using the csspin_python.playwright plugin."
+        )
+    )

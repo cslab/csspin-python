@@ -20,7 +20,7 @@
 
 from typing import Iterable
 
-from csspin import Path, Verbosity, config, die, option, setenv, sh, task
+from csspin import Path, Verbosity, config, die, interpolate1, option, setenv, sh, task
 from csspin.tree import ConfigTree
 
 defaults = config(
@@ -36,6 +36,11 @@ defaults = config(
     opts=[],
     tests=["cs", "tests"],  # Strong convention @CONTACT
     test_report="pytest.xml",
+    playwright=config(
+        enabled=False,
+        browsers_path="{spin.data}/playwright_browsers",
+        browsers=["chromium"],
+    ),
     requires=config(
         spin=[
             "csspin_python.debugpy",
@@ -48,6 +53,24 @@ defaults = config(
         ],
     ),
 )
+
+
+def _install_playwright_browsers(cfg: ConfigTree) -> None:
+    """Let playwright install the browsers"""
+    sh(
+        f"playwright install {' '.join(cfg.pytest.playwright.browsers)}",
+        env={"PLAYWRIGHT_BROWSERS_PATH": cfg.pytest.playwright.browsers_path},
+    )
+
+
+def configure(cfg: ConfigTree) -> None:
+    if interpolate1(cfg.pytest.playwright.enabled).lower() == "true":
+        cfg.pytest.requires.python.extend(["pytest-base-url", "pytest-playwright"])
+
+
+def provision(cfg: ConfigTree) -> None:
+    if cfg.pytest.playwright.enabled:
+        _install_playwright_browsers(cfg)
 
 
 @task(when="test")
@@ -87,6 +110,20 @@ def pytest(  # pylint: disable=too-many-arguments,too-many-positional-arguments
         cmd = f"debugpy {' '.join(cfg.debugpy.opts)} -m pytest".split()
     else:
         cmd = ["pytest"]
+
+    if cfg.pytest.playwright.enabled:
+        setenv(
+            PLAYWRIGHT_BROWSERS_PATH=cfg.pytest.playwright.browsers_path,
+            PACKAGE_NAME=cfg.spin.project_name,
+        )
+        for browser in cfg.pytest.playwright.browsers:
+            opts.extend(["--browser", browser])
+        # Run the browser download again, so that changes for
+        # cfg.pytest.playwright.browsers don't require a new provision call. If the
+        # browsers are already present it's more or less a noop.
+        _install_playwright_browsers(cfg)
+        if coverage or cfg.pytest.coverage:
+            setenv(PLAYWRIGHT_COVERAGE=1)
 
     if cfg.loaded.get("csspin_ce.mkinstance"):
         if not (

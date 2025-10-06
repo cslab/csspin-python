@@ -5,7 +5,9 @@
 playwright:
     type: object
     help: |
-        The pytest plugin provides the full pytest experience for spin.
+        The pytest plugin provides the full pytest experience for spin. This
+        plugin is deprecated, use the pytest plugin with the
+        'pytest.playwright.enabled=true' setting instead.
     properties:
         browsers_path:
             type: path

@@ -25,3 +25,22 @@ pytest:
         tests:
             type: list
             help: List of test files or directories to include.
+        playwright:
+            type: object
+            help: |
+                Settings necessary to also run playwright tests with the pytest
+                plugin.
+            properties:
+                enabled:
+                    type: bool
+                    help: |
+                        Should the pytest-playwright plugin be installed and
+                        initialized.
+                browsers_path:
+                    type: path
+                    help: Path for playwright to install the browsers.
+                browsers:
+                    type: list
+                    help: |
+                        The browsers to install and to use for running the
+                        playwright tests.
