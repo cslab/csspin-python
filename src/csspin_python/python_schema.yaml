@@ -144,3 +144,9 @@ python:
                 index:
                     type: str
                     help: The Codeartifact repository index (e.g. "16.0/simple").
+                client_id:
+                    type: str
+                    help: The OIDC client ID to use.
+                role_arn:
+                    type: str
+                    help: The role ARN to assume when authenticating.

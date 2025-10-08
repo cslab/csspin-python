@@ -3,6 +3,8 @@
 # Copyright (C) 2025 CONTACT Software GmbH
 # All rights reserved.
 # https://www.contact-software.com/
+# pylint: disable=no-member
+
 
 """
 Module implementing 'aws_auth' extra related acceptance tests for csspin-python
@@ -17,8 +19,6 @@ import sys
 import pytest
 
 PYTHON_EXISTS = shutil.which("python")
-CS_AWS_OIDC_CLIENT_ID = os.getenv("CS_AWS_OIDC_CLIENT_ID")
-CS_AWS_OIDC_CLIENT_SECRET = os.getenv("CS_AWS_OIDC_CLIENT_SECRET")
 
 
 def execute_spin(yaml, env, path="tests/acceptance/yamls", cmd=""):
@@ -41,16 +41,54 @@ def execute_spin(yaml, env, path="tests/acceptance/yamls", cmd=""):
 
 
 @pytest.mark.acceptance
-@pytest.mark.skipif(not CS_AWS_OIDC_CLIENT_ID, reason="AWS OIDC client ID not set")
-@pytest.mark.skipif(
-    not CS_AWS_OIDC_CLIENT_SECRET, reason="AWS OIDC client secret not set"
-)
 @pytest.mark.skipif(not PYTHON_EXISTS, reason="python not in PATH.")
-def test_aws_auth(tmp_path):
+@pytest.mark.parametrize(
+    "env_vars",
+    [
+        pytest.param(
+            {"CS_AWS_OIDC_CLIENT_SECRET": os.getenv("CS_AWS_OIDC_CLIENT_SECRET")},
+            id="default_aws_credentials",
+            marks=pytest.mark.skipif(
+                not os.getenv("CS_AWS_OIDC_CLIENT_SECRET"),
+                reason="'CS_AWS_OIDC_CLIENT_SECRET' not set in environment",
+            ),
+        ),
+        pytest.param(
+            {
+                "CS_AWS_OIDC_CLIENT_SECRET": os.getenv(
+                    "CS_EXTRA_AWS_OIDC_CLIENT_SECRET"
+                ),
+                "SPIN_TREE_PYTHON__AWS_AUTH__CLIENT_ID": os.getenv(
+                    "CS_EXTRA_AWS_OIDC_CLIENT_ID"
+                ),
+                "SPIN_TREE_PYTHON__AWS_AUTH__ROLE_ARN": os.getenv(
+                    "CS_EXTRA_AWS_OIDC_ROLE_ARN"
+                ),
+            },
+            id="custom_aws_credentials",
+            marks=pytest.mark.skipif(
+                not all(
+                    (
+                        os.getenv("CS_EXTRA_AWS_OIDC_CLIENT_SECRET"),
+                        os.getenv("CS_EXTRA_AWS_OIDC_CLIENT_ID"),
+                        os.getenv("CS_EXTRA_AWS_OIDC_ROLE_ARN"),
+                    )
+                ),
+                reason="'CS_EXTRA_AWS_OIDC_CLIENT_SECRET',"
+                " 'CS_EXTRA_AWS_OIDC_CLIENT_ID', 'CS_EXTRA_AWS_OIDC_ROLE_ARN'"
+                " not set in environment",
+            ),
+        ),
+    ],
+)
+def test_aws_auth(tmp_path, env_vars, monkeypatch):
     """
     Test whether the pip configuration file is created with the correct
     index-url and can be updated with the AWS credentials.
     """
+    for key, value in env_vars.items():
+        monkeypatch.setenv(key, value)
+
     import configparser
 
     if sys.platform == "win32":
