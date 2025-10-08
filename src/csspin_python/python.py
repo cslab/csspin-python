@@ -68,6 +68,7 @@ point to the base installation.
 
 import abc
 import configparser
+import hashlib
 import logging
 import os
 import re
@@ -152,10 +153,6 @@ defaults = config(
     python="{python.scriptdir}/python{platform.exe}",
     provisioner=None,
     provisioner_memo="{spin.spin_dir}/python_provisioner.memo",
-    current_package=config(
-        install=True,
-        extras=[],
-    ),
     aws_auth=config(
         enabled=False,
         memo="{spin.spin_dir}/aws_auth.memo",
@@ -315,13 +312,11 @@ def provision(cfg: ConfigTree) -> None:
     """Provision the python plugin"""
     with memoizer(cfg.python.provisioner_memo) as memo:
         if cfg.python.provisioner is None:
-            cfg.python.provisioner = SimpleProvisioner()
+            cfg.python.provisioner = SimpleProvisioner(cfg)
         if not memo.check(cfg.python.provisioner):
             memo.add(cfg.python.provisioner)
 
-    info("Checking {python.interpreter}")
     if not shutil.which(cfg.python.interpreter):
-        info("Provisioning '{python.interpreter}'")
         cfg.python.provisioner.provision_python(cfg)
 
     venv_provision(cfg)
@@ -746,7 +741,7 @@ def finalize_provision(cfg: ConfigTree) -> None:
 
 class ProvisionerProtocol:
     """An implementation of this protocol is used to provision
-    dependencies to a virtual environment.
+    requirements to a virtual environment.
 
     Separate plugins, can implement this interface and overwrite
     cfg.python.provisioner.
@@ -755,10 +750,8 @@ class ProvisionerProtocol:
     The provisioner will be memoized, so make sure it works with ``pickle.dumps``.
     """
 
-    requirements: set[str]
-    devpackages: set[str]
+    _requirements: set[str] = set()
 
-    # noinspection PyMethodMayBeStatic
     def provision_python(self: Self, cfg: ConfigTree) -> None:
         """Provision the project's python interpreter"""
         if sys.platform == "win32":
@@ -770,8 +763,6 @@ class ProvisionerProtocol:
     # noinspection PyMethodMayBeStatic
     def provision_venv(self: Self, cfg: ConfigTree) -> None:
         """Provision the virtual environment of the project"""
-        # virtualenv is guaranteed to be available like this
-        # as we declared it as one of spin's dependencies
         cmd = [
             sys.executable,
             "-mvirtualenv",
@@ -790,38 +781,39 @@ class ProvisionerProtocol:
     def prerequisites(self: Self, cfg: ConfigTree) -> None:
         """Provide requirements for the provisioning strategy."""
 
-    def lock(self: Self, cfg: ConfigTree) -> None:
-        """Lock the project's dependencies."""
-
-    def add(self: Self, cfg: ConfigTree, req: str, devpackage: bool = False) -> None:
-        """Add an extra dependency (incl. development ones)."""
-
-    def lock_extras(self: Self, cfg: ConfigTree) -> None:
-        """Lock the extra dependencies."""
-
-    def sync(self: Self, cfg: ConfigTree) -> None:
-        """Synchronize the environment with the locked dependencies."""
+    def add(
+        self: Self, cfg: ConfigTree, req: str  # pylint: disable=unused-argument
+    ) -> None:
+        """
+        Add a single requirement `req`, that will be installed into the
+        environment.
+        """
+        self._requirements.add(req)
 
     def install(self: Self, cfg: ConfigTree) -> None:
-        """Install the project itself."""
+        """Install the requirements"""
 
-    # noinspection PyMethodMayBeStatic
     def cleanup(self: Self, cfg: ConfigTree) -> None:
         """Cleanup the provisioned environment"""
         rmtree(cfg.python.venv)
 
 
 class SimpleProvisioner(ProvisionerProtocol):
-    """The simplest Python dependency provisioner using pip.
+    """
+    The simplest Python provisioner, using pip.
 
-    This provisioner will never uninstall dependencies that are no
-    longer required.
+    This provisioner will never uninstall requirements that are no longer
+    required.
     """
 
-    def __init__(self: Self) -> None:
-        self.requirements = set()
-        self.devpackages = set()
-        self.m = Memoizer("{python.memo}")
+    def __init__(self: Self, cfg: ConfigTree) -> None:
+        self._m = Memoizer(interpolate1("{python.memo}"))
+        self._install_command = Command(
+            "pip",
+            None if cfg.verbosity > Verbosity.NORMAL else "-q",
+            "--disable-pip-version-check",
+            "install",
+        )
 
     def prerequisites(self: Self, cfg: ConfigTree) -> None:
         # We'll need pip
@@ -837,81 +829,92 @@ class SimpleProvisioner(ProvisionerProtocol):
             "pip",
         )
 
-    def lock(self: Self, cfg: ConfigTree) -> None:
-        """Noop"""
-
-    def add(self: Self, cfg: ConfigTree, req: str, devpackage: bool = False) -> None:
-        # Add the requirement or devpackage if not already there.
-        if not self.m.check(req):
-            lst = self.devpackages if devpackage else self.requirements
-            lst.add(req)
-
-    def sync(self: Self, cfg: ConfigTree) -> None:
-        self.__execute_installation(
-            self.requirements,
-            None if cfg.verbosity > Verbosity.NORMAL else "-q",
-            cfg.python.index_url,
-        )
-
     def install(self: Self, cfg: ConfigTree) -> None:
-        quietflag = None if cfg.verbosity > Verbosity.NORMAL else "-q"
-        self.__execute_installation(self.devpackages, quietflag, cfg.python.index_url)
-
-        # If there is a setup.py, make an editable install (which
-        # transitively also installs runtime dependencies of the project).
-        if cfg.python.current_package.install and any(
-            (exists("setup.py"), exists("setup.cfg"), exists("pyproject.toml"))
+        if requirements := self._filter(
+            self._requirements, self._m, cfg.spin.project_root
         ):
-            cmd = [
-                "pip",
-                quietflag,
-                "--disable-pip-version-check",
-                "install",
-                "--index-url",
-                cfg.python.index_url,
-                "-e",
-            ]
-            if cfg.python.current_package.extras:
-                cmd.append(f".[{','.join(cfg.python.current_package.extras)}]")
-            else:
-                cmd.append(".")
-            sh(*cmd)
+            self._install_command(*self._split(requirements))
+            self._m.clear()
+            for req in requirements:
+                self._m.add(_req_for_memo(req, cfg.spin.project_root))
 
-        # Verify dependency compatibility of installed packages
-        pip_check = sh(
-            "pip",
-            "--disable-pip-version-check",
-            "check",
-            check=False,
-            capture_output=True,
-        )
-        if pip_check.returncode:
-            die(pip_check.stdout)
+    @staticmethod
+    def _split(requirements: Iterable[str]) -> list[str]:
+        """Used to pass whitespace-less args to :func:`csspin.sh()`."""
+        requirement_list = []
+        for requirement in requirements:
+            requirement_list.extend(requirement.split())
+        return requirement_list
 
-    def _split(self: Self, reqset: set[str]) -> list[str]:
-        """to pass whitespace-less args to sh()"""
-        reqlist = []
-        for req in reqset:
-            reqlist.extend(req.split())
-        return reqlist
+    @staticmethod
+    def _filter(
+        requirements: set[str], memo: Memoizer, project_root: Union[Path, str]
+    ) -> set[str]:
+        """
+        We want to filter all requirements prior to installing them, because we
+        only want to run the install, when there are changes, as it takes pip
+        quite some time to check, whether it has to do something.
+        """
+        if all(memo.check(_req_for_memo(req, project_root)) for req in requirements):
+            return set()
+        else:
+            return requirements
 
-    def __execute_installation(
-        self: Self, packages: set[str], quietflag: Union[str, None], index_url: str
-    ) -> None:
-        """Install packages that are not yet memoized"""
-        if to_install := {package for package in packages if not self.m.check(package)}:
-            sh(
-                "pip",
-                quietflag,
-                "--disable-pip-version-check",
-                "install",
-                "--index-url",
-                index_url,
-                *self._split(to_install),
-            )
-            for package in to_install:
-                self.m.add(package)
-            self.m.save()
+
+def _file_hash(filename: Union[Path, str]) -> str:
+    """
+    Calculate a sha256 hash of a file's content and return its hexdigest.
+    """
+    with open(filename, mode="br") as fd:
+        return hashlib.sha256(fd.read()).hexdigest()  # nosec: hashlib
+
+
+def _split_requirement_option(req: str, project_root: Path) -> Union[Path, None]:
+    """
+    Takes an element of ``python.requirements`` and checks if it
+    is an argument for pip that contains a filename. If so,
+    the filename will be returned, ``None`` otherwise.
+
+    The following options are respected:
+        - ``-r``/``--requirement``
+        - ``-c``/``--constraint``
+
+    If a file for an option cannot be found, the plugin will
+    :func:`csspin.die()`.
+    """
+    if (
+        req.startswith(option := "-r")
+        or req.startswith(option := "--requirement")
+        or req.startswith(option := "-c")
+        or req.startswith(option := "--constraint")
+    ):
+        # The pattern has to enforce the " "/"=" for the long-options
+        match_many = "+" if option.startswith("--") else "*"
+        pattern = rf"{option}[ =]{match_many}(?P<filename>.*)"
+        match = re.match(pattern, req)
+        if not match:
+            die(f"{req} could not be validated.")
+        else:
+            file = project_root / match.group("filename")
+            if not file.exists():
+                die(f"{file} does not exist.")
+            return file
+    return None
+
+
+def _req_for_memo(
+    req: str, project_root: Union[Path, str]
+) -> str:  # pylint: disable=inconsistent-return-statements
+    """
+    Return a memoizable representation of a python requirement. In case a
+    requirement is on of the following options, the function returns requirement
+    with a hash of the files' content appended. Otherwise the requirement itself
+    will be returned.
+    """
+    if file := _split_requirement_option(req, project_root):
+        return f"{req}{_file_hash(file)}"
+    else:
+        return req
 
 
 def venv_provision(  # pylint: disable=too-many-branches,missing-function-docstring
@@ -946,15 +949,9 @@ def venv_provision(  # pylint: disable=too-many-branches,missing-function-docstr
             logging.debug(f"{plugin_module.__name__}.venv_hook()")
             hook(cfg)
 
-    cfg.python.provisioner.lock(cfg)
-
-    # Install packages required by the project ('requirements')
+    # Add packages required by the project ('requirements')
     for req in cfg.python.get("requirements", []):
         cfg.python.provisioner.add(cfg, interpolate1(req))
-
-    # Install development packages required by the project ('devpackages')
-    for pkgspec in cfg.python.get("devpackages", []):
-        cfg.python.provisioner.add(cfg, interpolate1(pkgspec), True)
 
     # Install packages required by plugins used
     # ('<plugin>.requires.python')
@@ -962,9 +959,6 @@ def venv_provision(  # pylint: disable=too-many-branches,missing-function-docstr
         plugin_module = cfg.loaded[plugin]
         for req in get_requires(plugin_module.defaults, "python"):
             cfg.python.provisioner.add(cfg, interpolate1(req))
-
-    cfg.python.provisioner.lock_extras(cfg)
-    cfg.python.provisioner.sync(cfg)
 
 
 def cleanup(cfg: ConfigTree) -> None:

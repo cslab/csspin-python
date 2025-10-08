@@ -2,13 +2,16 @@
 
 include:
     - project: qs/spin/spin_plugin_common
-      ref: v2.0.0
+      ref: v2.0.1
       file: ci/.gitlab-ci.yml
 
 # ==============================================================================
 # The following customizations are required to ensure pip>=24 is installed,
 # which is required for installing extras with constraints (see
 # https://code.contact.de/qs/spin/cs.spin/-/issues/177).
+
+variables:
+    UV_LINK_MODE: copy
 
 test_linux:
     before_script:

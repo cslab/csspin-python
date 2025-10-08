@@ -1,0 +1,24 @@
+# -*- mode: yaml; coding: utf-8 -*-
+#
+# Schema for the uv_provisioner plugin for spin
+
+uv_provisioner:
+    type: object
+    help: Configuration of the csspin_python.uv plugin
+    properties:
+        enabled:
+            type: bool
+            help: |
+                Used to let the python plugin use the SimpleUvProvisioner to
+                provision the python environment.
+        uv_python_data:
+            type: path
+            help: |
+                The directory where the python interpreters uv provisions are
+                being stored.
+        uv_toml_path:
+            type: path
+            help: Path to uv's config file
+        uv_toml:
+            type: str
+            help: Content for uv's config file

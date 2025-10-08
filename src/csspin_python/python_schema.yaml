@@ -96,9 +96,6 @@ python:
         site_packages:
             type: path internal
             help: The path to the virtual environments site-packages directory.
-        devpackages:
-            type: list
-            help: A list of packages that will be editable installed
         requirements:
             type: list
             help: |
@@ -106,18 +103,8 @@ python:
                 have to be installed into the project's virtual environment.
                 This excludes requirements stated as 'install_requires' in
                 setup.py/setup.cfg.
-        current_package:
-            type: object
-            help: Install configuration of the current python project
-            properties:
-                install:
-                    type: bool
-                    help: |
-                        Property to determine whether the current package should
-                        get installed or not.
-                extras:
-                    type: list
-                    help: The extras of the current package to install.
+                Note that editable installs with ``-e`` or requirement files
+                with ``-r`` can also be used here.
         index_url:
             type: str
             help: |

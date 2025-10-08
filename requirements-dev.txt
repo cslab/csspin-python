@@ -1,4 +1,4 @@
--e .[aws_auth]
+-e .[aws_auth,uv]
 csspin
 pytest
 pytest-cov
