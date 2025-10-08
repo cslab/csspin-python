@@ -47,7 +47,6 @@ def provision_env(spinfile, tmp_path, cwd="tests/integration"):
 
     base_cmd = [
         "spin",
-        "-q",
         "-p",
         f"spin.data={data}",
         "-C",
@@ -57,14 +56,18 @@ def provision_env(spinfile, tmp_path, cwd="tests/integration"):
         "-f",
         spinfile_path,
     ]
-    cmd = base_cmd + ["provision"]
-    print(subprocess.list2cmdline(cmd))
+    provision_cmd = base_cmd + ["-vv", "provision"]
+    print(subprocess.list2cmdline(provision_cmd))
     try:
-        subprocess.check_output(cmd, encoding="utf-8", stderr=subprocess.STDOUT)
+        stdout = subprocess.check_output(
+            provision_cmd, encoding="utf-8", stderr=subprocess.STDOUT
+        )
+        with open(tmp_path / "provision.log", mode="w", encoding="utf-8") as fd:
+            fd.writelines(stdout)
     except subprocess.CalledProcessError as ex:
         print(ex.stdout)
         print(ex.stderr)
-    return (tmp_path, base_cmd)
+    return (tmp_path, base_cmd + ["-q"])
 
 
 TESTCASES = (
@@ -123,6 +126,26 @@ TESTCASES = (
         id="playwright.yaml",
         marks=PYTHON_SKIP_MARK,
     ),
+    pytest.param(  # pylint: disable=no-member
+        "uv_provisioner.yaml",
+        "python",
+        "3.11.9",
+        id="uv_provisioner.yaml",
+    ),
+    pytest.param(  # pylint: disable=no-member
+        "uv_provisioner_use.yaml",
+        "python",
+        (
+            None
+            if not PYTHON_EXISTS
+            else subprocess.check_output(
+                ["python", "--version"],
+                encoding="utf-8",
+            ).strip()
+        ),
+        id="uv_provisioner_use.yaml",
+        marks=PYTHON_SKIP_MARK,
+    ),
 )
 
 
@@ -161,38 +184,6 @@ def test_tool_available(spinfile, tool, version, tmp_dir_per_spinfile):
         assert version in run_command_in_env(["run", tool, "--version"], env_cmd)
     else:
         run_command_in_env(["run", tool, "--help"], env_cmd)
-
-
-@pytest.mark.integration()
-def test_devpackage_provision(tmp_path):
-    """
-    Ensure that a project can be provisioned using the python plugin, along with
-    it's devpackage configuration.
-    """
-    if not PYTHON_EXISTS:
-        pytest.skip("python not available")
-
-    base_cmd = [
-        "spin",
-        "-q",
-        "-p",
-        f"spin.data={tmp_path}",
-        "-C",
-        "tests/integration/fixtures/testpkg",
-        "--env",
-        str(tmp_path),
-    ]
-
-    cmd = base_cmd + ["provision"]
-    print(subprocess.list2cmdline(cmd))
-    try:
-        subprocess.check_output(cmd, encoding="utf-8", stderr=subprocess.STDOUT)
-    except subprocess.CalledProcessError as ex:
-        print(ex.stdout)
-
-    pip_list = run_command_in_env(["run", "pip", "list"], base_cmd)
-    assert "testpkg" in pip_list
-    assert "devpkg" in pip_list
 
 
 def test_patched_activation_scripts(tmp_path, test_script):

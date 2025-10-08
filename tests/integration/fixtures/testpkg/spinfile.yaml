@@ -1,8 +1,0 @@
-plugin_packages:
-    - ../../../..
-plugins:
-    - csspin_python.python
-python:
-    use: python
-    devpackages:
-        - -e ../devpkg

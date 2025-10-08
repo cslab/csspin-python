@@ -2,10 +2,11 @@
 # documentation requires a provisioned project.
 spin:
     project_name: csspin-python
+    index_url: https://packages.contact.de/tools/stable/+simple
 
 plugin_packages:
     - csspin-docs
-    - -e .[aws_auth]
+    - -e .[aws_auth,uv]
 
 plugins:
     - csspin_docs.sphinx
@@ -17,11 +18,16 @@ plugins:
           - pytest
           - python
           - radon
+          - uv_provisioner
 
 python:
     version: 3.11.10
     requirements:
         - sphinx-rtd-theme
+    index_url: https://packages.contact.de/apps/16.0/+simple/
+
+uv_provisioner:
+    enabled: true
 
 pytest:
     tests: [tests]
@@ -39,3 +45,4 @@ build_rules:
             - schemadoc playwright --rst -o doc/plugins/playwright_schemaref.rst
             - schemadoc python --rst -o doc/plugins/python_schemaref.rst
             - schemadoc pytest --rst -o doc/plugins/pytest_schemaref.rst
+            - schemadoc uv_provisioner --rst -o doc/plugins/uv_provisioner_schemaref.rst

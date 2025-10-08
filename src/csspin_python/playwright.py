@@ -134,7 +134,7 @@ def _download_playwright_browsers(cfg: ConfigTree) -> None:
     )
 
 
-def provision(cfg: ConfigTree) -> None:
+def finalize_provision(cfg: ConfigTree) -> None:
     """Install playwright browsers during provisioning"""
     _download_playwright_browsers(cfg)
 

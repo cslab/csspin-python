@@ -1,0 +1,8 @@
+plugin_packages:
+    - ../..[uv]
+plugins:
+    - csspin_python.uv_provisioner
+python:
+    version: '3.11.9'
+uv_provisioner:
+    enabled: true

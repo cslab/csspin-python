@@ -17,9 +17,11 @@ The following plugins are available:
 - `csspin_python.playwright`: A plugin for running tests using `playwright`_.
   This plugin is deprecated, use the pytest plugin with the
   'pytest.playwright.enabled=true' setting instead.
+- `csspin_python.uv_provisioner`: A plugin that uses `uv`_ to provision the Python environment.
 
-The package provides an ``aws_auth`` extra, that, if enabled, can
-authenticate to `CONTACT Software GmbH`_'s AWS Codeartifact.
+The package provides an ``aws_auth`` extra, that, if enabled, can authenticate
+to `CONTACT Software GmbH`_'s AWS Codeartifact. It also provides an ``uv``
+extra, that is necessary for using the ``csspin_python.uv_provisioner`` plugin.
 
 Prerequisites
 -------------
@@ -82,3 +84,4 @@ tests using ``spin pytest`` and do other great things.
 .. _`devpi`: https://pypi.org/project/devpi
 .. _`playwright`: https://pypi.org/project/pytest-playwright
 .. _`radon`: https://pypi.org/project/radon
+.. _`uv`: https://docs.astral.sh/uv/

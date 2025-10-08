@@ -40,6 +40,11 @@ requires-python = ">=3.9"
 
 [project.optional-dependencies]
 aws_auth = ["csaccess>=0.1.0"]
+uv = [
+  "tomli;python_version<'3.11'",  # From 3.11 on tomllib can be used
+  "tomli-w",  # For writing the uv.toml
+  "uv"
+]
 
 [project.urls]
 Homepage = "https://contact-software.com"
