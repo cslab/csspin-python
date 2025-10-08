@@ -2,7 +2,6 @@
 # documentation requires a provisioned project.
 spin:
     project_name: csspin-python
-    index_url: https://packages.contact.de/tools/stable/+simple
 
 plugin_packages:
     - csspin-docs
@@ -24,7 +23,6 @@ python:
     version: 3.11.10
     requirements:
         - sphinx-rtd-theme
-    index_url: https://packages.contact.de/apps/16.0/+simple/
 
 uv_provisioner:
     enabled: true
