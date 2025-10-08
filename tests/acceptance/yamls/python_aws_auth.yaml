@@ -1,3 +1,4 @@
+# We're testing the aws_auth feature of the python plugin here.
 plugin_packages:
     - ../../..[aws_auth]
 plugins:

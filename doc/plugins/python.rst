@@ -97,7 +97,6 @@ To install csspin-python using this extra make sure it is enabled in the project
 When provisioning a project using the extra installed *and* enabled, make sure
 to have the following environment variables in place:
 
-- ``CS_AWS_OIDC_CLIENT_ID``
 - ``CS_AWS_OIDC_CLIENT_SECRET``
 
 `CONTACT Software GmbH`_ will provide every customer with OIDC credentials

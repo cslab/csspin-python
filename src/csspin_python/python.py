@@ -1040,7 +1040,9 @@ def _check_aws_token_validity(cfg: ConfigTree) -> None:
         for item in memo.items():
             if isinstance(item, str) and item.startswith(f"{timestamp_key}:"):
                 last_time = int(item.split(":", 1)[1])
-                if current_time - last_time < cfg.python.aws_auth.key_duration:
+                if current_time - last_time < int(
+                    interpolate1(cfg.python.aws_auth.key_duration)
+                ):
                     pipconf = _get_pipconf(cfg)
                     config_parser = configparser.ConfigParser()
                     config_parser.read(pipconf)
@@ -1058,12 +1060,18 @@ def _check_aws_token_validity(cfg: ConfigTree) -> None:
             info("Updating Codeartifact token.")
             from urllib.parse import urljoin
 
+            opts = {
+                "static_oidc": interpolate1(cfg.python.aws_auth.static_oidc).lower()
+                == "true"
+            }
+            if cfg.python.aws_auth.client_id:
+                opts["client_id"] = interpolate1(cfg.python.aws_auth.client_id)
+            if cfg.python.aws_auth.role_arn:
+                opts["aws_role_arn"] = interpolate1(cfg.python.aws_auth.role_arn)
+
+            index_base_url = get_ca_pypi_url_programmatic(**opts)
             index_url = urljoin(
-                get_ca_pypi_url_programmatic(
-                    static_oidc=cfg.python.aws_auth.static_oidc
-                )
-                + "/",
-                cfg.python.aws_auth.index,
+                index_base_url + "/", interpolate1(cfg.python.aws_auth.index)
             )
             cfg.python.index_url = index_url
             _obfuscate_index_url(index_url)
