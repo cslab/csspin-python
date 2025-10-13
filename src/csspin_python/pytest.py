@@ -68,7 +68,7 @@ def configure(cfg: ConfigTree) -> None:
         cfg.pytest.requires.python.extend(["pytest-base-url", "pytest-playwright"])
 
 
-def provision(cfg: ConfigTree) -> None:
+def finalize_provision(cfg: ConfigTree) -> None:
     if cfg.pytest.playwright.enabled:
         _install_playwright_browsers(cfg)
 

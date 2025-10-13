@@ -1,0 +1,9 @@
+plugin_packages:
+    - ../..
+plugins:
+    - csspin_python.pytest
+python:
+    use: python
+pytest:
+    playwright:
+        enabled: true

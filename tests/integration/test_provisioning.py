@@ -113,6 +113,13 @@ TESTCASES = (
         marks=PYTHON_SKIP_MARK,
     ),
     pytest.param(  # pylint: disable=no-member
+        "pytest_with_playwright.yaml",
+        "playwright",
+        "",
+        id="pytest_with_playwright.yaml",
+        marks=PYTHON_SKIP_MARK,
+    ),
+    pytest.param(  # pylint: disable=no-member
         "radon.yaml",
         "radon",
         "",
