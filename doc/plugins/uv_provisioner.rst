@@ -74,7 +74,14 @@ in the matter, since excluding temporary directories is considered unsafe:
 - ``%TMP%``
 - ``%TMPDIR%``
 
+Installations from VCS
+----------------------
 
+The ``uv_provisioner`` considers Python packages defined in
+``python.requirements``. Unlike ``pip``, ``uv pip`` does not support installing
+from Git repositories that require Git LFS to checkout the sources out of
+the box, e.g. from ``git+https://code.contact.de/po/cs.projects.git@master``.
+Users need to enable this by setting ``UV_GIT_LFS=1`` in their environment.
 
 ``csspin_python.uv_provisioner`` schema reference
 #################################################
