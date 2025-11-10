@@ -263,8 +263,25 @@ python:wheel`` command:
             - cs.componenttest
             - path/to/another/package
 
+Supported Python versions
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
-``csspin_python.python`` schema reference
+.. NOTE:: The version limitations mentioned here are only valid if the \
+          ``SimpleProvisioner`` of the ``csspin_python.python`` plugin is used.
+          Other provisioners might have different limitations.
+
+Some Python versions might not be available for provision on all platforms. If a
+certain version is not available on the current platform, the provisioning will
+fail with an appropriate error message.
+
+To check which Python versions are supported for provision by the
+``csspin_python.python`` plugin, please refer to
+https://www.nuget.org/packages/python for Windows or run ``pyenv install
+--list`` on Linux.
+
+If a desired version is missing, the use of a pre-provisioned interpreter via
+``python.use`` is recommended.
+
 #########################################
 
 .. include:: python_schemaref.rst
