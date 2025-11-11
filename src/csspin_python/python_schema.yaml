@@ -105,6 +105,11 @@ python:
                 setup.py/setup.cfg.
                 Note that editable installs with ``-e`` or requirement files
                 with ``-r`` can also be used here.
+        constraints:
+            type: list
+            help: |
+                The list of constraint files that should be used when
+                installing packages into the virtual environment.
         index_url:
             type: str
             help: |

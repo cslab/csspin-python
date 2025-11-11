@@ -135,6 +135,7 @@ class SimpleUvProvisioner(SimpleProvisioner):
             *self._uv_cmd._cmd,
             "pip",
             "install",
+            *[f"--constraint={constraint}" for constraint in cfg.python.constraints],
         )
 
     def provision_python(self, cfg: ConfigTree) -> None:
