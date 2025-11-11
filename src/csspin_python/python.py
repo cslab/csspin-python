@@ -813,6 +813,7 @@ class SimpleProvisioner(ProvisionerProtocol):
             None if cfg.verbosity > Verbosity.NORMAL else "-q",
             "--disable-pip-version-check",
             "install",
+            *[f"--constraint={constraint}" for constraint in cfg.python.constraints],
         )
 
     def prerequisites(self: Self, cfg: ConfigTree) -> None:
@@ -939,7 +940,7 @@ def venv_provision(  # pylint: disable=too-many-branches,missing-function-docstr
 
     # Plugins can define a 'venv_hook' function, to give them a
     # chance to do something with the virtual environment just
-    # being provisioned (e.g. preparing the venv by adding pth
+    # being provisioned (e.g. preparing the venv by adding .pth
     # files or by adding packages with other installers like
     # easy_install).
     for plugin in cfg.spin.topo_plugins:

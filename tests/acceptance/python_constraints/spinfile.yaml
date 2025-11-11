@@ -1,0 +1,11 @@
+plugin_packages:
+    - ../../..
+plugins:
+    - csspin_python.python
+    - csspin_python.uv_provisioner
+python:
+    use: python
+    requirements:
+        - psutil
+    constraints:
+        - constraints.txt
