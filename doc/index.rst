@@ -46,3 +46,4 @@ installed.
    plugins/python.rst
    plugins/radon.rst
    plugins/uv_provisioner.rst
+   relnotes.rst
