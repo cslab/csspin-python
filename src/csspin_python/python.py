@@ -161,31 +161,7 @@ defaults = config(
         index="16.0/simple",
     ),
     index_url="https://pypi.org/simple",
-    requires=config(
-        python=["build", "wheel"],
-        system=config(
-            debian=config(
-                apt=[
-                    "build-essential",
-                    "curl",
-                    "git",
-                    "libbz2-dev",
-                    "libffi-dev",
-                    "libkrb5-dev",
-                    "liblzma-dev",
-                    "libncursesw5-dev",
-                    "libreadline-dev",
-                    "libsqlite3-dev",
-                    "libssl-dev",
-                    "libxml2-dev",
-                    "libxmlsec1-dev",
-                    "make",
-                    "xz-utils",
-                    "zlib1g-dev",
-                ]
-            )
-        ),
-    ),
+    requires=config(python=["build", "wheel"]),
 )
 
 
