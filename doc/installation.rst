@@ -2,23 +2,24 @@
    Copyright (C) 2024 CONTACT Software GmbH
    https://www.contact-software.com/
 
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
+   Licensed under the Apache License, Version 2.0 (the "License"); you may not
+   use this file except in compliance with the License. You may obtain a copy of
+   the License at
 
        http://www.apache.org/licenses/LICENSE-2.0
 
    Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
+   distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+   WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+   License for the specific language governing permissions and limitations under
+   the License.
 
 ======================
 Installation and setup
 ======================
 
-`csspin`_ must be installed.
+Configuration
+=============
 
 For leveraging plugins from within the ``csspin-python`` plugin-package for
 ``csspin``,  ``csspin-python`` must be added to the list of plugin-packages
@@ -49,3 +50,18 @@ used:
 .. code-block:: console
 
     spin pytest --help
+
+System requirements
+===================
+
+The ``csspin-python`` plugin-package requires the following software to be
+installed on the host system in order to work properly for all provided plugins
+(if not further specified, the requirements apply to all operating systems):
+
+- `csspin`_
+- git (for fetching package sources from Git repositories)
+
+On Linux systems, the following additional requirements must be met:
+
+- Python build dependencies (see
+  https://devguide.python.org/getting-started/setup-building/#build-dependencies)
