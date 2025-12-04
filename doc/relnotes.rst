@@ -64,6 +64,11 @@ Upcoming Release
 
 .. Month Day, Year
 
+Bug Fixes
+---------
+
+- python: uv_provisioner fails during uv.toml update (`#108 <https://code.contact.de/qs/spin/spin_python/-/issues/108>`_)
+
 Chores
 ------
 

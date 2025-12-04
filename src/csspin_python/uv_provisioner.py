@@ -180,7 +180,7 @@ def _update_index_url_in_toml(cfg: ConfigTree) -> None:
     """
     Update the index-url in the uv.toml in case it changed.
     """
-    if (uv_toml_path := interpolate1(cfg.uv_provisioner.uv_toml_path)).exists():
+    if (uv_toml_path := interpolate1(Path(cfg.uv_provisioner.uv_toml_path))).exists():
         with open(uv_toml_path, mode="r+b") as fd:
             toml_content = tomllib.load(fd)
             if toml_content.get("index-url") != cfg.python.index_url:
