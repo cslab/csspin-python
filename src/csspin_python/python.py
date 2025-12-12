@@ -159,6 +159,9 @@ defaults = config(
         key_duration=3600 * 10,  # 10 hours
         static_oidc=False,
         index="16.0/simple",
+        # Need to set client secret to empty string, otherwise the string "None"
+        # would be handled as secret and obfucsated in logs.
+        client_secret="",  # nosec: B106
     ),
     index_url="https://pypi.org/simple",
     requires=config(python=["build", "wheel"]),
@@ -994,7 +997,9 @@ def _obfuscate_index_url(index_url: str) -> None:
     secrets.add(index_url.split(":")[2].split("@")[0])  # Codeartifact token
 
 
-def _check_aws_token_validity(cfg: ConfigTree) -> None:
+def _check_aws_token_validity(  # pylint: disable=too-many-locals
+    cfg: ConfigTree,
+) -> None:
     """
     If csspin-python[aws_auth] is installed, we can use csaccess to get the
     CodeArtifact authentication token.
@@ -1009,6 +1014,17 @@ def _check_aws_token_validity(cfg: ConfigTree) -> None:
         )
 
     import time
+
+    if not (
+        client_secret := (
+            interpolate1(cfg.python.aws_auth.client_secret)
+            or os.getenv("CS_AWS_OIDC_CLIENT_SECRET")
+        )
+    ):
+        die(
+            "Please provide a client secret for CodeArtifact access via"
+            " 'python.aws_auth.client_secret'."
+        )
 
     current_time = int(time.time())
     timestamp_key = "aws_auth_timestamp"
@@ -1035,18 +1051,24 @@ def _check_aws_token_validity(cfg: ConfigTree) -> None:
                 memo.items().remove(item)
         else:
             info("Updating Codeartifact token.")
+            from urllib.error import HTTPError
             from urllib.parse import urljoin
 
             opts = {
+                "client_secret": client_secret,
                 "static_oidc": interpolate1(cfg.python.aws_auth.static_oidc).lower()
-                == "true"
+                == "true",
             }
             if cfg.python.aws_auth.client_id:
                 opts["client_id"] = interpolate1(cfg.python.aws_auth.client_id)
             if cfg.python.aws_auth.role_arn:
                 opts["aws_role_arn"] = interpolate1(cfg.python.aws_auth.role_arn)
 
-            index_base_url = get_ca_pypi_url_programmatic(**opts)
+            try:
+                index_base_url = get_ca_pypi_url_programmatic(**opts)
+            except HTTPError as e:
+                die(f"Failed to establish CodeArtifact connection: {e}")
+
             index_url = urljoin(
                 index_base_url + "/", interpolate1(cfg.python.aws_auth.index)
             )
