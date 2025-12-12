@@ -59,10 +59,10 @@
 Release Notes
 =============
 
-Upcoming Release
-================
+v3.1.1
+======
 
-.. Month Day, Year
+December 12, 2025
 
 Bug Fixes
 ---------
