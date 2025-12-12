@@ -46,7 +46,11 @@ def execute_spin(yaml, env, path="tests/acceptance/yamls", cmd=""):
     "env_vars",
     [
         pytest.param(
-            {"CS_AWS_OIDC_CLIENT_SECRET": os.getenv("CS_AWS_OIDC_CLIENT_SECRET")},
+            {
+                "SPIN_TREE_PYTHON__AWS_AUTH__CLIENT_SECRET": os.getenv(
+                    "CS_AWS_OIDC_CLIENT_SECRET"
+                )
+            },
             id="default_aws_credentials",
             marks=pytest.mark.skipif(
                 not os.getenv("CS_AWS_OIDC_CLIENT_SECRET"),
@@ -55,7 +59,7 @@ def execute_spin(yaml, env, path="tests/acceptance/yamls", cmd=""):
         ),
         pytest.param(
             {
-                "CS_AWS_OIDC_CLIENT_SECRET": os.getenv(
+                "SPIN_TREE_PYTHON__AWS_AUTH__CLIENT_SECRET": os.getenv(
                     "CS_EXTRA_AWS_OIDC_CLIENT_SECRET"
                 ),
                 "SPIN_TREE_PYTHON__AWS_AUTH__CLIENT_ID": os.getenv(

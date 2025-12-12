@@ -148,10 +148,15 @@ python:
                         CodeArtifact.
                 index:
                     type: str
-                    help: The Codeartifact repository index (e.g. "16.0/simple").
+                    help: The CodeArtifact repository index (e.g. "16.0/simple").
                 client_id:
                     type: str
                     help: The OIDC client ID to use.
+                client_secret:
+                    type: secret
+                    help: |
+                        The OIDC client secret to use, defaults to the
+                        environment variable 'CS_AWS_OIDC_CLIENT_SECRET'.
                 role_arn:
                     type: str
                     help: The role ARN to assume when authenticating.

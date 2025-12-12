@@ -72,5 +72,7 @@ Bug Fixes
 Chores
 ------
 
+- Configure AWS secret handling via configuration tree instead of relying on
+  environment variables (`#98 <https://code.contact.de/qs/spin/spin_python/-/issues/98>`_)
 - Document host system requirements properly (`#104 <https://code.contact.de/qs/spin/spin_python/-/issues/104>`_)
 - Add release notes to the documentation structure (`#100 <https://code.contact.de/qs/spin/spin_python/-/issues/100>`_)
