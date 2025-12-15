@@ -80,7 +80,7 @@ def test_constraints(
             "run",
             "python",
             "-c",
-            "from importlib.metadata import version; print(version('psutil'))",
+            "\"from importlib.metadata import version; print(version('psutil'))\"",
         ]
     )
     if not success:
