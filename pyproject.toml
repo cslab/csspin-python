@@ -47,7 +47,11 @@ uv = [
 ]
 
 [project.urls]
-Homepage = "https://contact-software.com"
+"CONTACT Software GmbH" = "https://contact-software.com"
+Documentation = "https://csspin-python.readthedocs.io/en/stable/"
+"Issue Tracker" = "https://github.com/cslab/csspin-python/issues"
+"Release Notes" = "https://csspin-python.readthedocs.io/en/stable/relnotes.html"
+Repository = "https://github.com/cslab/csspin-python"
 
 [tool.coverage.report]
 include = ["src/csspin_python/*"]
