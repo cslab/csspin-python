@@ -15,11 +15,11 @@
    limitations under the License.
 
 .. This document contains the release notes for csspin-python. Each release is
-   documented in a separate section, starting with the upcoming release.
+   documented in a separate section, starting with the most recent release at
+   the top.
 
-   The upcoming release section must be renamed to the actual release date when
-   the release is done, and a new upcoming release section must be added at the
-   top. The date of the release must be in the format `Month Day, Year`/`"%B %d,
+   The release section must be renamed to the actual release tag with a prefixed
+   "v". The date of the release must be in the format `Month Day, Year`/`"%B %d,
    %Y"`.
 
     At least one of these subsections must be present for each release:
