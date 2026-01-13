@@ -29,7 +29,7 @@ def run_command_in_env(cmd, spin_cmd):
 
 
 @functools.cache
-def provision_env(spinfile, tmp_path, cwd="tests/integration"):
+def provision_env(spinfile, tmp_path, cwd="tests/integration", data=None):
     """
     Helper function to provision a spin environment based on the spinfile
     provided by 'spinfile'.
@@ -42,8 +42,9 @@ def provision_env(spinfile, tmp_path, cwd="tests/integration"):
         pytest.skip("python not available")
 
     spinfile_path = os.path.join("tests", "integration", "yamls", spinfile)
-    data = tmp_path / ".data"
-    data.mkdir(parents=True, exist_ok=True)
+    if data is None:
+        data = tmp_path / ".data"
+        data.mkdir(parents=True, exist_ok=True)
 
     base_cmd = [
         "spin",
@@ -74,7 +75,7 @@ TESTCASES = (
     pytest.param(  # pylint: disable=no-member
         "python_version.yaml",
         "python",
-        "3.9",
+        "3.11",
         id="python_version.yaml",
     ),
     pytest.param(  # pylint: disable=no-member
@@ -218,11 +219,13 @@ def test_patched_activation_scripts(tmp_path, test_script):
         if testcase[0][0] in ("python_use.yaml", "python_version.yaml")
     ],
 )
-def test_cleanup(spinfile, _tool, _version, tmp_dir_per_spinfile):
+def test_cleanup(spinfile, _tool, _version, tmp_dir_per_spinfile, shared_data_dir):
     """
     Test the cleanup of the python plugin.
     """
-    tmp_path, env_cmd = provision_env(spinfile, tmp_dir_per_spinfile / "cleanup")
+    tmp_path, env_cmd = provision_env(
+        spinfile, tmp_dir_per_spinfile / "cleanup", data=shared_data_dir
+    )
 
     venv_dir = tmp_path / ".spin/venv"
     provisioner_memo = tmp_path / ".spin/python_provisioner.memo"
@@ -232,3 +235,61 @@ def test_cleanup(spinfile, _tool, _version, tmp_dir_per_spinfile):
     run_command_in_env(["cleanup"], env_cmd)
     assert not venv_dir.exists()
     assert not provisioner_memo.exists()
+
+
+@pytest.mark.parametrize(
+    "spinfile",
+    (
+        "python_version.yaml",
+        "uv_provisioner.yaml",
+    ),
+)
+def test_update_package(spinfile, tmp_path, shared_data_dir):
+    """
+    Test whether two consecutive provisions in the same environment basically works.
+    """
+    constraints_pytest_8 = tmp_path / "constraints_pytest_8.txt"
+    constraints_pytest_9 = tmp_path / "constraints_pytest_9.txt"
+    with open(constraints_pytest_8, "w", encoding="utf-8") as fd:
+        fd.write("pytest==8.0.0")
+    with open(constraints_pytest_9, "w", encoding="utf-8") as fd:
+        fd.write("pytest==9.0.0")
+
+    with patch.dict(os.environ, {"SPIN_TREE_PYTHON__REQUIREMENTS": "[pytest]"}):
+        with patch.dict(
+            os.environ, {"SPIN_TREE_PYTHON__CONSTRAINTS": f"[{constraints_pytest_8}]"}
+        ):
+            _, env_cmd = provision_env(
+                spinfile, tmp_path / "update_package", data=shared_data_dir
+            )
+        assert "pytest 8.0.0" in run_command_in_env(
+            ["run", "pytest", "--version"], env_cmd
+        )
+
+        with patch.dict(
+            os.environ, {"SPIN_TREE_PYTHON__CONSTRAINTS": f"[{constraints_pytest_9}]"}
+        ):
+            run_command_in_env(["provision"], env_cmd)
+        assert "pytest 9.0.0" in run_command_in_env(
+            ["run", "pytest", "--version"], env_cmd
+        )
+
+
+@pytest.mark.parametrize(
+    "spinfile",
+    (
+        "python_version.yaml",
+        "uv_provisioner.yaml",
+    ),
+)
+def test_update_python(spinfile, tmp_path, shared_data_dir):
+    """
+    Test whether we can update the python interpreter in the environment
+    """
+    tmp_path, env_cmd = provision_env(spinfile, tmp_path, data=shared_data_dir)
+    previous_version = run_command_in_env(["python", "--version"], env_cmd)
+    new_version = "3.14.2"
+    run_command_in_env(["-p", f"python.version={new_version}", "provision"], env_cmd)
+    actual_new_version = run_command_in_env(["python", "--version"], env_cmd)
+    assert actual_new_version != previous_version
+    assert actual_new_version == f"Python {new_version}"
