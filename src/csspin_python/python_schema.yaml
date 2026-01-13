@@ -160,3 +160,8 @@ python:
                 role_arn:
                     type: str
                     help: The role ARN to assume when authenticating.
+        skip_js_build:
+            type: bool
+            help: |
+                If true the build_js part of setuptools_ce will be skipped
+                during provision.

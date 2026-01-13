@@ -22,7 +22,7 @@ plugins:
 python:
     version: 3.11.10
     requirements:
-        - sphinx-rtd-theme
+        - sphinx-rtd-theme>=3.1.0
 
 uv_provisioner:
     enabled: true

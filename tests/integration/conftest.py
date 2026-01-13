@@ -33,3 +33,13 @@ def test_script():
     """
     ext = ".ps1" if sys.platform == "win32" else ".sh"
     return pathlib.Path(__file__).parent / f"fixtures/activation_script/test_env{ext}"
+
+
+@pytest.fixture(scope="session")
+def shared_data_dir(tmp_path_factory):
+    """
+    Fixture to return a shared spin.data directory.
+    """
+    data_dir = tmp_path_factory.getbasetemp() / ".data"
+    data_dir.mkdir(parents=True)
+    yield data_dir

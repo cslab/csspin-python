@@ -74,9 +74,10 @@ import os
 import re
 import shutil
 import sys
+from contextlib import contextmanager
 from subprocess import check_output
 from textwrap import dedent, indent
-from typing import Iterable, Type, Union
+from typing import Generator, Iterable, Type, Union
 
 try:
     from typing import Self  # type: ignore[attr-defined]
@@ -164,6 +165,7 @@ defaults = config(
         client_secret="",  # nosec: B106
     ),
     index_url="https://pypi.org/simple",
+    skip_js_build=None,
     requires=config(python=["build", "wheel"]),
 )
 
@@ -289,12 +291,23 @@ def nuget_install(cfg: ConfigTree) -> None:
 
 def provision(cfg: ConfigTree) -> None:
     """Provision the python plugin"""
+    if not cfg.python.use and exists(cfg.python.python):
+        python_version = (
+            check_output([cfg.python.python, "--version"])
+            .decode()
+            .strip()
+            .replace("Python ", "")
+        )
+        if python_version and not python_version.startswith(cfg.python.version):
+            _cleanup_memoed_provisioners(cfg)
+            rmtree(cfg.python.provisioner_memo)
+            rmtree(cfg.python.aws_auth.memo)
+            rmtree(cfg.python.venv)
     with memoizer(cfg.python.provisioner_memo) as memo:
         if cfg.python.provisioner is None:
             cfg.python.provisioner = SimpleProvisioner(cfg)
         if not memo.check(cfg.python.provisioner):
             memo.add(cfg.python.provisioner)
-
     if not shutil.which(cfg.python.interpreter):
         cfg.python.provisioner.provision_python(cfg)
 
@@ -332,6 +345,10 @@ def configure(cfg: ConfigTree) -> None:
 
     if exists(cfg.python.python):
         cfg.python.site_packages = get_site_packages(interpreter=cfg.python.python)
+        # Built JS should still be available in this case
+        # Skip only if users hasn't explicitly set it to False
+        if cfg.python.skip_js_build is None:
+            cfg.python.skip_js_build = True
 
     if cfg.python.aws_auth.enabled:
         _check_aws_token_validity(cfg)
@@ -810,13 +827,31 @@ class SimpleProvisioner(ProvisionerProtocol):
         )
 
     def install(self: Self, cfg: ConfigTree) -> None:
-        if requirements := self._filter(
-            self._requirements, self._m, cfg.spin.project_root
-        ):
-            self._install_command(*self._split(requirements))
-            self._m.clear()
-            for req in requirements:
-                self._m.add(_req_for_memo(req, cfg.spin.project_root))
+        @contextmanager
+        def skip_js_build(cfg: ConfigTree) -> Generator[None, None, None]:
+            if cfg.python.skip_js_build:
+                try:
+                    setenv(SETUPTOOLS_CE_BUILD_JS_SKIP=1)
+                    yield
+                    setenv(SETUPTOOLS_CE_BUILD_JS_SKIP=None)
+                finally:
+                    # Make sure the variable will not be written into the
+                    # activation scripts
+                    global EXPORTS  # pylint: disable=global-statement
+                    EXPORTS = [
+                        (k, v) for k, v in EXPORTS if k != "SETUPTOOLS_CE_BUILD_JS_SKIP"
+                    ]
+            else:
+                yield
+
+        with skip_js_build(cfg):
+            if self._m.items():
+                self._install_command("--upgrade", *self._split(self._requirements))
+            else:
+                self._install_command(*self._split(self._requirements))
+        self._m.clear()
+        for req in self._requirements:
+            self._m.add(_req_for_memo(req, cfg.spin.project_root))
 
     @staticmethod
     def _split(requirements: Iterable[str]) -> list[str]:
@@ -825,20 +860,6 @@ class SimpleProvisioner(ProvisionerProtocol):
         for requirement in requirements:
             requirement_list.extend(requirement.split())
         return requirement_list
-
-    @staticmethod
-    def _filter(
-        requirements: set[str], memo: Memoizer, project_root: Union[Path, str]
-    ) -> set[str]:
-        """
-        We want to filter all requirements prior to installing them, because we
-        only want to run the install, when there are changes, as it takes pip
-        quite some time to check, whether it has to do something.
-        """
-        if all(memo.check(_req_for_memo(req, project_root)) for req in requirements):
-            return set()
-        else:
-            return requirements
 
 
 def _file_hash(filename: Union[Path, str]) -> str:
@@ -901,8 +922,8 @@ def venv_provision(  # pylint: disable=too-many-branches,missing-function-docstr
     cfg: ConfigTree,
 ) -> None:
     fresh_env = False
-
     info("Checking venv '{python.venv}'")
+
     if not exists(cfg.python.venv):
         info("Provisioning venv '{python.venv}'")
         cfg.python.provisioner.provision_venv(cfg)
@@ -943,6 +964,19 @@ def venv_provision(  # pylint: disable=too-many-branches,missing-function-docstr
 
 def cleanup(cfg: ConfigTree) -> None:
     """Remove directories and files generated by the python plugin."""
+    _cleanup_memoed_provisioners(cfg)
+    rmtree(cfg.python.provisioner_memo)
+    rmtree(cfg.python.aws_auth.memo)
+    for path in cfg.python.build_wheels:
+        current_path = Path(interpolate1(path))
+        rmtree(current_path / "build")
+        rmtree(current_path / "dist")
+        for filename in os.listdir(current_path):
+            if filename.endswith(".egg-info") or filename.endswith(".dist-info"):
+                rmtree(current_path / filename)
+
+
+def _cleanup_memoed_provisioners(cfg: ConfigTree) -> None:
     with memoizer(cfg.python.provisioner_memo) as memo:
         for provisioner in memo.items():
             try:
@@ -953,16 +987,6 @@ def cleanup(cfg: ConfigTree) -> None:
                     f"'{provisioner.__class__.__name__}' failed: {err}"
                 )
         memo.clear()
-
-    rmtree(cfg.python.provisioner_memo)
-    rmtree(cfg.python.aws_auth.memo)
-    for path in cfg.python.build_wheels:
-        current_path = Path(interpolate1(path))
-        rmtree(current_path / "build")
-        rmtree(current_path / "dist")
-        for filename in os.listdir(current_path):
-            if filename.endswith(".egg-info") or filename.endswith(".dist-info"):
-                rmtree(current_path / filename)
 
 
 def _get_pipconf(cfg: ConfigTree) -> Path:

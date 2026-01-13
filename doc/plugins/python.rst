@@ -47,8 +47,34 @@ at least contain the following configuration.
 The provisioning of the required virtual environment as well as the plugins
 dependencies can be done via the well-known ``spin provision``-task.
 
-How to install packages from another package index and sources?
-###############################################################
+Update the environment
+######################
+
+The environment the csspin_python.python plugin creates can be updated easily by running
+``spin provision`` anew.
+
+In case the version of ``python.version`` changed since the last ``provision``
+call, the current environment will be removed and a new one will be created,
+using the new Python version. All ``python.requirements`` will be installed into
+the new environment afterwards.
+
+In the other case when the ``python.version`` has not changed since the las
+``provision`` call, the ``csspin_python.python`` plugin will update the Python
+packages installed in the environment.
+
+.. Note::
+
+    Please keep in mind that the SimpleProvisioner will only ever install
+    packages but never uninstall them.
+
+.. Note::
+
+    In case ``spin provision`` is being called while ``python.python`` already
+    exists the building of JS during wheel building will be suppressed. To avoid
+    suppression, set ``python.skip_js_build`` to ``False``.
+
+Installing python packages
+##########################
 
 Using a static index URL
 ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -116,26 +142,6 @@ allows to install packages from the CodeArtifact registry.
     spin: python -mpip -q --disable-pip-version-check install --index-url https://aws:*******@contact-373369985286.d.codeartifact.eu-central-1.amazonaws.com/pypi/16.0/simple/ -U pip
     ...
 
-How to install packages from other sources instead from the package server?
-###########################################################################
-
-Installing a package from a local file system in editable mode can be done by
-adding the path to the desired package prefixed with ``-e`` to the
-``devpackages`` key in the project's ``spinfile.yaml``:
-
-.. code-block:: yaml
-    :caption: Installing additional, editable packages from other sources than a package server
-
-    ...
-    python:
-        version: "3.11.9"
-        ...
-        # The 'devpackages' key can be used like below to install certain
-        # packages from local sandboxes or elsewhere instead from the package
-        # server used.
-        devpackages:
-            - -e cs.templatetest
-
 How to use an existing Python interpreter, instead of provisioning another one?
 ###############################################################################
 
@@ -188,38 +194,6 @@ Activating the virtual environment can be done by sourcing the activate script:
     # Powershell 7:
     & (spin env)
 
-How to modify the behavior of the installation of the current package?
-######################################################################
-
-The behavior to install the current package can be modified in two ways.
-
-One is, to include optional dependencies (so called :emphasis:`extras`) of the
-current package. This can be done in the ``spinfile.yaml`` like this:
-
-.. code-block:: yaml
-    :caption: Include the extras ``postgres`` and ``s3`` during provisioning
-
-    ...
-    python:
-        current_package:
-            extras:
-                - postgres
-                - s3
-
-Please note, that this only ever works, when the current package has these extras defined.
-
-The other way is to not install the current package during provisioning. This could be handy
-if only tasks should be run, that don't need the current package installed in the venv.
-To do so, add the following to your ``spinfile.yaml``:
-
-.. code-block:: yaml
-    :caption: Suppress the installation of the current python package
-
-    ...
-    python:
-        current_package:
-            install: False
-
 How to inject a custom pip configuration within the scope of the environment?
 #############################################################################
 
@@ -264,7 +238,7 @@ python:wheel`` command:
             - path/to/another/package
 
 Supported Python versions
-~~~~~~~~~~~~~~~~~~~~~~~~~
+#########################
 
 .. NOTE:: The version limitations mentioned here are only valid if the \
           ``SimpleProvisioner`` of the ``csspin_python.python`` plugin is used.
