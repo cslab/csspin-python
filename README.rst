@@ -54,7 +54,7 @@ within the `spinfile.yaml` configuration file of your project.
       - csspin_python.pytest
 
     python:
-      version: 3.9.8
+      version: 3.10.19
       requirements:
         - sphinx-click
         - sphinx-rtd-theme
