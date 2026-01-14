@@ -2,7 +2,7 @@
 
 include:
     - project: qs/spin/spin_plugin_common
-      ref: v2.0.1
+      ref: v3.0.0
       file: ci/.gitlab-ci.yml
 
 # ==============================================================================
@@ -16,7 +16,7 @@ variables:
 test_linux:
     before_script:
         - python3 -m pip install -U pip
-        - pip install -r requirements-dev.txt
+        - python3 -m pip install -r requirements-dev.txt
 
 test_windows:
     before_script:
