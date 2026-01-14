@@ -59,6 +59,34 @@
 Release Notes
 =============
 
+v3.2.0
+======
+
+January 14, 2026
+
+Enhancements
+------------
+
+- Provide a convenient way to update all Python packages in the provisioned
+  environment (`#73 <https://code.contact.de/qs/spin/spin_python/-/issues/73>`_)
+
+Bug Fixes
+---------
+
+- ``spin provision`` does not update devpackages properly
+  (`#72 <https://code.contact.de/qs/spin/spin_python/-/issues/72>`_)
+- Provision with new packages for existing environments results in installation
+  of wrong versions (`#109
+  <https://code.contact.de/qs/spin/spin_python/-/issues/109>`_)
+
+Chores
+------
+
+- Add repository URL information to Wheel metadata
+  (`#112 <https://code.contact.de/qs/spin/spin_python/-/issues/112>`_)
+- Update release process documentation and contribution guideline
+  (`#113 <https://code.contact.de/qs/spin/spin_python/-/issues/113>`_)
+
 v3.1.1
 ======
 
@@ -67,12 +95,16 @@ December 12, 2025
 Bug Fixes
 ---------
 
-- python: uv_provisioner fails during uv.toml update (`#108 <https://code.contact.de/qs/spin/spin_python/-/issues/108>`_)
+- python: uv_provisioner fails during uv.toml update
+  (`#108 <https://code.contact.de/qs/spin/spin_python/-/issues/108>`_)
 
 Chores
 ------
 
 - Configure AWS secret handling via configuration tree instead of relying on
-  environment variables (`#98 <https://code.contact.de/qs/spin/spin_python/-/issues/98>`_)
-- Document host system requirements properly (`#104 <https://code.contact.de/qs/spin/spin_python/-/issues/104>`_)
-- Add release notes to the documentation structure (`#100 <https://code.contact.de/qs/spin/spin_python/-/issues/100>`_)
+  environment variables
+  (`#98 <https://code.contact.de/qs/spin/spin_python/-/issues/98>`_)
+- Document host system requirements properly
+  (`#104 <https://code.contact.de/qs/spin/spin_python/-/issues/104>`_)
+- Add release notes to the documentation structure
+  (`#100 <https://code.contact.de/qs/spin/spin_python/-/issues/100>`_)
