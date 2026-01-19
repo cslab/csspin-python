@@ -17,7 +17,6 @@
 
 """Module implementing the devpi plugin for spin"""
 
-
 from typing import Iterable
 
 from csspin import Command, config, die, exists, readyaml, setenv, sh, task

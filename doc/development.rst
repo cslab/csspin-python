@@ -36,7 +36,6 @@ used within any function of the plugin.
 
     from csspin import config
 
-
     defaults = config(
         requires=config(
             spin=["csspin_python.python"],
