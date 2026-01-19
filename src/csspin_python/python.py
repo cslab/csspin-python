@@ -468,24 +468,19 @@ class BashActivate(ActivateScriptPatcher):
     replacements = [
         ("deactivate", "origdeactivate"),
     ]
-    old_env_pattern = dedent(
-        """
+    old_env_pattern = dedent("""
         if [ -z ${{{name}+x}} ]; then
             export _OLD_SPIN_UNSET{name}=""
         else
             export _OLD_SPIN_VALUE{name}="${name}"
         fi
-        """
-    )
-    setpattern = dedent(
-        """
+        """)
+    setpattern = dedent("""
         {name}="{value}"
         export {name}
-        """
-    )
+        """)
     resetpattern = indent(
-        dedent(
-            """
+        dedent("""
             if ! [ -z "${{_OLD_SPIN_VALUE{name}+_}}" ] ; then
                 {name}="$_OLD_SPIN_VALUE{name}"
                 export {name}
@@ -495,12 +490,10 @@ class BashActivate(ActivateScriptPatcher):
                 unset {name}
                 unset _OLD_SPIN_UNSET{name}
             fi
-            """
-        ),
+            """),
         prefix="    ",
     )
-    script = dedent(
-        """
+    script = dedent("""
         {patchmarker}
         {original}
         deactivate () {{
@@ -520,8 +513,7 @@ class BashActivate(ActivateScriptPatcher):
         # commands. Without forgetting past commands the $PATH changes
         # we made may not be respected
         hash -r 2>/dev/null
-        """
-    )
+        """)
 
     @staticmethod
     def interpolate_environ_value(value: str) -> str:
@@ -543,24 +535,19 @@ class PowershellActivate(ActivateScriptPatcher):
     old_env_pattern = (
         "New-Variable -Scope global -Name _OLD_SPIN_{name} -Value $env:{name}"
     )
-    setpattern = dedent(
-        """
+    setpattern = dedent("""
         $env:{name} = "{value}"
-        """
-    )
+        """)
     resetpattern = indent(
-        dedent(
-            """
+        dedent("""
                 if (Test-Path variable:_OLD_SPIN_{name}) {{
                     $env:{name} = $variable:_OLD_SPIN_{name}
                     Remove-Variable "_OLD_SPIN_{name}" -Scope global
                 }}
-            """
-        ),
+            """),
         prefix="    ",
     )
-    script = dedent(
-        """
+    script = dedent("""
         {patchmarker}
         {original}
         function global:deactivate([switch] $NonDestructive) {{
@@ -574,8 +561,7 @@ class PowershellActivate(ActivateScriptPatcher):
         deactivate -nondestructive
         {old_value_setters}
         {setters}
-        """
-    )
+        """)
 
     @staticmethod
     def interpolate_environ_value(value: str) -> str:
@@ -592,8 +578,7 @@ class BatchActivate(ActivateScriptPatcher):
     patchmarker = "\nREM Patched by csspin_python.python\n"
     activatescript = Path("{python.scriptdir}") / "activate.bat"
     replacements = []
-    old_env_pattern = dedent(
-        """
+    old_env_pattern = dedent("""
         if defined _OLD_SPIN_VALUE_{name} goto ENDIFSPIN{name}1
         if defined _OLD_SPIN_UNSET_{name} goto ENDIFSPIN{name}2
         if defined {name} goto ENDIFSPIN{name}3
@@ -613,19 +598,16 @@ class BatchActivate(ActivateScriptPatcher):
             set "_OLD_SPIN_UNSET_{name}= "
             goto ENDIFSPIN{name}5
         :ENDIFSPIN{name}5
-        """
-    )
+        """)
     setpattern = 'set "{name}={value}"'
     resetpattern = ""
-    script = dedent(
-        """
+    script = dedent("""
         @echo off
         {patchmarker}
         {original}
         {old_value_setters}
         {setters}
-        """
-    )
+        """)
 
     @staticmethod
     def interpolate_environ_value(value: str) -> str:
@@ -644,8 +626,7 @@ class BatchDeactivate(ActivateScriptPatcher):
     replacements = []
     old_env_pattern = ""
     setpattern = ""
-    resetpattern = dedent(
-        """
+    resetpattern = dedent("""
         if defined _OLD_SPIN_VALUE_{name} goto ENDIFVSPIN{name}1
         if defined _OLD_SPIN_UNSET_{name} goto ENDIFVSPIN{name}2
         :ENDIFVSPIN{name}1
@@ -657,16 +638,13 @@ class BatchDeactivate(ActivateScriptPatcher):
             set _OLD_SPIN_UNSET_{name}=
             goto ENDIFVSPIN{name}0
         :ENDIFVSPIN{name}0
-        """
-    )
-    script = dedent(
-        """
+        """)
+    script = dedent("""
         @echo off
         {patchmarker}
         {original}
         {resetters}
-        """
-    )
+        """)
 
 
 class PythonActivate(ActivateScriptPatcher):
@@ -676,13 +654,11 @@ class PythonActivate(ActivateScriptPatcher):
     old_env_pattern = ""
     setpattern = 'os.environ["{name}"] = fr"{value}"'
     resetpattern = ""
-    script = dedent(
-        """
+    script = dedent("""
         {patchmarker}
         {original}
         {setters}
-        """
-    )
+        """)
 
     @staticmethod
     def interpolate_environ_value(value: str) -> str:

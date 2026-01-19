@@ -20,6 +20,7 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
 """Configuration for the documentation build"""
+
 from pathlib import Path
 
 # -- Project information -----------------------------------------------------

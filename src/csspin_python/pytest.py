@@ -17,7 +17,6 @@
 
 """Module implementing the pytest plugin for spin"""
 
-
 from typing import Iterable
 
 from csspin import Path, Verbosity, config, die, interpolate1, option, setenv, sh, task
