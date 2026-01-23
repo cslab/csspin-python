@@ -126,5 +126,10 @@ Steps to create a release:
    [cetest](https://code.contact.de/qs/images/cetest) image, follow the release
    procedure there.
 
-5. [optional] Create a Demo It! demonstrating the latest improvements of
+5. If the release is a major or minor, announce it via
+   https://community.contact-software.com/c/news-and-announcements/releases/11
+   channel. Don't forget to set the tags "ptm" and "csspin" for better
+   visibility.
+
+6. [optional] Create a Demo It! demonstrating the latest improvements of
    csspin-python.
