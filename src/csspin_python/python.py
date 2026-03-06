@@ -75,7 +75,7 @@ import re
 import shutil
 import sys
 from contextlib import contextmanager
-from subprocess import check_output
+from subprocess import CalledProcessError, check_output
 from textwrap import dedent, indent
 from typing import Generator, Iterable, Type, Union
 
@@ -289,20 +289,65 @@ def nuget_install(cfg: ConfigTree) -> None:
     )
 
 
-def provision(cfg: ConfigTree) -> None:
-    """Provision the python plugin"""
-    if not cfg.python.use and exists(cfg.python.python):
+def _check_venv(  # pylint: disable=too-many-return-statements
+    cfg: ConfigTree,
+) -> bool:
+    """
+    Checks whether the venv is actually a venv compatible
+    with our configuration and not just some dir.
+    """
+    try:
         python_version = (
             check_output([cfg.python.python, "--version"])
             .decode()
             .strip()
             .replace("Python ", "")
         )
-        if python_version and not python_version.startswith(cfg.python.version):
+    except CalledProcessError:
+        return False
+    if not cfg.python.version and not cfg.python.use:
+        return False
+    if cfg.python.use:
+        try:
+            use_python_version = (
+                check_output([cfg.python.use, "--version"])
+                .decode()
+                .strip()
+                .replace("Python ", "")
+            )
+        except CalledProcessError:
+            return False
+        if use_python_version == python_version:
+            return True
+        else:
+            warn(
+                "The cfg.python.use version does not match the cfg.python.python "
+                "version set in the venv. If you want to update the python version "
+                "used in the venv, you have to manually remove it."
+            )
+            return True
+    if python_version.startswith(cfg.python.version):
+        return True
+    return False
+
+
+def provision(cfg: ConfigTree) -> None:
+    """Provision the python plugin"""
+
+    info("Checking venv '{python.venv}'")
+
+    fresh_venv = False
+
+    if exists("{python.venv}"):
+        if not _check_venv(cfg):
             _cleanup_memoed_provisioners(cfg)
             rmtree(cfg.python.provisioner_memo)
             rmtree(cfg.python.aws_auth.memo)
             rmtree(cfg.python.venv)
+            fresh_venv = True
+    else:
+        fresh_venv = True
+
     with memoizer(cfg.python.provisioner_memo) as memo:
         if cfg.python.provisioner is None:
             cfg.python.provisioner = SimpleProvisioner(cfg)
@@ -311,7 +356,7 @@ def provision(cfg: ConfigTree) -> None:
     if not shutil.which(cfg.python.interpreter):
         cfg.python.provisioner.provision_python(cfg)
 
-    venv_provision(cfg)
+    venv_provision(cfg, fresh_venv)
 
     cfg.python.site_packages = get_site_packages(interpreter=cfg.python.python)
 
@@ -895,15 +940,12 @@ def _req_for_memo(
 
 
 def venv_provision(  # pylint: disable=too-many-branches,missing-function-docstring
-    cfg: ConfigTree,
+    cfg: ConfigTree, fresh_venv: bool = False
 ) -> None:
-    fresh_env = False
-    info("Checking venv '{python.venv}'")
 
-    if not exists(cfg.python.venv):
+    if fresh_venv:
         info("Provisioning venv '{python.venv}'")
         cfg.python.provisioner.provision_venv(cfg)
-        fresh_env = True
 
     # This sets PATH to the venv
     init(cfg)
@@ -911,7 +953,7 @@ def venv_provision(  # pylint: disable=too-many-branches,missing-function-docstr
     _configure_pipconf(cfg)
 
     # Establish the prerequisites
-    if fresh_env:
+    if fresh_venv:
         cfg.python.provisioner.prerequisites(cfg)
 
     # Plugins can define a 'venv_hook' function, to give them a
