@@ -9,6 +9,7 @@
 import re
 import sys
 from contextlib import nullcontext
+from subprocess import CalledProcessError
 from unittest import mock
 
 import pytest
@@ -16,7 +17,11 @@ from click import Abort
 
 # Mock `csspin.task` away as the import fails otherwise
 with mock.patch("csspin.task"):
-    from csspin_python.python import _configure_pipconf, _split_requirement_option
+    from csspin_python.python import (
+        _check_venv,
+        _configure_pipconf,
+        _split_requirement_option,
+    )
 
 
 @pytest.mark.parametrize(
@@ -89,3 +94,174 @@ def test__split_requirement_option(tmp_path, requirement, expected_filename, con
             _split_requirement_option(requirement, tmp_path)
             == tmp_path / expected_filename
         )
+
+
+@pytest.mark.parametrize(
+    "exists_return, check_output_side_effect, use, "
+    "version, expected_result, expect_warn, description",
+    [
+        # no `use`, version matches prefix -> True
+        (
+            True,
+            [b"Python 3.11.4"],
+            None,
+            "3.11",
+            True,
+            False,
+            "version matches",
+        ),
+        # no `use`, version does not match prefix -> False
+        (
+            True,
+            [b"Python 3.10.2"],
+            None,
+            "3.11",
+            False,
+            False,
+            "version mismatch",
+        ),
+        # no `use`, empty version string -> False
+        (
+            True,
+            [b"Python "],
+            None,
+            "3.11",
+            False,
+            False,
+            "empty version output",
+        ),
+        # `use` set, versions match -> True, no warning
+        (
+            True,
+            [b"Python 3.11.4", b"Python 3.11.4"],
+            "/usr/bin/python3.11",
+            "3.11",
+            True,
+            False,
+            "use matches venv",
+        ),
+        # `use` set, versions differ -> True but warning emitted
+        (
+            True,
+            [b"Python 3.11.4", b"Python 3.12.0"],
+            "/usr/bin/python3.12",
+            "3.11",
+            True,
+            True,
+            "use differs but still healthy",
+        ),
+        # venv exists but neither version nor use is set -> False
+        (
+            True,
+            [b"Python 3.11.4"],
+            None,
+            None,
+            False,
+            False,
+            "no version or use configured",
+        ),
+        # venv exists, use is set but version is not -> True if use matches
+        (
+            True,
+            [b"Python 3.11.4", b"Python 3.11.4"],
+            "/usr/bin/python3.11",
+            None,
+            True,
+            False,
+            "only use set, matches",
+        ),
+        # venv exists, use is set but version is not ->
+        # True even if use differs (with warning)
+        (
+            True,
+            [b"Python 3.11.4", b"Python 3.12.0"],
+            "/usr/bin/python3.12",
+            None,
+            True,
+            True,
+            "only use set, differs",
+        ),
+        # empty string version (edge case)
+        (
+            True,
+            [b"Python 3.11.4"],
+            None,
+            "",
+            False,
+            False,
+            "empty version string config",
+        ),
+        # python executable exists but fails to run -> should return False
+        (
+            True,
+            CalledProcessError(1, "python"),
+            None,
+            "3.11",
+            False,
+            False,
+            "python execution fails",
+        ),
+        # use is set but points to non-existent executable -> should return False
+        (
+            True,
+            [b"Python 3.11.4", CalledProcessError(1, "python")],
+            "/usr/bin/nonexistent",
+            "3.11",
+            False,
+            False,
+            "use executable missing",
+        ),
+    ],
+    ids=[
+        "version_matches_prefix",
+        "version_no_match",
+        "empty_version_string",
+        "use_versions_match",
+        "use_versions_differ_warns",
+        "neither_version_nor_use_set",
+        "only_use_set_matches",
+        "only_use_set_differs",
+        "empty_version_config",
+        "python_execution_fails",
+        "use_executable_missing",
+    ],
+)
+@mock.patch("csspin_python.python.warn")
+@mock.patch("csspin_python.python.check_output")
+@mock.patch("csspin_python.python.exists")
+def test_check_venv(  # pylint: disable=too-many-arguments,too-many-positional-arguments
+    mock_exists,
+    mock_check_output,
+    mock_warn,
+    exists_return,
+    check_output_side_effect,
+    use,
+    version,
+    expected_result,
+    expect_warn,
+    description,
+):
+    """
+    Tests the check_venv function for all its cases.
+    """
+    mock_exists.return_value = exists_return
+
+    # Handle both list of outputs and direct exception
+    if isinstance(check_output_side_effect, CalledProcessError):
+        mock_check_output.side_effect = check_output_side_effect
+    else:
+        mock_check_output.side_effect = check_output_side_effect
+
+    cfg = mock.MagicMock()
+    cfg.python.python = "venv/bin/python"
+    cfg.python.use = use
+    cfg.python.version = version
+
+    result = _check_venv(cfg)
+    assert result == expected_result, f"Failed: {description}"
+
+    if expect_warn:
+        mock_warn.assert_called_once()
+        assert "does not match" in mock_warn.call_args[0][0]
+    else:
+        mock_warn.assert_not_called()
