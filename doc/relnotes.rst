@@ -59,6 +59,25 @@
 Release Notes
 =============
 
+v4.0.0
+======
+
+March 26, 2026
+
+Breaking Changes
+----------------
+
+- Drop Python 3.9 Support (`#114
+  <https://code.contact.de/qs/spin/spin_python/-/issues/114>`_)
+
+Bug Fixes
+---------
+
+- Provision fails when python.venv exists and is empty (`#118
+  <https://code.contact.de/qs/spin/spin_python/-/issues/118>`_)
+- aws_auth + uv_provisioner: Malformed uv.toml after key_duration expired (`#121
+  <https://code.contact.de/qs/spin/spin_python/-/issues/121>`_)
+
 v3.2.0
 ======
 
