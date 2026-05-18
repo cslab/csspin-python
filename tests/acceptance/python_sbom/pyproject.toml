@@ -1,0 +1,22 @@
+# This file is used for testing the python_sbom plugin. It defines a dummy
+# project with some dependencies that should be included in the generated SBOM.
+
+[build-system]
+build-backend = "setuptools.build_meta"
+requires = ["setuptools"]
+
+[project]
+dependencies = [
+  "requests",  # this is ignored by the SBOM generation as they are not included in the "thirdparty" extra
+  'pypiwin32; platform_system == "Windows"',
+  'pyinotify; platform_system == "Linux"'
+]
+name = "dummy-sbom-project"
+version = "0.1.0"
+
+[project.optional-dependencies]
+thirdparty = [
+  "packaging",
+  'pypiwin32; platform_system == "Windows"',
+  'pyinotify; platform_system == "Linux"'
+]

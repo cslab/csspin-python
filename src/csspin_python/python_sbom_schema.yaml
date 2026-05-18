@@ -1,0 +1,18 @@
+# -*- mode: yaml; coding: utf-8 -*-
+#
+# Schema for the python_sbom plugin for csspin
+
+python_sbom:
+    type: object
+    help: Configuration related to the python_sbom plugin for csspin
+    properties:
+        project_paths:
+            type: list
+            help: |
+                List of paths to the Python projects for which to generate the
+                SBOM.
+        cyclonedx_version:
+            type: str
+            help: |
+                Version of the cyclonedx-bom package to use for generating the
+                SBOM.

@@ -44,5 +44,6 @@ released versions are available at https://pypi.org/project/csspin-python/.
    plugins/pytest.rst
    plugins/python.rst
    plugins/radon.rst
+   plugins/python_sbom.rst
    plugins/uv_provisioner.rst
    relnotes.rst

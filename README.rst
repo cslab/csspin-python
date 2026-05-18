@@ -9,18 +9,21 @@ The following plugins are available:
 - `csspin_python.debugpy`: A plugin for debugging Python code using `debugpy`_.
 - `csspin_python.devpi`: A plugin for simplified usage of `devpi`_.
 - `csspin_python.pytest`: A plugin for running tests using pytest.
-- `csspin_python.python`: A plugin for provisioning Python environments  and
-  installing dependencies.
+- `csspin_python.python`: A plugin for provisioning Python environments,
+  installing dependencies, and managing the virtual environment.
+- `csspin_python.python_sbom`: A plugin for generating a `CycloneDX`_ Software
+  Bill of Materials (SBOM) for Python third-party dependencies.
 - `csspin_python.radon`: A plugin for running `radon`_ to analyze code
   complexity.
 - `csspin_python.sphinx`: A plugin for building Sphinx documentation.
 - `csspin_python.playwright`: A plugin for running tests using `playwright`_.
   This plugin is deprecated, use the pytest plugin with the
   'pytest.playwright.enabled=true' setting instead.
-- `csspin_python.uv_provisioner`: A plugin that uses `uv`_ to provision the Python environment.
+- `csspin_python.uv_provisioner`: A plugin that uses `uv`_ to provision the
+  Python environment.
 
 The package provides an ``aws_auth`` extra, that, if enabled, can authenticate
-to `CONTACT Software GmbH`_'s AWS Codeartifact. It also provides an ``uv``
+to `CONTACT Software GmbH`_'s AWS CodeArtifact. It also provides an ``uv``
 extra, that is necessary for using the ``csspin_python.uv_provisioner`` plugin.
 
 Prerequisites
@@ -84,4 +87,5 @@ tests using ``spin pytest`` and do other great things.
 .. _`devpi`: https://pypi.org/project/devpi
 .. _`playwright`: https://pypi.org/project/pytest-playwright
 .. _`radon`: https://pypi.org/project/radon
+.. _`CycloneDX`: https://cyclonedx.org/
 .. _`uv`: https://docs.astral.sh/uv/

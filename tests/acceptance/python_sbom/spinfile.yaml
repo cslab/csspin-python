@@ -1,0 +1,8 @@
+spin:
+    project_name: dummy-sbom-project
+plugin_packages:
+    - ../../..
+plugins:
+    - csspin_python.python_sbom
+python:
+    version: 3.10.9
