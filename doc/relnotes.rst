@@ -59,6 +59,17 @@
 Release Notes
 =============
 
+v4.1.0-rc1
+==========
+
+May 18, 2026
+
+Enhancements
+------------
+
+- Add ``python_sbom`` plugin for creating Python SBOMs (`!110
+  <https://code.contact.de/qs/spin/spin_python/-/merge_requests/110>`_)
+
 v4.0.0
 ======
 
