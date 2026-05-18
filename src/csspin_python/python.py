@@ -69,12 +69,15 @@ point to the base installation.
 import abc
 import configparser
 import hashlib
+import json
 import logging
 import os
 import re
 import shutil
+import subprocess
 import sys
 from contextlib import contextmanager
+from functools import cache
 from subprocess import CalledProcessError, check_output
 from textwrap import dedent, indent
 from typing import Generator, Iterable, Type, Union
@@ -88,6 +91,7 @@ except ImportError:
 
 from click.exceptions import Abort
 from csspin import (
+    CONFIG,
     EXPORTS,
     Command,
     Memoizer,
@@ -714,6 +718,30 @@ class PythonActivate(ActivateScriptPatcher):
             if key in os.environ:
                 value = value.replace(f"{{{key}}}", f"{{os.environ['{key}']}}")
         return value
+
+
+@cache
+def get_project_metadata(project_path: str, index_url: str) -> dict:  # type: ignore[return] # pylint: disable=inconsistent-return-statements # noqa: E501
+    """
+    Retrieve project metadata of ``project_path`` via ``python -m build
+    --metadata``.
+
+    Cached since ``build --metadata`` is noisy and the output is identical for
+    every caller within the same process.
+    """
+    setenv(PIP_INDEX_URL=index_url)
+    kwargs = {}
+    if CONFIG.verbosity < Verbosity.INFO:
+        kwargs["stderr"] = subprocess.DEVNULL
+    raw_metadata = backtick(
+        "python", "-m", "build", "--metadata", project_path, **kwargs
+    )
+    setenv(PIP_INDEX_URL=None)
+
+    if raw_metadata:
+        return json.loads(raw_metadata)  # type: ignore[no-any-return]
+
+    die(f"Could not retrieve project metadata of '{project_path}'.")
 
 
 def get_site_packages(interpreter: Path) -> Path:

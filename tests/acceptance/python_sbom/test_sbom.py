@@ -1,0 +1,88 @@
+# -*- mode: python; coding: utf-8 -*-
+#
+# Copyright (C) 2026 CONTACT Software GmbH
+# https://www.contact-software.com/
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+"""Acceptance tests for the python-sbom task."""
+
+import json
+import platform
+import shutil
+import subprocess
+from pathlib import Path
+
+import pytest
+
+HERE = Path(__file__).parent
+SPINFILE = str(HERE / "spinfile.yaml")
+OUTPUT_FILE = HERE / "dummy-sbom-project.python_sbom.cdx.json"
+
+
+def _execute_command(cmd: list[str]) -> tuple[str, bool]:
+    """Execute the given command and return its output and success status."""
+    try:
+        return (
+            subprocess.check_output(cmd, encoding="utf-8", stderr=subprocess.STDOUT),
+            True,
+        )
+    except subprocess.CalledProcessError as ex:
+        print(ex.output)
+        return ex.output, False
+
+
+@pytest.fixture(autouse=True)
+def cleanup_env():
+    """Clean up generated files and spin environment after each test."""
+    yield
+    shutil.rmtree(HERE / ".spin", ignore_errors=True)
+    OUTPUT_FILE.unlink(missing_ok=True)
+
+
+@pytest.mark.acceptance()
+def test_sbom_generates_cdx_json() -> None:
+    """Test that python-sbom creates a valid CycloneDX JSON file."""
+    base_command = ["spin", "-C", str(HERE), "-f", SPINFILE]
+
+    output, success = _execute_command(base_command + ["provision"])
+    assert success, output
+
+    output, success = _execute_command(base_command + ["python-sbom"])
+    assert success, output
+
+    assert OUTPUT_FILE.exists(), f"{OUTPUT_FILE.name} was not created"
+    content = json.loads(OUTPUT_FILE.read_text(encoding="utf-8"))
+    assert content.get("bomFormat") == "CycloneDX"
+    components = content.get("components", [])
+    component_names = {c.get("name") for c in components}
+    assert "packaging" in component_names, "Expected 'packaging' in SBOM components"
+    assert (
+        "requests" not in component_names
+    ), "Dependency 'requests' should not be included as it's not in the 'thirdparty' extra"
+
+    system = platform.system()
+    if system == "Windows":
+        assert (
+            "pypiwin32" in component_names
+        ), "Windows-only dep 'pypiwin32' must appear in SBOM on Windows"
+        assert (
+            "pyinotify" not in component_names
+        ), "Linux-only dep 'pyinotify' must not appear in SBOM on Windows"
+    elif system == "Linux":
+        assert (
+            "pyinotify" in component_names
+        ), "Linux-only dep 'pyinotify' must appear in SBOM on Linux"
+        assert (
+            "pypiwin32" not in component_names
+        ), "Windows-only dep 'pypiwin32' must not appear in SBOM on Linux"

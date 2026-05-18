@@ -25,7 +25,7 @@
     - [ ] Comments and docstrings are up-to-date
     - [ ] For all new files which will be published: added the license header?
 - Formalities
-    - [ ] Adhere to the contributing guidelines in CONTRIBUTING.md
+    - [ ] Adhere to the [contributing guidelines](../../CONTRIBUTING.md)
     - [ ] The merge request and related issue(s) are labeled and will be closed
           properly after merge
     - [ ] Communication to stakeholders (if required)

@@ -256,6 +256,7 @@ https://www.nuget.org/packages/python for Windows or run ``pyenv install
 If a desired version is missing, the use of a pre-provisioned interpreter via
 ``python.use`` is recommended.
 
-#########################################
+``python`` schema reference
+###########################
 
 .. include:: python_schemaref.rst
