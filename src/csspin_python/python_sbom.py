@@ -19,6 +19,7 @@
 
 import json
 import sys
+import sysconfig
 from subprocess import DEVNULL, PIPE
 from tempfile import TemporaryDirectory
 
@@ -163,7 +164,10 @@ def _write_sbom(
     cfg: ConfigTree, content: str, project_name: str, project_version: str
 ) -> None:
     """Inject project metadata into the cyclonedx JSON and write the output file."""
-    output_file = cfg.spin.project_root / f"{project_name}.python_sbom.cdx.json"
+    platform_tag = sysconfig.get_platform().replace("-", "_")
+    output_file = (
+        cfg.spin.project_root / f"{project_name}.{platform_tag}.python_sbom.cdx.json"
+    )
     # cyclonedx-bom doesn't add primary component name and version when not
     # using pyproject.toml
     sbom_json = json.loads(content)
