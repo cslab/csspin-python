@@ -21,13 +21,15 @@ import json
 import platform
 import shutil
 import subprocess
+import sysconfig
 from pathlib import Path
 
 import pytest
 
 HERE = Path(__file__).parent
 SPINFILE = str(HERE / "spinfile.yaml")
-OUTPUT_FILE = HERE / "dummy-sbom-project.python_sbom.cdx.json"
+_PLATFORM_TAG = sysconfig.get_platform().replace("-", "_")
+OUTPUT_FILE = HERE / f"dummy-sbom-project.{_PLATFORM_TAG}.python_sbom.cdx.json"
 
 
 def _execute_command(cmd: list[str]) -> tuple[str, bool]:
