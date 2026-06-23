@@ -6,11 +6,13 @@ build-backend = "setuptools.build_meta"
 requires = ["setuptools"]
 
 [project]
+authors = [{name = "CONTACT Software GmbH", email = "ptm-team@contact-software.com"}]
 dependencies = [
   "requests",  # this is ignored by the SBOM generation as they are not included in the "thirdparty" extra
   'pypiwin32; platform_system == "Windows"',
   'pyinotify; platform_system == "Linux"'
 ]
+license = {text = "Apache-2.0"}
 name = "dummy-sbom-project"
 version = "0.1.0"
 

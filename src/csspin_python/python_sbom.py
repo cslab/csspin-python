@@ -17,9 +17,12 @@
 
 """Module implementing the python_sbom plugin for csspin"""
 
+import email.utils
 import json
 import sys
 import sysconfig
+from importlib.metadata import metadata as _pkg_metadata
+from importlib.metadata import version as _pkg_version
 from subprocess import DEVNULL, PIPE
 from tempfile import TemporaryDirectory
 
@@ -69,8 +72,9 @@ def sbom(cfg: ConfigTree) -> None:
         third_party_deps = _collect_thirdparty_deps(
             metadata.get("requires_dist", set()), python_version=cfg.python.version
         )
-        sbom_content = _run_cyclonedx(cfg, third_party_deps, stderr)
-        _write_sbom(cfg, sbom_content, metadata.get("name"), metadata.get("version"))
+        sbom_json = json.loads(_run_cyclonedx(cfg, third_party_deps, stderr))
+        _enrich_sbom(sbom_json, metadata, third_party_deps)
+        _write_sbom(cfg, sbom_json, metadata.get("name"))
 
 
 def cleanup(cfg: ConfigTree) -> None:
@@ -160,23 +164,116 @@ def _run_cyclonedx(cfg: ConfigTree, third_party_deps: set[str], stderr: int) -> 
         return backtick(interpreter_cdx, "-m", "cyclonedx_py", "environment", venv, stderr=stderr)  # type: ignore[no-any-return] # noqa: E501
 
 
-def _write_sbom(
-    cfg: ConfigTree, content: str, project_name: str, project_version: str
-) -> None:
-    """Inject project metadata into the cyclonedx JSON and write the output file."""
+def _write_sbom(cfg: ConfigTree, sbom_json: dict, project_name: str) -> None:
+    """Write the CycloneDX JSON document to the output file."""
     platform_tag = sysconfig.get_platform().replace("-", "_")
-    output_file = (
-        cfg.spin.project_root / f"{project_name}.{platform_tag}.python_sbom.cdx.json"
+    output_file = cfg.spin.project_root / (
+        f"{project_name}.{platform_tag}.python_sbom.cdx.json"
     )
-    # cyclonedx-bom doesn't add primary component name and version when not
-    # using pyproject.toml
-    sbom_json = json.loads(content)
-    sbom_json |= {
-        "metadata": {"component": {"name": project_name, "version": project_version}}
-    }
     with open(output_file, "w", encoding="utf-8") as f:
         json.dump(sbom_json, f, indent=2, sort_keys=True)
     info(f"Generated Python SBOM successfully ({output_file})")
+
+
+def _parse_authors(author_name: str, author_email: str) -> str:
+    """Parse RFC 2822 Author-email metadata into 'name (email)' format."""
+    if not author_email:
+        die("Project metadata has no Author-email field.")
+        return ""
+
+    entries = email.utils.getaddresses([author_email])
+
+    if len(entries) == 1 and not entries[0][0] and author_name:
+        entries = [(author_name, entries[0][1])]
+
+    for name, addr in entries:
+        if not name:
+            die(f"Author entry '{addr}' has no name; all authors require a name.")
+            return ""
+        if not addr:
+            die(f"Author entry '{name}' has no email; all authors require an email.")
+            return ""
+
+    return ", ".join(f"{name} ({addr})" for name, addr in entries)
+
+
+def _build_primary_component(metadata: dict) -> tuple[dict, str]:
+    """Build the CycloneDX primary component dict and its bom-ref from project metadata."""
+    if not (name := metadata.get("name")):
+        die("Project metadata is missing 'name'.")
+    if not (version := metadata.get("version")):
+        die("Project metadata is missing 'version'.")
+    if not (license_id := metadata.get("license")):
+        die("Project metadata is missing 'license'.")
+
+    authors = _parse_authors(
+        author_name=metadata.get("author", "").strip(),
+        author_email=metadata.get("author_email", "").strip(),
+    )
+    primary_ref = f"{name}=={version}"
+    component = {
+        "author": authors,
+        "bom-ref": primary_ref,
+        "licenses": [{"expression": license_id}],
+        "name": name,
+        "type": "application",
+        "version": version,
+    }
+    return component, primary_ref
+
+
+def _enrich_sbom(
+    sbom_json: dict,
+    metadata: dict,
+    third_party_deps: set[str],
+) -> None:
+    """Add the primary component and its dependency entry to the CycloneDX document."""
+    component, primary_ref = _build_primary_component(metadata)
+    existing_metadata = sbom_json.get("metadata", {})
+    existing_tools = existing_metadata.get("tools", {})
+    existing_tool_components = (
+        existing_tools
+        if isinstance(existing_tools, list)
+        else existing_tools.get("components", [])
+    )
+    sbom_json["metadata"] = {
+        **existing_metadata,
+        "component": component,
+        "tools": {
+            "components": existing_tool_components
+            + [
+                {
+                    "description": "Python SBOM plugin for csspin",
+                    "licenses": [
+                        {
+                            "expression": _pkg_metadata("csspin-python")[
+                                "License-Expression"
+                            ]
+                        }
+                    ],
+                    "name": "csspin-python",
+                    "supplier": {
+                        "name": "CONTACT Software GmbH",
+                        "url": [
+                            "https://www.contact-software.com/",
+                            "https://pypi.org/project/csspin-python/",
+                        ],
+                    },
+                    "type": "application",
+                    "version": _pkg_version("csspin-python"),
+                }
+            ]
+        },
+    }
+    direct_dep_names = {Requirement(dep).name.lower() for dep in third_party_deps}
+    direct_dep_refs = sorted(
+        comp["bom-ref"]
+        for comp in sbom_json.get("components", [])
+        if comp.get("name", "").lower() in direct_dep_names and "bom-ref" in comp
+    )
+    dependencies = sbom_json.get("dependencies", [])
+    dependencies.append({"dependsOn": direct_dep_refs, "ref": primary_ref})
+    sbom_json["dependencies"] = dependencies
 
 
 def _collect_thirdparty_deps(requires_dist: list, python_version: str) -> set[str]:

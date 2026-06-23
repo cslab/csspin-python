@@ -88,3 +88,23 @@ def test_sbom_generates_cdx_json() -> None:
         assert (
             "pypiwin32" not in component_names
         ), "Windows-only dep 'pypiwin32' must not appear in SBOM on Linux"
+
+    primary_ref = "dummy-sbom-project==0.1.0"
+    component = content["metadata"]["component"]
+    assert component["bom-ref"] == primary_ref
+    assert (
+        component["author"] == "CONTACT Software GmbH (ptm-team@contact-software.com)"
+    )
+    assert component["licenses"] == [{"expression": "Apache-2.0"}]
+
+    bom_ref_by_name = {c["name"]: c["bom-ref"] for c in components if "bom-ref" in c}
+    primary_dep = next(
+        (d for d in content.get("dependencies", []) if d["ref"] == primary_ref),
+        None,
+    )
+    assert primary_dep is not None, f"No dependencies entry for {primary_ref}"
+    assert bom_ref_by_name["packaging"] in primary_dep["dependsOn"]
+    if system == "Linux":
+        assert bom_ref_by_name["pyinotify"] in primary_dep["dependsOn"]
+    elif system == "Windows":
+        assert bom_ref_by_name["pypiwin32"] in primary_dep["dependsOn"]
