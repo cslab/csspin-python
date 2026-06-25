@@ -1085,15 +1085,15 @@ def _check_aws_token_validity(  # pylint: disable=too-many-locals
 
     import time
 
-    if not (
-        client_secret := (
-            interpolate1(cfg.python.aws_auth.client_secret)
-            or os.getenv("CS_AWS_OIDC_CLIENT_SECRET")
-        )
-    ):
+    client_secret = interpolate1(cfg.python.aws_auth.client_secret) or os.getenv(
+        "CS_AWS_OIDC_CLIENT_SECRET"
+    )
+    static_oidc = interpolate1(cfg.python.aws_auth.static_oidc).lower() == "true"
+
+    if static_oidc and not client_secret:
         die(
             "Please provide a client secret for CodeArtifact access via"
-            " 'python.aws_auth.client_secret'."
+            " 'python.aws_auth.client_secret' when using static OIDC."
         )
 
     current_time = int(time.time())
@@ -1126,8 +1126,7 @@ def _check_aws_token_validity(  # pylint: disable=too-many-locals
 
             opts = {
                 "client_secret": client_secret,
-                "static_oidc": interpolate1(cfg.python.aws_auth.static_oidc).lower()
-                == "true",
+                "static_oidc": static_oidc,
             }
             if cfg.python.aws_auth.client_id:
                 opts["client_id"] = interpolate1(cfg.python.aws_auth.client_id)
