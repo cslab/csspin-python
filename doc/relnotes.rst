@@ -59,16 +59,26 @@
 Release Notes
 =============
 
-v4.1.0-rc1
-==========
+v4.1.0
+======
 
-May 18, 2026
+June 30, 2026
 
 Enhancements
 ------------
 
 - Add ``python_sbom`` plugin for creating Python SBOMs (`!110
   <https://code.contact.de/qs/spin/spin_python/-/merge_requests/110>`_)
+
+Chores
+------
+
+- Add platform identifier to SBOM file name (`!112
+  <https://code.contact.de/qs/spin/spin_python/-/merge_requests/112>`_)
+- Enrich SBOM during python-sbom task (`!113
+  <https://code.contact.de/qs/spin/spin_python/-/merge_requests/113>`_)
+- Don't terminate when ``aws_auth.client_secret`` isn't set (`#123
+  <https://code.contact.de/qs/spin/spin_python/-/work_items/123>`_)
 
 v4.0.0
 ======
