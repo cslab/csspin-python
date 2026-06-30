@@ -28,7 +28,6 @@ defaults = config(
         "--cov-reset",
         "--cov",
         "--cov-report=term",
-        "--cov-report=html",
         "--cov-report=xml:{pytest.coverage_report}",
     ],
     coverage_report="python-pytest-coverage.xml",
