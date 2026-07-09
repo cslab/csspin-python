@@ -297,8 +297,13 @@ def _check_venv(  # pylint: disable=too-many-return-statements
     cfg: ConfigTree,
 ) -> bool:
     """
-    Checks whether the venv is actually a venv compatible
-    with our configuration and not just some dir.
+    Checks whether the venv is actually a venv compatible with our configuration
+    and not just some dir.
+
+    Uses absolute interpreter paths and runs *outside* the subprocess environment
+    on purpose: it must work while inspecting an existing venv to decide whether a
+    ``python.version`` change requires rebuilding it -- i.e. before the new
+    interpreter is provisioned.
     """
     try:
         python_version = (
@@ -402,6 +407,11 @@ def configure(cfg: ConfigTree) -> None:
     if cfg.python.aws_auth.enabled:
         _check_aws_token_validity(cfg)
 
+    # Provide spin's subprocess environment (see python_env). Registered here
+    # rather than in init so it is also available to the provision and
+    # finalize_provision hooks of plugins depending on this one.
+    cfg.spin.subprocess_environment = lambda: python_env(cfg)
+
 
 def init(cfg: ConfigTree) -> None:
     """Initialize the python plugin"""
@@ -413,32 +423,85 @@ def init(cfg: ConfigTree) -> None:
                 " project. You might want to run spin with the 'provision'"
                 " task."
             )
-    venv_init(cfg)
-
-
-# We won't activate more than once.
-ACTIVATED = False
 
 
 def venv_init(cfg: ConfigTree) -> None:
     """Activate the virtual environment"""
-    global ACTIVATED  # pylint: disable=global-statement
-    if os.environ.get("VIRTUAL_ENV", "") != cfg.python.venv and not ACTIVATED:
-        activate_this = cfg.python.scriptdir / "activate_this.py"
-        if not exists(activate_this):
-            die(
-                f"{cfg.python.venv} does not exist. You may want to provision"
-                " it using 'spin provision'"
-            )
-        if sys.platform == "win32":
-            echo(f"{cfg.python.scriptdir}\\activate.ps1")
-        else:
-            echo(f". {cfg.python.scriptdir}/activate")
-        with open(activate_this, encoding="utf-8") as file:
-            exec(  # pylint: disable=exec-used # nosec
-                file.read(), {"__file__": activate_this}
-            )
-        ACTIVATED = True
+    activate_this = cfg.python.scriptdir / "activate_this.py"
+    if not exists(activate_this):
+        die(
+            f"{cfg.python.venv} does not exist. You may want to provision"
+            " it using 'spin provision'"
+        )
+    if sys.platform == "win32":
+        echo(f"{cfg.python.scriptdir}\\activate.ps1")
+    else:
+        echo(f". {cfg.python.scriptdir}/activate")
+    with open(activate_this, encoding="utf-8") as file:
+        exec(  # pylint: disable=exec-used # nosec
+            file.read(), {"__file__": activate_this}
+        )
+
+
+@contextmanager
+def python_env(cfg: ConfigTree) -> Generator:
+    """
+    Context manager to activate the subprocess/python virtual environment and
+    deactivate it once done.
+
+    Registered as ``spin.subprocess_environment`` by the plugin's
+    :py:func:`configure` hook, so ``csspin.sh`` activates the virtual environment
+    around the commands it spawns. Activation is conditional: while the virtual
+    environment has not been created yet (e.g. early during ``spin provision``)
+    this is a no-op and the command runs in spin's in-process environment; once
+    the venv exists it is activated. Saving and restoring
+    ``os.environ``, ``sys.path`` and the ``sys`` prefix attributes makes nesting
+    safe -- an explicit ``with python_env(cfg):`` block whose inner ``csspin.sh``
+    re-enters this context.
+
+    See the "The subprocess environment" section of csspin's plugin development
+    guide for the general concept.
+    """
+    if not exists(cfg.python.scriptdir / "activate_this.py"):
+        # The virtual environment has not been provisioned (yet); run the command
+        # in spin's in-process environment instead of activating.
+        yield
+    else:
+
+        def interpolate_environ_value(value: str) -> str:
+            if not value:
+                return ""
+            value = str(value)
+            keys = re.findall(r"{(?P<key>\w+?)}", value)
+            for key in keys:
+                if key in os.environ:
+                    value = value.replace(f"{{{key}}}", os.environ[key])
+            return value
+
+        missing = object()
+        old_env = os.environ.copy()
+        old_sys_path = sys.path.copy()
+        old_sys_prefix = sys.prefix
+        old_real_prefix = getattr(sys, "real_prefix", missing)
+        try:
+            for name, value in EXPORTS:
+                os.environ[name] = interpolate_environ_value(value)
+
+            venv_init(cfg)
+            yield
+        finally:
+            echo(f"deactivate {cfg.python.venv}")
+            os.environ.clear()
+            os.environ.update(old_env)
+            sys.path = old_sys_path
+            sys.prefix = old_sys_prefix
+            # activate_this.py sets sys.real_prefix on activation; restore it (or
+            # remove it) so the attribute does not leak past this context.
+            if old_real_prefix is missing:
+                if hasattr(sys, "real_prefix"):
+                    delattr(sys, "real_prefix")
+            else:
+                setattr(sys, "real_prefix", old_real_prefix)
 
 
 class ActivateScriptPatcher(abc.ABC):
@@ -975,7 +1038,6 @@ def venv_provision(  # pylint: disable=too-many-branches,missing-function-docstr
         info("Provisioning venv '{python.venv}'")
         cfg.python.provisioner.provision_venv(cfg)
 
-    # This sets PATH to the venv
     init(cfg)
 
     _configure_pipconf(cfg)
