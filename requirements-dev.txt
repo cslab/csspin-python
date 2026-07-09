@@ -1,5 +1,5 @@
 -e .[aws_auth,uv]
-csspin
+csspin>=3.1.1
 pytest
 pytest-cov
 mypy

@@ -6,6 +6,7 @@
 
 """Module implementing the unit tests for csspin_python"""
 
+import os
 import re
 import sys
 from contextlib import nullcontext
@@ -21,6 +22,7 @@ with mock.patch("csspin.task"):
         _check_venv,
         _configure_pipconf,
         _split_requirement_option,
+        python_env,
     )
 
 
@@ -265,3 +267,69 @@ def test_check_venv(  # pylint: disable=too-many-arguments,too-many-positional-a
         assert "does not match" in mock_warn.call_args[0][0]
     else:
         mock_warn.assert_not_called()
+
+
+@mock.patch("csspin_python.python.exists", return_value=True)
+@mock.patch("csspin_python.python.echo")
+@mock.patch("csspin_python.python.venv_init")
+def test_python_env_nesting(mock_venv_init, _mock_echo, _mock_exists):
+    """
+    Nesting python_env() must not corrupt the outer activation or lose the
+    original environment on teardown.
+
+    csspin.sh activates spin.subprocess_environment (i.e. python_env) around the
+    commands it spawns, so an explicit ``with python_env(cfg):`` block that calls
+    sh() ends up nesting python_env. This must be safe.
+
+    `exists` is patched True so python_env takes the activation path (the venv is
+    considered provisioned) rather than its no-op path.
+
+    The inner activation sets *different* values for the same variables, so the
+    test also pins down which value wins where: the inner value inside the inner
+    context, and the outer value again once the inner context exits.
+
+    Sequence:
+      original env  -> [outer enters w/ "outer"] -> var == "outer"
+                    -> [inner enters w/ "inner"] -> var == "inner"
+                    -> [inner exits]             -> var == "outer" (outer intact)
+                    -> [outer exits]             -> var gone (original restored)
+    """
+    cfg = mock.MagicMock()
+
+    var = "_SPIN_PYTHON_ENV_TEST"
+    inner_only = "_SPIN_PYTHON_ENV_INNER_ONLY"
+
+    original_env = os.environ.copy()
+    original_sys_path = sys.path.copy()
+    original_sys_prefix = sys.prefix
+
+    # Patch EXPORTS to a list we grow in place between the two activations.
+    # EXPORTS is read on each python_env() entry and applied in order, so the
+    # outer activation applies "outer" and the inner one -- after extending
+    # EXPORTS -- applies a later "inner" (plus an inner-only variable) that wins.
+    exports = [(var, "outer")]
+    with mock.patch("csspin_python.python.EXPORTS", exports):
+        with python_env(cfg):
+            assert os.environ[var] == "outer"
+            assert inner_only not in os.environ
+
+            # Extend (not replace) EXPORTS for the inner activation; the later
+            # entry overrides the earlier "outer" value.
+            exports.extend([(var, "inner"), (inner_only, "1")])
+            with python_env(cfg):
+                # Inner value wins inside the inner context.
+                assert os.environ[var] == "inner"
+                assert os.environ[inner_only] == "1"
+
+            # Inner exit restores the value present when the inner context was
+            # entered (the outer activation), and drops the inner-only variable.
+            assert os.environ[var] == "outer"
+            assert inner_only not in os.environ
+
+        # Outer exit restores the process to its original state.
+        assert var not in os.environ
+        assert os.environ == original_env
+        assert sys.path == original_sys_path
+        assert sys.prefix == original_sys_prefix
+
+    assert mock_venv_init.call_count == 2
