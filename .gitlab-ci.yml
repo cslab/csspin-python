@@ -2,7 +2,7 @@
 
 include:
     - project: qs/spin/spin_plugin_common
-      ref: v3.0.0
+      ref: v4.0.0
       file: ci/.gitlab-ci.yml
 
 # ==============================================================================
