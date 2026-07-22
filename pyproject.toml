@@ -58,8 +58,17 @@ include = ["src/csspin_python/*"]
 precision = 2
 
 [tool.coverage.run]
+# `include` (not `source`) keeps the recorded paths as plain relative globs
+# SonarQube can map back to the repo tree; `source` rewrites them against the
+# source root in a way the scanner cannot resolve for subprocess coverage.
+include = ["src/csspin_python/*"]
 parallel = true
+# Auto-enable coverage in the spin subprocesses without a manual
+# COVERAGE_PROCESS_START shim; `sigterm` flushes data for children killed by
+# SIGTERM.
+patch = ["subprocess"]
 relative_files = true
+sigterm = true
 
 [tool.isort]
 # The profile must be 'black', to avoid conflicting reordering caused by
