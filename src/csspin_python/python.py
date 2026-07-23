@@ -191,7 +191,7 @@ def wheel(
     for build_path in {Path(path).absolute() for path in search_paths}:
         try:
             echo("Building PEP 517-like wheel")
-            sh(
+            cmd = [
                 "python",
                 "-m",
                 "build",
@@ -199,20 +199,28 @@ def wheel(
                 build_path,
                 "-o",
                 "{spin.project_root}/dist",
-            )
+            ]
+            if cfg.verbosity <= Verbosity.NORMAL:
+                cmd.append("--config-setting=quiet=true")
+            sh(*cmd)
         except Abort:
             echo("Building does not seem to work, use legacy setup.py style")
             with cd(build_path):
-                sh(
+                cmd = [
                     "python",
                     "setup.py",
-                    None if cfg.verbosity > Verbosity.NORMAL else "-v" "build",
+                ]
+                if cfg.verbosity <= Verbosity.NORMAL:
+                    cmd.append("-q")
+                cmd += [
+                    "build",
                     "-b",
                     "{spin.project_root}/build",
                     "bdist_wheel",
                     "-d",
                     "{spin.project_root}/dist",
-                )
+                ]
+                sh(*cmd)
 
 
 @task()
