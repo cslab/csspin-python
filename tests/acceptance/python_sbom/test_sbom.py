@@ -53,12 +53,31 @@ def cleanup_env():
 
 
 @pytest.mark.acceptance()
-def test_sbom_generates_cdx_json() -> None:
+@pytest.mark.parametrize(
+    "python_version",
+    [
+        "3.10.9",
+        # >=3.12 dropped distutils from the stdlib, which is why
+        # _predict_wheel_filename() must run in an environment with setuptools
+        # installed (the project's provisioned venv) rather than spin's bare
+        # seed interpreter.
+        "3.14.2",
+    ],
+)
+def test_sbom_generates_cdx_json(python_version: str) -> None:
     """Test that python-sbom creates a valid CycloneDX JSON file."""
-    base_command = ["spin", "-C", str(HERE), "-f", SPINFILE]
+    base_command = [
+        "spin",
+        "-C",
+        str(HERE),
+        "-f",
+        SPINFILE,
+        "-p",
+        f"python.version={python_version}",
+    ]
 
-    output, success = _execute_command(base_command + ["provision"])
-    assert success, output
+    provision_output, success = _execute_command(base_command + ["provision"])
+    assert success, provision_output
 
     output, success = _execute_command(base_command + ["python-sbom"])
     assert success, output
@@ -96,6 +115,11 @@ def test_sbom_generates_cdx_json() -> None:
         component["author"] == "CONTACT Software GmbH (ptm-team@contact-software.com)"
     )
     assert component["licenses"] == [{"expression": "Apache-2.0"}]
+    assert component["purl"] == (
+        "pkg:pypi/dummy-sbom-project@0.1.0"
+        "?file_name=dummy_sbom_project-0.1.0-py3-none-any.whl"
+        r"&repository_url=https:%2F%2Fpackages.contact.de%2Ftools%2Fstable"
+    )
 
     bom_ref_by_name = {c["name"]: c["bom-ref"] for c in components if "bom-ref" in c}
     primary_dep = next(

@@ -25,6 +25,7 @@ from importlib.metadata import metadata as _pkg_metadata
 from importlib.metadata import version as _pkg_version
 from subprocess import DEVNULL, PIPE
 from tempfile import TemporaryDirectory
+from urllib.parse import quote, urlencode, urlparse
 
 from csspin import (
     Verbosity,
@@ -40,12 +41,14 @@ from csspin import (
 )
 from csspin.tree import ConfigTree
 from packaging.requirements import Requirement
+from packaging.utils import canonicalize_name
 from path import Path
 
 defaults = config(
     cyclonedx_bom_version="7.3.0",
     project_paths=["{spin.project_root}"],
-    requires=config(spin=["csspin_python.python"]),
+    repository_url="{python.index_url}",
+    requires=config(spin=["csspin_python.python"], python=["setuptools"]),
 )
 
 
@@ -69,12 +72,23 @@ def sbom(cfg: ConfigTree) -> None:
 
         project_path = Path(project_path).absolute()
         metadata = get_project_metadata(project_path, cfg.python.index_url)
+        project_name, project_version = metadata.get("name"), metadata.get("version")
+
+        file_name = _predict_wheel_filename(
+            project_path, project_name, project_version, cfg.python.python
+        )
         third_party_deps = _collect_thirdparty_deps(
             metadata.get("requires_dist", set()), python_version=cfg.python.version
         )
         sbom_json = json.loads(_run_cyclonedx(cfg, third_party_deps, stderr))
-        _enrich_sbom(sbom_json, metadata, third_party_deps)
-        _write_sbom(cfg, sbom_json, metadata.get("name"))
+        _enrich_sbom(
+            sbom_json,
+            metadata,
+            third_party_deps,
+            cfg.python_sbom.repository_url,
+            file_name,
+        )
+        _write_sbom(cfg, sbom_json, project_name)
 
 
 def cleanup(cfg: ConfigTree) -> None:
@@ -114,7 +128,7 @@ def _ensure_cyclonedx_venv(cfg: ConfigTree, binary_dir: str, quiet: str | None) 
         )
         rmtree(venv_cdx)
 
-    sh(cfg.python.interpreter, "-m", "venv", venv_cdx)
+    sh(cfg.python.interpreter, "-m", "venv", venv_cdx, use_subprocess_environment=False)
     sh(
         interpreter_cdx,
         "-m",
@@ -125,6 +139,7 @@ def _ensure_cyclonedx_venv(cfg: ConfigTree, binary_dir: str, quiet: str | None) 
         "--index-url",
         cfg.python.index_url,
         "cyclonedx-bom==" + requested_version,
+        use_subprocess_environment=False,
     )
     with memoizer(memo_file) as memo:
         memo.add(memo_key)
@@ -143,7 +158,7 @@ def _run_cyclonedx(cfg: ConfigTree, third_party_deps: set[str], stderr: int) -> 
     with TemporaryDirectory() as tmp_dir:
         venv = Path(tmp_dir) / "venv"
         interpreter = venv / binary_dir / "python" + cfg.platform.exe
-        sh(cfg.python.interpreter, "-m", "venv", venv)
+        sh(cfg.python.interpreter, "-m", "venv", venv, use_subprocess_environment=False)
         if third_party_deps:
             sh(
                 interpreter,
@@ -158,10 +173,28 @@ def _run_cyclonedx(cfg: ConfigTree, third_party_deps: set[str], stderr: int) -> 
                     for constraint in cfg.python.constraints
                 ],
                 *third_party_deps,
+                use_subprocess_environment=False,
                 stderr=stderr,
             )
-        sh(interpreter, "-m", "pip", quiet, "uninstall", "-y", "pip")
-        return backtick(interpreter_cdx, "-m", "cyclonedx_py", "environment", venv, stderr=stderr)  # type: ignore[no-any-return] # noqa: E501
+        sh(
+            interpreter,
+            "-m",
+            "pip",
+            quiet,
+            "uninstall",
+            "-y",
+            "pip",
+            use_subprocess_environment=False,
+        )
+        return backtick(  # type: ignore[no-any-return]
+            interpreter_cdx,
+            "-m",
+            "cyclonedx_py",
+            "environment",
+            venv,
+            use_subprocess_environment=False,
+            stderr=stderr,
+        )
 
 
 def _write_sbom(cfg: ConfigTree, sbom_json: dict, project_name: str) -> None:
@@ -197,7 +230,52 @@ def _parse_authors(author_name: str, author_email: str) -> str:
     return ", ".join(f"{name} ({addr})" for name, addr in entries)
 
 
-def _build_primary_component(metadata: dict) -> tuple[dict, str]:
+def _repository_base_url(index_url: str) -> str:
+    """Reduce a pip index URL to the repository base URL a purl expects."""
+    parsed = urlparse(index_url)
+    segments = [segment for segment in parsed.path.split("/") if segment]
+    if segments and segments[-1] in ("simple", "+simple"):
+        segments.pop()
+    return parsed._replace(
+        netloc=parsed.netloc.rsplit("@", 1)[-1],  # drop basic-auth credentials
+        path="/".join([""] + segments),
+    ).geturl()
+
+
+def _build_purl(name: str, version: str, repository_url: str, file_name: str) -> str:
+    """Build the pypi Package URL for a project, per tn-0058.
+
+    ``repository_url`` is only added when the package isn't published to
+    public pypi.org, since type, name and version are unique there already.
+    """
+    purl = f"pkg:pypi/{canonicalize_name(name)}@{quote(version, safe=':')}"
+
+    qualifiers = {"file_name": file_name}
+    if urlparse(repository_url).hostname != "pypi.org":
+        qualifiers["repository_url"] = _repository_base_url(repository_url)
+
+    return f"{purl}?{urlencode(sorted(qualifiers.items()), safe=':')}"
+
+
+def _predict_wheel_filename(
+    project_path: str, name: str, version: str, interpreter: str
+) -> str:
+    """
+    Predict the wheel filename ``python:wheel`` will produce for
+    ``project_path``, without building it.
+
+    ``name`` and ``version`` come from :func:`get_project_metadata`.
+    ``interpreter`` must be ``project_path``'s own, since it owns the tags.
+    Cached since the prediction is identical for every caller within the same
+    process.
+    """
+    script = Path(__file__).parent / "_predict_wheel_filename.py"
+    return backtick(interpreter, script, project_path, name, version).strip()  # type: ignore[no-any-return] # noqa: E501
+
+
+def _build_primary_component(
+    metadata: dict, repository_url: str, file_name: str
+) -> tuple[dict, str]:
     """Build the CycloneDX primary component dict and its bom-ref from project metadata."""
     if not (name := metadata.get("name")):
         die("Project metadata is missing 'name'.")
@@ -206,6 +284,7 @@ def _build_primary_component(metadata: dict) -> tuple[dict, str]:
     if not (license_id := metadata.get("license")):
         die("Project metadata is missing 'license'.")
 
+    purl = _build_purl(str(name), str(version), repository_url, file_name)
     authors = _parse_authors(
         author_name=metadata.get("author", "").strip(),
         author_email=metadata.get("author_email", "").strip(),
@@ -216,6 +295,7 @@ def _build_primary_component(metadata: dict) -> tuple[dict, str]:
         "bom-ref": primary_ref,
         "licenses": [{"expression": license_id}],
         "name": name,
+        "purl": purl,
         "type": "application",
         "version": version,
     }
@@ -226,9 +306,13 @@ def _enrich_sbom(
     sbom_json: dict,
     metadata: dict,
     third_party_deps: set[str],
+    repository_url: str,
+    file_name: str,
 ) -> None:
     """Add the primary component and its dependency entry to the CycloneDX document."""
-    component, primary_ref = _build_primary_component(metadata)
+    component, primary_ref = _build_primary_component(
+        metadata, repository_url, file_name
+    )
     existing_metadata = sbom_json.get("metadata", {})
     existing_tools = existing_metadata.get("tools", {})
     existing_tool_components = (

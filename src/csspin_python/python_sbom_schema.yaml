@@ -16,3 +16,8 @@ python_sbom:
             help: |
                 Version of the cyclonedx-bom package to use for generating the
                 SBOM.
+        repository_url:
+            type: str
+            help: |
+                URL of the package index used for the primary component's
+                Package URL. Defaults to 'python.index_url'.
