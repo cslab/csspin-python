@@ -6,3 +6,6 @@ plugins:
     - csspin_python.python_sbom
 python:
     version: 3.10.9
+python_sbom:
+    # Adding a repo URL to check if its included in the PURL
+    repository_url: https://packages.contact.de/tools/stable/+simple
