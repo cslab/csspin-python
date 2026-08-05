@@ -1,14 +1,14 @@
 # -*- mode: yaml; coding: utf-8 -*-
 
 include:
-    - project: qs/spin/spin_plugin_common
-      ref: v4.0.0
+    - project: pod/tools/spin_plugin_common
+      ref: v4.0.1
       file: ci/.gitlab-ci.yml
 
 # ==============================================================================
 # The following customizations are required to ensure pip>=24 is installed,
 # which is required for installing extras with constraints (see
-# https://code.contact.de/qs/spin/cs.spin/-/issues/177).
+# https://code.contact.de/pod/components/csspin/-/issues/177).
 
 variables:
     UV_LINK_MODE: copy
