@@ -52,7 +52,7 @@
     Chores
     ------
 
-    - Add release notes to the documentation structure (`#100 <https://code.contact.de/qs/spin/cs.spin/-/issues/100>`_)
+    - Add release notes to the documentation structure (`#100 <https://code.contact.de/pod/components/csspin/-/issues/100>`_)
 
 
 =============
@@ -68,17 +68,17 @@ Enhancements
 ------------
 
 - Add ``python_sbom`` plugin for creating Python SBOMs (`!110
-  <https://code.contact.de/qs/spin/spin_python/-/merge_requests/110>`_)
+  <https://code.contact.de/pod/components/csspin-python/-/merge_requests/110>`_)
 
 Chores
 ------
 
 - Add platform identifier to SBOM file name (`!112
-  <https://code.contact.de/qs/spin/spin_python/-/merge_requests/112>`_)
+  <https://code.contact.de/pod/components/csspin-python/-/merge_requests/112>`_)
 - Enrich SBOM during python-sbom task (`!113
-  <https://code.contact.de/qs/spin/spin_python/-/merge_requests/113>`_)
+  <https://code.contact.de/pod/components/csspin-python/-/merge_requests/113>`_)
 - Don't terminate when ``aws_auth.client_secret`` isn't set (`#123
-  <https://code.contact.de/qs/spin/spin_python/-/work_items/123>`_)
+  <https://code.contact.de/pod/components/csspin-python/-/work_items/123>`_)
 
 v4.0.0
 ======
@@ -89,15 +89,15 @@ Breaking Changes
 ----------------
 
 - Drop Python 3.9 Support (`#114
-  <https://code.contact.de/qs/spin/spin_python/-/issues/114>`_)
+  <https://code.contact.de/pod/components/csspin-python/-/issues/114>`_)
 
 Bug Fixes
 ---------
 
 - Provision fails when python.venv exists and is empty (`#118
-  <https://code.contact.de/qs/spin/spin_python/-/issues/118>`_)
+  <https://code.contact.de/pod/components/csspin-python/-/issues/118>`_)
 - aws_auth + uv_provisioner: Malformed uv.toml after key_duration expired (`#121
-  <https://code.contact.de/qs/spin/spin_python/-/issues/121>`_)
+  <https://code.contact.de/pod/components/csspin-python/-/issues/121>`_)
 
 v3.2.0
 ======
@@ -108,24 +108,24 @@ Enhancements
 ------------
 
 - Provide a convenient way to update all Python packages in the provisioned
-  environment (`#73 <https://code.contact.de/qs/spin/spin_python/-/issues/73>`_)
+  environment (`#73 <https://code.contact.de/pod/components/csspin-python/-/issues/73>`_)
 
 Bug Fixes
 ---------
 
 - ``spin provision`` does not update devpackages properly
-  (`#72 <https://code.contact.de/qs/spin/spin_python/-/issues/72>`_)
+  (`#72 <https://code.contact.de/pod/components/csspin-python/-/issues/72>`_)
 - Provision with new packages for existing environments results in installation
   of wrong versions (`#109
-  <https://code.contact.de/qs/spin/spin_python/-/issues/109>`_)
+  <https://code.contact.de/pod/components/csspin-python/-/issues/109>`_)
 
 Chores
 ------
 
 - Add repository URL information to Wheel metadata
-  (`#112 <https://code.contact.de/qs/spin/spin_python/-/issues/112>`_)
+  (`#112 <https://code.contact.de/pod/components/csspin-python/-/issues/112>`_)
 - Update release process documentation and contribution guideline
-  (`#113 <https://code.contact.de/qs/spin/spin_python/-/issues/113>`_)
+  (`#113 <https://code.contact.de/pod/components/csspin-python/-/issues/113>`_)
 
 v3.1.1
 ======
@@ -136,15 +136,15 @@ Bug Fixes
 ---------
 
 - python: uv_provisioner fails during uv.toml update
-  (`#108 <https://code.contact.de/qs/spin/spin_python/-/issues/108>`_)
+  (`#108 <https://code.contact.de/pod/components/csspin-python/-/issues/108>`_)
 
 Chores
 ------
 
 - Configure AWS secret handling via configuration tree instead of relying on
   environment variables
-  (`#98 <https://code.contact.de/qs/spin/spin_python/-/issues/98>`_)
+  (`#98 <https://code.contact.de/pod/components/csspin-python/-/issues/98>`_)
 - Document host system requirements properly
-  (`#104 <https://code.contact.de/qs/spin/spin_python/-/issues/104>`_)
+  (`#104 <https://code.contact.de/pod/components/csspin-python/-/issues/104>`_)
 - Add release notes to the documentation structure
-  (`#100 <https://code.contact.de/qs/spin/spin_python/-/issues/100>`_)
+  (`#100 <https://code.contact.de/pod/components/csspin-python/-/issues/100>`_)

@@ -123,7 +123,7 @@ Steps to create a release:
 3. Hit "Create tag" ✨
 
 4. [optional] If the change need to be distributed within the
-   [cetest](https://code.contact.de/qs/images/cetest) image, follow the release
+   [cetest](https://code.contact.de/pod/images/cetest) image, follow the release
    procedure there.
 
 5. If the release is a major or minor, announce it via
