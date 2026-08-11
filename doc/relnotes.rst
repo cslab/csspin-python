@@ -59,6 +59,47 @@
 Release Notes
 =============
 
+v5.0.0
+======
+
+August 11, 2026
+
+Breaking Changes
+----------------
+
+- ``csspin-python`` no longer globally activates the venv in the
+  ``python`` plugin's ``init`` hook. It now registers ``python_env()``
+  as spin's ``subprocess_environment``, so the venv is activated on
+  demand for ``spin run``, ``extra_tasks``, and provisioning (`!109
+  <https://code.contact.de/pod/components/csspin-python/-/merge_requests/109>`_)
+
+Migration Guide
+---------------
+
+- This release requires ``csspin>=3.1.1``.
+
+Enhancements
+------------
+
+- Add a ``purl`` field to the primary component of generated Python
+  SBOMs (`!121
+  <https://code.contact.de/pod/components/csspin-python/-/merge_requests/121>`_)
+
+Chores
+------
+
+- Update CI includes and stale references after the move to
+  ``pod/components`` (`!122
+  <https://code.contact.de/pod/components/csspin-python/-/merge_requests/122>`_)
+- Reduce setuptools verbosity in default mode when running
+  ``python:wheel`` (`!120
+  <https://code.contact.de/pod/components/csspin-python/-/merge_requests/120>`_)
+- Add SonarQube analysis (`!119
+  <https://code.contact.de/pod/components/csspin-python/-/merge_requests/119>`_)
+- Remove the pytest ``--cov-report=html`` export since it was never
+  used (`#84
+  <https://code.contact.de/pod/components/csspin-python/-/work_items/84>`_)
+
 v4.1.0
 ======
 
