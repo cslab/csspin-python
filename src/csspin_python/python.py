@@ -163,7 +163,6 @@ defaults = config(
         memo="{spin.spin_dir}/aws_auth.memo",
         key_duration=3600 * 10,  # 10 hours
         static_oidc=False,
-        index="16.0/simple",
         # Need to set client secret to empty string, otherwise the string "None"
         # would be handled as secret and obfucsated in logs.
         client_secret="",  # nosec: B106
