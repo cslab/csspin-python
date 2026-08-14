@@ -148,7 +148,7 @@ python:
                         CodeArtifact.
                 index:
                     type: str
-                    help: The CodeArtifact repository index (e.g. "16.0/simple").
+                    help: The CodeArtifact repository index (e.g. "2026.2/simple").
                 client_id:
                     type: str
                     help: The OIDC client ID to use.

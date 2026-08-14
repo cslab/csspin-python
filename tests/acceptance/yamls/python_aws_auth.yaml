@@ -8,3 +8,4 @@ python:
     aws_auth:
         enabled: True
         static_oidc: True
+        index: 2026.2/simple
