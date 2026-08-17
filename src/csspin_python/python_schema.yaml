@@ -116,6 +116,13 @@ python:
                 The index url from where packages should get installed into the
                 venv. This value will also be put into cfg.python.pipconf, if
                 not already mentioned there.
+        extra_index_urls:
+            type: list
+            help: |
+                Additional package indexes to install from, alongside
+                'index_url'. If 'aws_auth.extra_indexes' is set, its
+                resolved, authenticated CodeArtifact URLs are merged into
+                this list.
         build_wheels:
             type: list
             help: |
@@ -149,6 +156,11 @@ python:
                 index:
                     type: str
                     help: The CodeArtifact repository index (e.g. "2026.2/simple").
+                extra_indexes:
+                    type: list
+                    help: |
+                        Additional CodeArtifact repository indexes to
+                        authenticate against, alongside 'index'.
                 client_id:
                     type: str
                     help: The OIDC client ID to use.

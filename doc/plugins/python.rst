@@ -146,6 +146,20 @@ allows to install packages from the CodeArtifact registry.
     spin: python -mpip -q --disable-pip-version-check install --index-url https://aws:*******@contact-373369985286.d.codeartifact.eu-central-1.amazonaws.com/pypi/16.0/simple/ -U pip
     ...
 
+Additional CodeArtifact repositories (within the same domain as the one
+configured via ``python.aws_auth.index``) can be authenticated and exposed as
+extra package indexes via ``python.aws_auth.extra_indexes``:
+
+.. code-block:: yaml
+    :caption: ``spinfile.yaml`` authenticating against an additional CodeArtifact index
+
+    python:
+        aws_auth:
+            enabled: True
+            index: 16.0/simple
+            extra_indexes:
+                - stb/simple
+
 How to use an existing Python interpreter, instead of provisioning another one?
 ###############################################################################
 
