@@ -71,7 +71,9 @@ def sbom(cfg: ConfigTree) -> None:
             die(f"Project path '{project_path}' does not exist.")
 
         project_path = Path(project_path).absolute()
-        metadata = get_project_metadata(project_path, cfg.python.index_url)
+        metadata = get_project_metadata(
+            project_path, cfg.python.index_url, tuple(cfg.python.extra_index_urls)
+        )
         project_name, project_version = metadata.get("name"), metadata.get("version")
 
         file_name = _predict_wheel_filename(
@@ -138,6 +140,7 @@ def _ensure_cyclonedx_venv(cfg: ConfigTree, binary_dir: str, quiet: str | None) 
         "install",
         "--index-url",
         cfg.python.index_url,
+        *[f"--extra-index-url={url}" for url in cfg.python.extra_index_urls],
         "cyclonedx-bom==" + requested_version,
         use_subprocess_environment=False,
     )
@@ -168,6 +171,7 @@ def _run_cyclonedx(cfg: ConfigTree, third_party_deps: set[str], stderr: int) -> 
                 "install",
                 "--index-url",
                 cfg.python.index_url,
+                *[f"--extra-index-url={url}" for url in cfg.python.extra_index_urls],
                 *[
                     f"--constraint={constraint}"
                     for constraint in cfg.python.constraints

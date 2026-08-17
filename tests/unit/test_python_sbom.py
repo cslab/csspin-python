@@ -10,13 +10,16 @@ from unittest import mock
 
 import pytest
 from click import Abort
+from path import Path
 
 # Mock `csspin.task` away as the import fails otherwise
 with mock.patch("csspin.task"):
     from csspin_python.python_sbom import (
         _build_primary_component,
         _build_purl,
+        _ensure_cyclonedx_venv,
         _parse_authors,
+        _run_cyclonedx,
     )
 
 
@@ -208,3 +211,53 @@ class TestPrimaryComponentMetadata:
         metadata = {**_AUTHOR_METADATA, missing_key: ""}
         with pytest.raises(Abort):
             _build_primary_component(metadata, "https://pypi.org/simple", _FILE_NAME)
+
+
+class TestIsolatedBuildsSeeExtraIndexUrls:
+    """
+    Tests that the temp venvs 'python_sbom' installs into propagate
+    'python.extra_index_urls', so third-party deps living on an aws_auth
+    extra CodeArtifact index (e.g. 'ccversioning' on 'stb') are reachable.
+    """
+
+    @mock.patch("csspin_python.python_sbom.memoizer")
+    @mock.patch("csspin_python.python_sbom.sh")
+    def test__ensure_cyclonedx_venv_passes_extra_index_urls(
+        self, mock_sh, mock_memoizer, tmp_path
+    ):
+        """The cyclonedx-bom install command gets '--extra-index-url' too."""
+        mock_memoizer.return_value.__enter__.return_value = mock.MagicMock(
+            check=lambda *_: False
+        )
+
+        cfg = mock.MagicMock()
+        cfg.spin.project_root = Path(tmp_path)
+        cfg.python.extra_index_urls = ["https://index.example/stb/simple"]
+        cfg.platform.exe = ""
+
+        _ensure_cyclonedx_venv(cfg, "bin", None)
+
+        install_call = mock_sh.call_args_list[1]
+        assert "--extra-index-url=https://index.example/stb/simple" in install_call.args
+
+    @mock.patch("csspin_python.python_sbom._ensure_cyclonedx_venv")
+    @mock.patch("csspin_python.python_sbom.backtick")
+    @mock.patch("csspin_python.python_sbom.sh")
+    def test__run_cyclonedx_passes_extra_index_urls_for_third_party_deps(
+        self, mock_sh, mock_backtick, mock_ensure_venv
+    ):
+        """The third-party-deps install command gets '--extra-index-url' too."""
+        mock_ensure_venv.return_value = "/fake/interpreter"
+        mock_backtick.return_value = "{}"
+
+        cfg = mock.MagicMock()
+        cfg.python.extra_index_urls = ["https://index.example/stb/simple"]
+        cfg.verbosity = 0
+        cfg.platform.exe = ""
+
+        _run_cyclonedx(cfg, {"ccversioning"}, None)
+
+        install_call = next(
+            call for call in mock_sh.call_args_list if "install" in call.args
+        )
+        assert "--extra-index-url=https://index.example/stb/simple" in install_call.args

@@ -161,16 +161,26 @@ class SimpleUvProvisioner(SimpleProvisioner):
         self._uv_cmd("pip", "install", "pip")
 
 
+def _set_extra_index_url(toml_content: dict, extra_index_urls: list[str]) -> None:
+    """Set or drop the 'extra-index-url' key in `toml_content` in place."""
+    if extra_index_urls:
+        toml_content["extra-index-url"] = extra_index_urls
+    else:
+        toml_content.pop("extra-index-url", None)
+
+
 def _configure_uv_toml(cfg: ConfigTree) -> None:
     """
     Create a config file for uv, similar to the pip.conf of
     csspin_python.python, since `uv` pip won't respect the pip.conf.
+
+    'index-url'/'extra-index-url' declared in the 'uv_provisioner.uv_toml'
+    template are ignored; 'python.index_url'/'python.extra_index_urls' are
+    the only supported way to configure these.
     """
     toml_content = tomllib.loads(cfg.uv_provisioner.uv_toml or "")
-    if "index-url" not in toml_content:
-        toml_content["index-url"] = cfg.python.index_url
-    else:
-        toml_content["index-url"] = toml_content.get("index-url", cfg.python.index_url)
+    toml_content["index-url"] = cfg.python.index_url
+    _set_extra_index_url(toml_content, cfg.python.extra_index_urls)
 
     with open(cfg.uv_provisioner.uv_toml_path, mode="wb") as fd:
         tomli_w.dump(toml_content, fd)
@@ -178,12 +188,20 @@ def _configure_uv_toml(cfg: ConfigTree) -> None:
 
 def _update_index_url_in_toml(cfg: ConfigTree) -> None:
     """
-    Update the index-url in the uv.toml in case it changed.
+    Update the index-url and extra-index-url in the uv.toml in case they
+    changed.
     """
     if (uv_toml_path := interpolate1(Path(cfg.uv_provisioner.uv_toml_path))).exists():
         with open(uv_toml_path, mode="rb") as fd:
             toml_content = tomllib.load(fd)
+        changed = False
         if toml_content.get("index-url") != cfg.python.index_url:
             toml_content["index-url"] = cfg.python.index_url
+            changed = True
+
+        if toml_content.get("extra-index-url", []) != cfg.python.extra_index_urls:
+            _set_extra_index_url(toml_content, cfg.python.extra_index_urls)
+            changed = True
+        if changed:
             with open(uv_toml_path, mode="wb") as fd:
                 tomli_w.dump(toml_content, fd)

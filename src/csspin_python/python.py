@@ -81,6 +81,8 @@ from functools import cache
 from subprocess import CalledProcessError, check_output
 from textwrap import dedent, indent
 from typing import Generator, Iterable, Type, Union
+from urllib.error import HTTPError
+from urllib.parse import urljoin, urlsplit
 
 try:
     from typing import Self  # type: ignore[attr-defined]
@@ -186,6 +188,8 @@ def wheel(
 ) -> None:
     """Build a wheel of the current project and any additional wheels."""
     setenv(PIP_INDEX_URL=cfg.python.index_url)
+    if cfg.python.extra_index_urls:
+        setenv(PIP_EXTRA_INDEX_URL=" ".join(cfg.python.extra_index_urls))
     search_paths = paths or cfg.python.build_wheels
     for build_path in {Path(path).absolute() for path in search_paths}:
         try:
@@ -791,7 +795,9 @@ class PythonActivate(ActivateScriptPatcher):
 
 
 @cache
-def get_project_metadata(project_path: str, index_url: str) -> dict:  # type: ignore[return] # pylint: disable=inconsistent-return-statements # noqa: E501
+def get_project_metadata(  # type: ignore[return] # pylint: disable=inconsistent-return-statements # noqa: E501
+    project_path: str, index_url: str, extra_index_urls: tuple[str, ...] = ()
+) -> dict:
     """
     Retrieve project metadata of ``project_path`` via ``python -m build
     --metadata``.
@@ -800,12 +806,16 @@ def get_project_metadata(project_path: str, index_url: str) -> dict:  # type: ig
     every caller within the same process.
     """
     setenv(PIP_INDEX_URL=index_url)
+    if extra_index_urls:
+        setenv(PIP_EXTRA_INDEX_URL=" ".join(extra_index_urls))
     kwargs = {}
     if CONFIG.verbosity < Verbosity.INFO:
         kwargs["stderr"] = subprocess.DEVNULL
     raw_metadata = backtick(
         "python", "-m", "build", "--metadata", project_path, **kwargs
     )
+    if extra_index_urls:
+        setenv(PIP_EXTRA_INDEX_URL=None)
     setenv(PIP_INDEX_URL=None)
 
     if raw_metadata:
@@ -1124,21 +1134,78 @@ def _configure_pipconf(cfg: ConfigTree, update: bool = False) -> None:
         "index_url" in config_parser["global"] or "index-url" in config_parser["global"]
     ):
         config_parser["global"]["index_url"] = interpolate1(cfg.python.index_url)
+
+    # Extra index urls are only configured via 'python.extra_index_urls', not
+    # 'python.pipconf', so drop whatever the pipconf template declares rather
+    # than merging it in.
+    for key in ("extra_index_url", "extra-index-url"):
+        config_parser["global"].pop(key, None)
+
+    if cfg.python.extra_index_urls:
+        config_parser["global"]["extra_index_url"] = "\n".join(
+            interpolate1(url) for url in cfg.python.extra_index_urls
+        )
     with open(_get_pipconf(cfg), mode="w", encoding="utf-8") as fd:
         config_parser.write(fd)
 
 
 def _obfuscate_index_url(index_url: str) -> None:
-    """Add the CodeArtifact token to the secrets."""
+    """Add the credentials of an index URL to the secrets."""
 
     from csspin import secrets
 
-    secrets.add(index_url.split(":")[2].split("@")[0])  # Codeartifact token
+    if password := urlsplit(index_url).password:
+        secrets.add(password)
 
 
-def _check_aws_token_validity(  # pylint: disable=too-many-locals
-    cfg: ConfigTree,
-) -> None:
+def _merge_extra_index_urls(existing: Iterable[str], new: list[str]) -> list[str]:
+    """
+    Merge `new` extra index URLs into `existing`, preserving order and dropping
+    duplicates. Used so that a user-configured ``python.extra_index_urls``
+    survives aws_auth resolving its own CodeArtifact-backed extra indexes.
+    """
+    merged = list(existing)
+    for url in new:
+        if url not in merged:
+            merged.append(url)
+    return merged
+
+
+def _resolve_extra_index_urls(cfg: ConfigTree, index_base_url: str) -> list[str]:
+    """
+    Resolve ``python.aws_auth.extra_indexes`` into full, authenticated
+    CodeArtifact index URLs, obfuscating each token along the way.
+    """
+
+    extra_index_urls = []
+    for extra_index in cfg.python.aws_auth.extra_indexes:
+        extra_index_url = urljoin(index_base_url + "/", interpolate1(extra_index))
+        # Kinda redundant since index_url carries the same secret and is already
+        # obfuscated. So this noop here just exists to make the obfucation
+        # explicit.
+        _obfuscate_index_url(extra_index_url)
+        extra_index_urls.append(extra_index_url)
+    return extra_index_urls
+
+
+def _apply_resolved_index_urls(cfg: ConfigTree, index_base_url: str) -> None:
+    """
+    Set ``python.index_url`` and merge-resolve ``python.extra_index_urls`` from
+    `index_base_url`, the CodeArtifact domain/repository base shared by the
+    primary index and any ``aws_auth.extra_indexes``. Shared by both the
+    fresh-token and cached-token paths of ``_check_aws_token_validity``.
+    """
+
+    index_url = urljoin(index_base_url + "/", interpolate1(cfg.python.aws_auth.index))
+    cfg.python.index_url = index_url
+    _obfuscate_index_url(index_url)
+    cfg.python.extra_index_urls = _merge_extra_index_urls(
+        cfg.python.extra_index_urls,
+        _resolve_extra_index_urls(cfg, index_base_url),
+    )
+
+
+def _check_aws_token_validity(cfg: ConfigTree) -> None:
     """
     If csspin-python[aws_auth] is installed, we can use csaccess to get the
     CodeArtifact authentication token.
@@ -1169,50 +1236,34 @@ def _check_aws_token_validity(  # pylint: disable=too-many-locals
     timestamp_key = "aws_auth_timestamp"
 
     with memoizer(cfg.python.aws_auth.memo) as memo:
-        for item in memo.items():
-            if isinstance(item, str) and item.startswith(f"{timestamp_key}:"):
-                last_time = int(item.split(":", 1)[1])
+        if memo.items() and (item := memo.items()[0]):
+            if not isinstance(item, tuple):
+                memo.clear()
+            else:
+                _, last_time, index_base_url = item
                 if current_time - last_time < int(
                     interpolate1(cfg.python.aws_auth.key_duration)
                 ):
-                    pipconf = _get_pipconf(cfg)
-                    config_parser = configparser.ConfigParser()
-                    config_parser.read(pipconf)
-                    info(f"Using existing index URL from {pipconf}.")
+                    info("Using cached CodeArtifact token.")
+                    _apply_resolved_index_urls(cfg, index_base_url)
+                    return
+                memo.clear()
 
-                    if index_url := (
-                        config_parser["global"].get("index_url")
-                        or config_parser["global"].get("index-url")
-                    ):
-                        cfg.python.index_url = index_url
-                        _obfuscate_index_url(index_url)
-                    break
-                memo.items().remove(item)
-        else:
-            info("Updating Codeartifact token.")
-            from urllib.error import HTTPError
-            from urllib.parse import urljoin
+        info("Updating Codeartifact token.")
 
-            opts = {
-                "client_secret": client_secret,
-                "static_oidc": static_oidc,
-            }
-            if cfg.python.aws_auth.client_id:
-                opts["client_id"] = interpolate1(cfg.python.aws_auth.client_id)
-            if cfg.python.aws_auth.role_arn:
-                opts["aws_role_arn"] = interpolate1(cfg.python.aws_auth.role_arn)
+        opts = {"client_secret": client_secret, "static_oidc": static_oidc}
+        if cfg.python.aws_auth.client_id:
+            opts["client_id"] = interpolate1(cfg.python.aws_auth.client_id)
+        if cfg.python.aws_auth.role_arn:
+            opts["aws_role_arn"] = interpolate1(cfg.python.aws_auth.role_arn)
 
-            try:
-                index_base_url = get_ca_pypi_url_programmatic(**opts)
-            except HTTPError as e:
-                die(f"Failed to establish CodeArtifact connection: {e}")
+        try:
+            index_base_url = get_ca_pypi_url_programmatic(**opts)
+        except HTTPError as e:
+            die(f"Failed to establish CodeArtifact connection: {e}")
 
-            index_url = urljoin(
-                index_base_url + "/", interpolate1(cfg.python.aws_auth.index)
-            )
-            cfg.python.index_url = index_url
-            _obfuscate_index_url(index_url)
+        _apply_resolved_index_urls(cfg, index_base_url)
 
-            if exists(cfg.python.venv):
-                _configure_pipconf(cfg, update=True)
-            memo.add(f"{timestamp_key}:{current_time}")
+        if exists(cfg.python.venv):
+            _configure_pipconf(cfg, update=True)
+        memo.add((timestamp_key, current_time, index_base_url))

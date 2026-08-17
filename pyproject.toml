@@ -214,6 +214,15 @@ notes = ["FIXME", "XXX", "TODO", "TBC", "TBD"]
 # CON: to make the output more concise
 score = "no"
 
+[tool.pylint.typecheck]
+# src/csspin_python/pytest.py has no sibling __init__.py, so linting it
+# alongside a test file puts src/csspin_python/ itself on sys.path. Since the
+# pylint pre-commit env has no real pytest installed, `import pytest` in test
+# files then resolves to that local plugin file instead. astroid's bundled
+# (outdated) pytest brain stub extends whatever resolves as "pytest" with a
+# fixed attribute list that predates pytest.param, so it alone gets flagged.
+generated-members = ["pytest.param"]
+
 [tool.pytest.ini_options]
 markers = ["acceptance", "integration", "wip"]
 
