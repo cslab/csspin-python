@@ -59,6 +59,57 @@
 Release Notes
 =============
 
+v6.0.0
+======
+
+August 18, 2026
+
+Breaking Changes
+----------------
+
+- ``python.aws_auth.static_oidc`` and ``python.aws_auth.client_secret`` are
+  removed. csaccess selects the AWS CodeArtifact authentication mode now, so
+  ``csspin-python`` neither forwards these options nor reads
+  ``CS_AWS_OIDC_CLIENT_SECRET`` (`#128
+  <https://code.contact.de/pod/components/csspin-python/-/work_items/128>`_)
+- ``python.aws_auth.index`` no longer defaults to ``16.0/simple``. Projects
+  using ``aws_auth`` must set the CodeArtifact repository index explicitly
+  (`#130
+  <https://code.contact.de/pod/components/csspin-python/-/work_items/130>`_)
+- ``csaccess>=3.0.0`` is now the default when ``aws_auth`` is enabled.
+
+Migration Guide
+---------------
+
+- Drop ``static_oidc`` and ``client_secret`` from the ``python.aws_auth``
+  section of the project's ``spinfile.yaml``. The `csaccess package
+  description <https://pypi.org/project/csaccess/>`_ documents the available
+  authentication modes and the environment they require.
+- Set ``python.aws_auth.index`` if the project relied on the previous default,
+  for example:
+
+  .. code-block:: yaml
+
+      python:
+          aws_auth:
+              enabled: True
+              index: 2026.2/simple
+
+Enhancements
+------------
+
+- Support csaccess GitLab CI OIDC authentication mode (`#128
+  <https://code.contact.de/pod/components/csspin-python/-/work_items/128>`_)
+- Support ``extra_indexes`` for ``aws_auth`` (`#129
+  <https://code.contact.de/pod/components/csspin-python/-/work_items/129>`_)
+
+Bug Fixes
+---------
+
+- python: ``aws_auth`` stack does not verify value of ``index_url`` in
+  ``pip.conf`` (`#131
+  <https://code.contact.de/pod/components/csspin-python/-/work_items/131>`_)
+
 v5.0.0
 ======
 
