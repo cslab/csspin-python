@@ -120,18 +120,8 @@ To install csspin-python using this extra make sure it is enabled in the project
             enabled: True
     ...
 
-When provisioning a project using the extra installed *and* enabled in static
-OIDC mode (``python.aws_auth.static_oidc``), make sure to have the following
-environment variable in place:
-
-- ``CS_AWS_OIDC_CLIENT_SECRET``
-
-In interactive mode (the default, without static OIDC) the client secret is not
-required.
-
-`CONTACT Software GmbH`_ will provide every customer with OIDC credentials
-during onboarding and the Cloud team can be contacted in case there are any
-questions.
+Further details about csaccess workflows and authentication methods are provided in
+the csaccess package description on pypi: https://pypi.org/project/csaccess/.
 
 Provisioning the project will result in a modified ``python.index_url`` that
 allows to install packages from the CodeArtifact registry.

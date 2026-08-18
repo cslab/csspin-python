@@ -148,11 +148,6 @@ python:
                         Time in seconds defining how long the plugin should
                         consider the authentication token as valid before
                         issuing a new one.
-                static_oidc:
-                    type: bool
-                    help: |
-                        Whether to static OIDC when authenticating with AWS
-                        CodeArtifact.
                 index:
                     type: str
                     help: The CodeArtifact repository index (e.g. "2026.2/simple").
@@ -164,11 +159,6 @@ python:
                 client_id:
                     type: str
                     help: The OIDC client ID to use.
-                client_secret:
-                    type: secret
-                    help: |
-                        The OIDC client secret to use, defaults to the
-                        environment variable 'CS_AWS_OIDC_CLIENT_SECRET'.
                 role_arn:
                     type: str
                     help: The role ARN to assume when authenticating.
