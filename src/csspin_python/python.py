@@ -164,10 +164,6 @@ defaults = config(
         enabled=False,
         memo="{spin.spin_dir}/aws_auth.memo",
         key_duration=3600 * 10,  # 10 hours
-        static_oidc=False,
-        # Need to set client secret to empty string, otherwise the string "None"
-        # would be handled as secret and obfucsated in logs.
-        client_secret="",  # nosec: B106
     ),
     index_url="https://pypi.org/simple",
     skip_js_build=None,
@@ -1221,17 +1217,6 @@ def _check_aws_token_validity(cfg: ConfigTree) -> None:
 
     import time
 
-    client_secret = interpolate1(cfg.python.aws_auth.client_secret) or os.getenv(
-        "CS_AWS_OIDC_CLIENT_SECRET"
-    )
-    static_oidc = interpolate1(cfg.python.aws_auth.static_oidc).lower() == "true"
-
-    if static_oidc and not client_secret:
-        die(
-            "Please provide a client secret for CodeArtifact access via"
-            " 'python.aws_auth.client_secret' when using static OIDC."
-        )
-
     current_time = int(time.time())
     timestamp_key = "aws_auth_timestamp"
 
@@ -1251,7 +1236,8 @@ def _check_aws_token_validity(cfg: ConfigTree) -> None:
 
         info("Updating Codeartifact token.")
 
-        opts = {"client_secret": client_secret, "static_oidc": static_oidc}
+        opts = {}
+
         if cfg.python.aws_auth.client_id:
             opts["client_id"] = interpolate1(cfg.python.aws_auth.client_id)
         if cfg.python.aws_auth.role_arn:
