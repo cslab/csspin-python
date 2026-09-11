@@ -161,7 +161,19 @@ def _run_cyclonedx(cfg: ConfigTree, third_party_deps: set[str], stderr: int) -> 
     with TemporaryDirectory() as tmp_dir:
         venv = Path(tmp_dir) / "venv"
         interpreter = venv / binary_dir / "python" + cfg.platform.exe
-        sh(cfg.python.interpreter, "-m", "venv", venv, use_subprocess_environment=False)
+        # Run --upgrade-deps and set PIP_CONSTRAINT to force pip and setuptools
+        # to have the version from the constraint files, if they are present.
+        # Necessary as python3.11 still has setuptools in the env created by
+        # venv.
+        sh(
+            cfg.python.interpreter,
+            "-m",
+            "venv",
+            "--upgrade-deps",
+            venv,
+            use_subprocess_environment=False,
+            env={"PIP_CONSTRAINT": " ".join(cfg.python.constraints)},
+        )
         if third_party_deps:
             sh(
                 interpreter,
