@@ -59,6 +59,30 @@
 Release Notes
 =============
 
+v6.0.1
+======
+
+October 15, 2026
+
+Bug Fixes
+---------
+
+- python_sbom: Generated SBOM contains wrong setuptools version (`#134
+  <https://code.contact.de/pod/components/csspin-python/-/work_items/134>`_)
+
+Chores
+------
+
+- python_sbom: Use CycloneDX v1.7 and mark third party dependencies as external
+  (`#133 <https://code.contact.de/pod/components/csspin-python/-/work_items/133>`_)
+- Add the CEDM component portfolio update to the release procedure (`!128
+  <https://code.contact.de/pod/components/csspin-python/-/merge_requests/128>`_)
+- Fix the formatting of the TOML files (`!130
+  <https://code.contact.de/pod/components/csspin-python/-/merge_requests/130>`_)
+- Fix the acceptance test broken by the new ``csspin`` release and drop the
+  ``.claude/`` directory (`!131
+  <https://code.contact.de/pod/components/csspin-python/-/merge_requests/131>`_)
+
 v6.0.0
 ======
 
