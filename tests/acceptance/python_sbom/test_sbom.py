@@ -108,6 +108,10 @@ def test_sbom_generates_cdx_json(python_version: str) -> None:
             "pypiwin32" not in component_names
         ), "Windows-only dep 'pypiwin32' must not appear in SBOM on Linux"
 
+    assert all(
+        c.get("isExternal") for c in components
+    ), "Every third-party component must be flagged as external"
+
     primary_ref = "dummy-sbom-project==0.1.0"
     component = content["metadata"]["component"]
     assert component["bom-ref"] == primary_ref
