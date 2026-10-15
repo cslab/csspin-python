@@ -6,6 +6,7 @@
 
 """Module implementing the unit tests for the python_sbom plugin"""
 
+import copy
 from unittest import mock
 
 import pytest
@@ -18,6 +19,7 @@ with mock.patch("csspin.task"):
         _build_primary_component,
         _build_purl,
         _ensure_cyclonedx_venv,
+        _mark_components_external,
         _parse_authors,
         _run_cyclonedx,
     )
@@ -211,6 +213,53 @@ class TestPrimaryComponentMetadata:
         metadata = {**_AUTHOR_METADATA, missing_key: ""}
         with pytest.raises(Abort):
             _build_primary_component(metadata, "https://pypi.org/simple", _FILE_NAME)
+
+
+def _sbom_document(spec_version: str) -> dict:
+    """Return a minimal cyclonedx-py style document for the given spec version."""
+    return {
+        "specVersion": spec_version,
+        "metadata": {
+            "component": {"name": "cs.foo", "type": "application"},
+            "tools": {"components": [{"name": "cyclonedx-py", "type": "application"}]},
+        },
+        "components": [
+            {"bom-ref": "a==1.0", "name": "a", "type": "library"},
+            {"bom-ref": "b==2.0", "name": "b", "type": "library"},
+        ],
+    }
+
+
+class TestMarkComponentsExternal:
+    """Tests for _mark_components_external."""
+
+    @pytest.mark.parametrize("spec_version", ["1.7"])
+    def test_marks_every_component_from_spec_1_7(self, spec_version):
+        """Sets isExternal on each component for 1.7 and newer, compared numerically"""
+        sbom_json = _sbom_document(spec_version)
+        expected = [{**comp, "isExternal": True} for comp in sbom_json["components"]]
+
+        _mark_components_external(sbom_json)
+
+        assert sbom_json["components"] == expected
+
+    @pytest.mark.parametrize("spec_version", ["1.5", "1.6"])
+    def test_leaves_document_unchanged_before_spec_1_7(self, spec_version):
+        """Adds no isExternal key, as it would be schema-invalid before 1.7"""
+        sbom_json = _sbom_document(spec_version)
+        original = copy.deepcopy(sbom_json)
+
+        _mark_components_external(sbom_json)
+
+        assert sbom_json == original
+
+    def test_tolerates_document_without_components(self):
+        """Neither fails nor adds a components key when there are no dependencies"""
+        sbom_json = {"specVersion": "1.7"}
+
+        _mark_components_external(sbom_json)
+
+        assert sbom_json == {"specVersion": "1.7"}
 
 
 class TestIsolatedBuildsSeeExtraIndexUrls:

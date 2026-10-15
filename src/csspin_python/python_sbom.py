@@ -42,12 +42,14 @@ from csspin import (
 from csspin.tree import ConfigTree
 from packaging.requirements import Requirement
 from packaging.utils import canonicalize_name
+from packaging.version import Version
 from path import Path
 
 defaults = config(
-    cyclonedx_bom_version="7.3.0",
+    cyclonedx_bom_version="7.5.0",
     project_paths=["{spin.project_root}"],
     repository_url="{python.index_url}",
+    spec_version="1.7",
     requires=config(spin=["csspin_python.python"], python=["setuptools"]),
 )
 
@@ -90,6 +92,7 @@ def sbom(cfg: ConfigTree) -> None:
             cfg.python_sbom.repository_url,
             file_name,
         )
+        _mark_components_external(sbom_json)
         _write_sbom(cfg, sbom_json, project_name)
 
 
@@ -207,6 +210,8 @@ def _run_cyclonedx(cfg: ConfigTree, third_party_deps: set[str], stderr: int) -> 
             "-m",
             "cyclonedx_py",
             "environment",
+            "--spec-version",
+            cfg.python_sbom.spec_version,
             venv,
             use_subprocess_environment=False,
             stderr=stderr,
@@ -374,6 +379,16 @@ def _enrich_sbom(
     dependencies = sbom_json.get("dependencies", [])
     dependencies.append({"dependsOn": direct_dep_refs, "ref": primary_ref})
     sbom_json["dependencies"] = dependencies
+
+
+def _mark_components_external(sbom_json: dict) -> None:
+    """
+    Flag the third-party components as external, for CycloneDX 1.7 and newer.
+    """
+    if Version(sbom_json["specVersion"]) < Version("1.7"):
+        return
+    for component in sbom_json.get("components", []):
+        component["isExternal"] = True
 
 
 def _collect_thirdparty_deps(requires_dist: list, python_version: str) -> set[str]:

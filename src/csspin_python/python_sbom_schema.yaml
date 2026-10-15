@@ -21,3 +21,6 @@ python_sbom:
             help: |
                 URL of the package index used for the primary component's
                 Package URL. Defaults to 'python.index_url'.
+        spec_version:
+            type: str
+            help: CycloneDX specification version of the generated SBOM.
