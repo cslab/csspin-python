@@ -158,7 +158,10 @@ class SimpleUvProvisioner(SimpleProvisioner):
         )
 
     def prerequisites(self, cfg: ConfigTree) -> None:
-        self._uv_cmd("pip", "install", "pip")
+        # venv_provision runs the venv_hook only after the prerequisites, but
+        # installing pip already needs the uv.toml.
+        _configure_uv_toml(cfg)
+        self._install_command(f"--config-file={cfg.uv_provisioner.uv_toml_path}", "pip")
 
 
 def _set_extra_index_url(toml_content: dict, extra_index_urls: list[str]) -> None:
