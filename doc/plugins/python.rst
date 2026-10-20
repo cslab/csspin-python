@@ -264,6 +264,22 @@ https://www.nuget.org/packages/python for Windows or run ``pyenv install
 If a desired version is missing, the use of a pre-provisioned interpreter via
 ``python.use`` is recommended.
 
+Python source mirror
+####################
+
+Set ``python.pyenv.mirror`` to download Python sources from a mirror instead of
+pyenv's default location. The plugin sets the value as the environment variable
+``PYTHON_BUILD_MIRROR_URL``. The mirror has to serve each file as
+``<mirror>/<sha256>``, where ``<sha256>`` is the SHA-256 checksum of the file.
+See the `pyenv documentation
+<https://github.com/pyenv/pyenv/tree/master/plugins/python-build#package-download-mirrors>`__
+for details.
+
+The mirror must hold the files for the Python version in use. It has no effect
+on Windows, when ``python.use`` is set, or when ``python.user_pyenv`` is set.
+The ``uv_provisioner`` plugin has its own ``uv_provisioner.python_mirror``
+setting.
+
 ``python`` schema reference
 ###########################
 
