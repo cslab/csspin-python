@@ -28,7 +28,7 @@ pytest:
         playwright:
             type: object
             help: |
-                Settings necessary to also run playwright tests with the pytest
+                Settings necessary to also run Playwright tests with the pytest
                 plugin.
             properties:
                 enabled:
@@ -38,9 +38,15 @@ pytest:
                         initialized.
                 browsers_path:
                     type: path
-                    help: Path for playwright to install the browsers.
+                    help: Path for Playwright to install the browsers.
                 browsers:
                     type: list
                     help: |
                         The browsers to install and to use for running the
-                        playwright tests.
+                        Playwright tests.
+                mirror:
+                    type: str
+                    help: |
+                        Host to download the Playwright browsers from. The
+                        mirror has to hold the files for the Playwright version
+                        in use.
