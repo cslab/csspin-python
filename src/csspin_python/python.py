@@ -293,6 +293,8 @@ def nuget_install(cfg: ConfigTree) -> None:
         "-mpip",
         None if cfg.verbosity > Verbosity.NORMAL else "-q",
         "install",
+        f"--index-url={cfg.python.index_url}",
+        *[f"--extra-index-url={url}" for url in cfg.python.extra_index_urls],
         "-U",
         "pip",
         "wheel",
