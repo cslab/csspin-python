@@ -56,6 +56,18 @@ Index URL
 When using the ``uv_provisioner`` plugin you must make sure to set
 ``python.index_url`` so that it points to a simple index.
 
+Python download mirror
+----------------------
+
+Set ``uv_provisioner.python_mirror`` when ``uv`` cannot reach its default
+download location for Python interpreters. The plugin passes the value to ``uv
+python install`` as ``--mirror``. See the `uv documentation
+<https://docs.astral.sh/uv/reference/cli/#uv-python-install--mirror>`__ for the
+format of the URL.
+
+The mirror must hold the files for the ``uv`` version in use. It has no effect
+when ``python.use`` is set.
+
 Windows Defender
 ----------------
 

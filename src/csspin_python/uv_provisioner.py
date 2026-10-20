@@ -145,6 +145,11 @@ class SimpleUvProvisioner(SimpleProvisioner):
             cfg.python.version,
             "--no-bin",
             "--no-registry",
+            (
+                f"--mirror={cfg.uv_provisioner.python_mirror}"
+                if cfg.uv_provisioner.python_mirror
+                else None
+            ),
         )
         cfg.python.interpreter = _get_uv_python(cfg)
         info(f"Using '{cfg.python.interpreter}' as interpreter")
