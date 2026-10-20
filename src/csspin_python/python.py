@@ -256,6 +256,8 @@ def pyenv_install(cfg: ConfigTree) -> None:
                     sh("git", "pull")
             # we should set
             setenv(PYTHON_BUILD_CACHE_PATH=mkdir(cfg.python.pyenv.cache))
+            if cfg.python.pyenv.mirror:
+                setenv(PYTHON_BUILD_MIRROR_URL=cfg.python.pyenv.mirror)
             setenv(PYTHON_CFLAGS="-DOPENSSL_NO_COMP")
             try:
                 sh(

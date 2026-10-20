@@ -19,6 +19,12 @@ python:
                 cache:
                     type: path
                     help: Path to cache the Python sources downloaded by pyenv
+                mirror:
+                    type: str
+                    help: |
+                        Base URL of a mirror for the Python sources downloaded
+                        by pyenv. Ignored on Windows and when 'python.use' or
+                        'python.user_pyenv' is set.
                 python_build:
                     type: path
                     help: Path to the python-build builtin plugin of pyenv
