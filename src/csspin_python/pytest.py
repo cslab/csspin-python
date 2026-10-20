@@ -55,6 +55,8 @@ defaults = config(
 
 def _install_playwright_browsers(cfg: ConfigTree) -> None:
     """Let playwright install the browsers"""
+    if cfg.pytest.playwright.mirror:
+        setenv(PLAYWRIGHT_DOWNLOAD_HOST=cfg.pytest.playwright.mirror)
     sh(
         f"playwright install {' '.join(cfg.pytest.playwright.browsers)}",
         env={"PLAYWRIGHT_BROWSERS_PATH": cfg.pytest.playwright.browsers_path},

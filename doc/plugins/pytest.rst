@@ -130,6 +130,15 @@ Doing so will make sure that the required python packages to use ``pytest`` and
 installed packages contain a pytest plugin, executing the tests for playwright
 is as easy as calling ``spin pytest``.
 
+Playwright browser mirror
+#########################
+
+Set ``pytest.playwright.mirror`` to download the browsers from a mirror instead
+of playwright's default location. The plugin sets the value as the environment
+variable ``PLAYWRIGHT_DOWNLOAD_HOST``. See the `playwright documentation
+<https://playwright.dev/docs/browsers#download-from-artifact-repository>`__ for
+the layout the mirror has to serve.
+
 ``pytest`` schema reference
 ###########################
 
