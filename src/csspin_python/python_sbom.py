@@ -167,7 +167,8 @@ def _run_cyclonedx(cfg: ConfigTree, third_party_deps: set[str], stderr: int) -> 
         # Run --upgrade-deps and set PIP_CONSTRAINT to force pip and setuptools
         # to have the version from the constraint files, if they are present.
         # Necessary as python3.11 still has setuptools in the env created by
-        # venv.
+        # venv. PIP_INDEX_URL and PIP_EXTRA_INDEX_URL point the upgrade at the
+        # configured indexes, because venv has no index option.
         sh(
             cfg.python.interpreter,
             "-m",
@@ -175,7 +176,11 @@ def _run_cyclonedx(cfg: ConfigTree, third_party_deps: set[str], stderr: int) -> 
             "--upgrade-deps",
             venv,
             use_subprocess_environment=False,
-            env={"PIP_CONSTRAINT": " ".join(cfg.python.constraints)},
+            env={
+                "PIP_CONSTRAINT": " ".join(cfg.python.constraints),
+                "PIP_INDEX_URL": cfg.python.index_url,
+                "PIP_EXTRA_INDEX_URL": " ".join(cfg.python.extra_index_urls),
+            },
         )
         if third_party_deps:
             sh(
