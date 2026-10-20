@@ -22,3 +22,10 @@ uv_provisioner:
         uv_toml:
             type: str
             help: Content for uv's config file
+        python_mirror:
+            type: str
+            help: |
+                Passed to 'uv python install' as '--mirror' when uv provisions
+                the Python interpreter. The mirror has to hold the files for
+                the uv version in use. Ignored when 'python.use' is set.
+            default: ''
