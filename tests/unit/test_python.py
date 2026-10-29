@@ -6,6 +6,7 @@
 
 """Module implementing the unit tests for csspin_python"""
 
+import inspect
 import os
 import re
 import sys
@@ -28,6 +29,7 @@ with mock.patch("csspin.task", lambda *args, **kwargs: (lambda func: func)):
         _configure_pipconf,
         _obfuscate_index_url,
         _split_requirement_option,
+        activate,
         get_project_metadata,
         python_env,
         wheel,
@@ -645,17 +647,82 @@ def test_check_venv(  # pylint: disable=too-many-arguments,too-many-positional-a
         mock_warn.assert_not_called()
 
 
+@mock.patch.dict(os.environ)
+@mock.patch("csspin_python.python.echo")
+def test_activate(mock_echo, tmp_path, monkeypatch):
+    """
+    activate() sets the environment variables for the processes spin starts,
+    once, and leaves spin's own sys.path and sys.prefix alone.
+    """
+    venv = tmp_path / "venv"
+    scriptdir = venv / ("Scripts" if sys.platform == "win32" else "bin")
+    scriptdir.mkdir(parents=True)
+    cfg = mock.MagicMock()
+    cfg.python.venv = venv
+    cfg.python.scriptdir = scriptdir
+
+    monkeypatch.delenv("VIRTUAL_ENV", raising=False)
+    monkeypatch.setenv("PYTHONHOME", "/some/python/home")
+    monkeypatch.setenv("PATH", "/usr/bin")
+    original_sys_path = sys.path.copy()
+    original_sys_prefix = sys.prefix
+
+    activate(cfg)
+
+    assert os.environ["VIRTUAL_ENV"] == str(venv)
+    assert os.environ["PATH"] == os.pathsep.join((str(scriptdir), "/usr/bin"))
+    assert "PYTHONHOME" not in os.environ
+    assert sys.path == original_sys_path
+    assert sys.prefix == original_sys_prefix
+    mock_echo.assert_called_once()
+
+    # Activating an already active virtual environment changes nothing
+    activate(cfg)
+    assert os.environ["PATH"] == os.pathsep.join((str(scriptdir), "/usr/bin"))
+    mock_echo.assert_called_once()
+
+
+@mock.patch.dict(os.environ)
+@mock.patch("csspin_python.python.die", side_effect=Abort)
+def test_activate_missing_venv(_mock_die, tmp_path, monkeypatch):
+    """Activating a virtual environment that doesn't exist fails."""
+    monkeypatch.delenv("VIRTUAL_ENV", raising=False)
+    cfg = mock.MagicMock()
+    cfg.python.venv = tmp_path / "venv"
+    cfg.python.scriptdir = tmp_path / "venv" / "bin"
+    with pytest.raises(Abort):
+        activate(cfg)
+
+
+@mock.patch("csspin_python.python.exists", return_value=False)
+@mock.patch("csspin_python.python.warn")
+def test_python_env_is_deprecated(mock_warn, _mock_exists):
+    """
+    python_env() still works, but warns about being deprecated, naming the
+    code using it.
+    """
+    caller = f"{__file__}:{inspect.currentframe().f_lineno + 1}"
+    with python_env(mock.MagicMock()):
+        pass
+    mock_warn.assert_called_once()
+    message = mock_warn.call_args[0][0]
+    assert "deprecated" in message
+    assert message.startswith(f"{caller} uses ")
+
+
 @mock.patch("csspin_python.python.exists", return_value=True)
 @mock.patch("csspin_python.python.echo")
+@mock.patch("csspin_python.python.warn")
 @mock.patch("csspin_python.python.venv_init")
-def test_python_env_nesting(mock_venv_init, _mock_echo, _mock_exists):
+def test_python_env_nesting(mock_venv_init, _mock_warn, _mock_echo, _mock_exists):
     """
     Nesting python_env() must not corrupt the outer activation or lose the
     original environment on teardown.
 
-    csspin.sh activates spin.subprocess_environment (i.e. python_env) around the
-    commands it spawns, so an explicit ``with python_env(cfg):`` block that calls
-    sh() ends up nesting python_env. This must be safe.
+    Plugins may nest explicit ``with python_env(cfg):`` blocks, and csspin
+    versions providing spin.subprocess_environment still call python_env around
+    the commands spawned by sh() when an older csspin-python registered it.
+    This must be safe.
 
     `exists` is patched True so python_env takes the activation path (the venv is
     considered provisioned) rather than its no-op path.

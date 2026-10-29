@@ -133,7 +133,7 @@ def _ensure_cyclonedx_venv(cfg: ConfigTree, binary_dir: str, quiet: str | None) 
         )
         rmtree(venv_cdx)
 
-    sh(cfg.python.interpreter, "-m", "venv", venv_cdx, use_subprocess_environment=False)
+    sh(cfg.python.interpreter, "-m", "venv", venv_cdx)
     sh(
         interpreter_cdx,
         "-m",
@@ -145,7 +145,6 @@ def _ensure_cyclonedx_venv(cfg: ConfigTree, binary_dir: str, quiet: str | None) 
         cfg.python.index_url,
         *[f"--extra-index-url={url}" for url in cfg.python.extra_index_urls],
         "cyclonedx-bom==" + requested_version,
-        use_subprocess_environment=False,
     )
     with memoizer(memo_file) as memo:
         memo.add(memo_key)
@@ -175,7 +174,6 @@ def _run_cyclonedx(cfg: ConfigTree, third_party_deps: set[str], stderr: int) -> 
             "venv",
             "--upgrade-deps",
             venv,
-            use_subprocess_environment=False,
             env={
                 "PIP_CONSTRAINT": " ".join(cfg.python.constraints),
                 "PIP_INDEX_URL": cfg.python.index_url,
@@ -197,7 +195,6 @@ def _run_cyclonedx(cfg: ConfigTree, third_party_deps: set[str], stderr: int) -> 
                     for constraint in cfg.python.constraints
                 ],
                 *third_party_deps,
-                use_subprocess_environment=False,
                 stderr=stderr,
             )
         sh(
@@ -208,7 +205,6 @@ def _run_cyclonedx(cfg: ConfigTree, third_party_deps: set[str], stderr: int) -> 
             "uninstall",
             "-y",
             "pip",
-            use_subprocess_environment=False,
         )
         return backtick(  # type: ignore[no-any-return]
             interpreter_cdx,
@@ -218,7 +214,6 @@ def _run_cyclonedx(cfg: ConfigTree, third_party_deps: set[str], stderr: int) -> 
             "--spec-version",
             cfg.python_sbom.spec_version,
             venv,
-            use_subprocess_environment=False,
             stderr=stderr,
         )
 

@@ -68,7 +68,9 @@ point to the base installation.
 
 import abc
 import configparser
+import contextlib
 import hashlib
+import inspect
 import json
 import logging
 import os
@@ -124,6 +126,9 @@ from csspin import (
     writetext,
 )
 from csspin.tree import ConfigTree
+
+# csspin's plugin development guide, for warnings pointing to its sections
+_PLUGIN_GUIDE_URL = "https://csspin.readthedocs.io/en/stable/howtoplugins.html"
 
 defaults = config(
     build_wheels=["{spin.project_root}"],
@@ -418,14 +423,13 @@ def configure(cfg: ConfigTree) -> None:
     if cfg.python.aws_auth.enabled:
         _check_aws_token_validity(cfg)
 
-    # Provide spin's subprocess environment (see python_env). Registered here
-    # rather than in init so it is also available to the provision and
-    # finalize_provision hooks of plugins depending on this one.
-    cfg.spin.subprocess_environment = lambda: python_env(cfg)
-
 
 def init(cfg: ConfigTree) -> None:
-    """Initialize the python plugin"""
+    """Initialize the python plugin and activate the virtual environment.
+
+    Runs before spin executes tasks, and during 'spin provision' as soon as the
+    virtual environment has been created (see venv_provision).
+    """
     if not cfg.python.use:
         logging.debug("Checking for %s", cfg.python.interpreter)
         if not exists(cfg.python.interpreter):
@@ -434,6 +438,36 @@ def init(cfg: ConfigTree) -> None:
                 " project. You might want to run spin with the 'provision'"
                 " task."
             )
+    activate(cfg)
+
+
+def activate(cfg: ConfigTree) -> None:
+    """Activate the virtual environment for the processes spin starts, like its
+    'activate' script does in a shell.
+
+    This only sets environment variables. It must never change spin's own
+    sys.path or sys.prefix (e.g. by executing 'activate_this.py'): plugin code
+    must not import from the project's virtual environment, which may use
+    another Python version (see "Outer and inner interpreter" in csspin's plugin
+    development guide).
+    """
+    venv = str(cfg.python.venv)
+    if os.environ.get("VIRTUAL_ENV") == venv:
+        return
+    if not exists(cfg.python.scriptdir):
+        die(
+            f"{cfg.python.venv} does not exist. You may want to provision"
+            " it using 'spin provision'"
+        )
+    if sys.platform == "win32":
+        echo(f"{cfg.python.scriptdir}\\activate.ps1")
+    else:
+        echo(f". {cfg.python.scriptdir}/activate")
+    os.environ["PATH"] = os.pathsep.join(
+        (str(cfg.python.scriptdir), os.environ.get("PATH", ""))
+    )
+    os.environ["VIRTUAL_ENV"] = venv
+    os.environ.pop("PYTHONHOME", None)
 
 
 def venv_init(cfg: ConfigTree) -> None:
@@ -454,25 +488,46 @@ def venv_init(cfg: ConfigTree) -> None:
         )
 
 
+def _caller_location() -> str:
+    """Return 'file:line' of the innermost caller outside this module and
+    contextlib, i.e. the plugin code using one of our functions."""
+    skip = {os.path.normcase(__file__), os.path.normcase(contextlib.__file__)}
+    frame = inspect.currentframe()
+    try:
+        while frame is not None:
+            filename = frame.f_code.co_filename
+            if os.path.normcase(filename) not in skip:
+                return f"{filename}:{frame.f_lineno}"
+            frame = frame.f_back
+        return "<unknown>"
+    finally:
+        del frame
+
+
 @contextmanager
 def python_env(cfg: ConfigTree) -> Generator:
     """
-    Context manager to activate the subprocess/python virtual environment and
-    deactivate it once done.
+    Context manager activating the virtual environment *in spin's process*,
+    including its sys.path, and deactivating it once done.
 
-    Registered as ``spin.subprocess_environment`` by the plugin's
-    :py:func:`configure` hook, so ``csspin.sh`` activates the virtual environment
-    around the commands it spawns. Activation is conditional: while the virtual
-    environment has not been created yet (e.g. early during ``spin provision``)
-    this is a no-op and the command runs in spin's in-process environment; once
-    the venv exists it is activated. Saving and restoring
-    ``os.environ``, ``sys.path`` and the ``sys`` prefix attributes makes nesting
-    safe -- an explicit ``with python_env(cfg):`` block whose inner ``csspin.sh``
-    re-enters this context.
+    .. deprecated::
+       Plugin code must not import from the project's virtual environment,
+       which may use another Python version than spin (see "Outer and inner
+       interpreter" in csspin's plugin development guide). The virtual
+       environment is activated for the processes spin starts by
+       :py:func:`activate` already. Make modules a plugin imports dependencies
+       of its plugin package, or run the tools from the virtual environment as
+       subprocesses. This function will be removed in a future release.
 
-    See the "The subprocess environment" section of csspin's plugin development
-    guide for the general concept.
+    Saving and restoring ``os.environ``, ``sys.path`` and the ``sys`` prefix
+    attributes makes nesting safe.
     """
+    warn(
+        f"{_caller_location()} uses csspin_python.python.python_env(), which is"
+        " deprecated and will be removed: plugin code must not import from the"
+        " project's virtual environment."
+        f" See {_PLUGIN_GUIDE_URL}#outer-and-inner-interpreter."
+    )
     if not exists(cfg.python.scriptdir / "activate_this.py"):
         # The virtual environment has not been provisioned (yet); run the command
         # in spin's in-process environment instead of activating.
