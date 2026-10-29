@@ -93,9 +93,13 @@ and the generated docs.
 
 `csspin_python.python` is the foundational plugin: it provisions the interpreter
 (pyenv on Linux/macOS, nuget on Windows, or a pluggable `ProvisionerProtocol`)
-and the project virtualenv, and registers `cfg.spin.subprocess_environment` so
-every `csspin.sh()` call runs inside that venv. Most other plugins declare a
-`requires.spin` dependency on it.
+and the project virtualenv, and activates the venv once in `init` (also called
+by `venv_provision` right after creating it) by setting `PATH`/`VIRTUAL_ENV`, so
+every process spin starts runs inside it. Activation must never touch spin's own
+`sys.path`/`sys.prefix`, and plugin code must never import from the venv (see
+"Outer and inner interpreter" in csspin's `doc/howtoplugins.rst`). `python_env()`, which does activate in-process, is deprecated and
+only kept for plugins that haven't been migrated yet. Most other plugins declare
+a `requires.spin` dependency on it.
 
 `ProvisionerProtocol` is the extension point for alternative strategies: assign
 an instance to `cfg.python.provisioner` from another plugin's `configure()`.
