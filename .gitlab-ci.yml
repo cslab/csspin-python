@@ -2,7 +2,7 @@
 
 include:
     - project: pod/tools/spin_plugin_common
-      ref: v4.0.1
+      ref: v5.0.0
       file: ci/.gitlab-ci.yml
 
 # ==============================================================================
