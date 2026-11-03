@@ -950,12 +950,17 @@ class ProvisionerProtocol:
         ]
         virtualenv = Command(*cmd)
         # do not download seeds, since we update pip later anyway
-        # add the plugins directory to the PYTHONPATH so that virtualenv will be found
+        # add the plugin packages to the PYTHONPATH so that virtualenv will be
+        # found; csspin versions without spin.plugin_site_packages install
+        # them into the plugins directory itself
+        plugin_site_packages = cfg.spin.get("plugin_site_packages") or (
+            cfg.spin.spin_dir / "plugins"
+        )
         virtualenv(
             "-p",
             cfg.python.interpreter,
             cfg.python.venv,
-            env={"PYTHONPATH": cfg.spin.spin_dir / "plugins"},
+            env={"PYTHONPATH": plugin_site_packages},
         )
 
     def prerequisites(self: Self, cfg: ConfigTree) -> None:
