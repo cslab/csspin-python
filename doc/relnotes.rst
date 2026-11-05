@@ -59,6 +59,48 @@
 Release Notes
 =============
 
+v6.1.0
+======
+
+November 5, 2026
+
+Enhancements
+------------
+
+- Add ``uv_provisioner.python_mirror`` for installing Python interpreters from
+  a mirror (`#138
+  <https://code.contact.de/pod/components/csspin-python/-/work_items/138>`_)
+- Add ``python.pyenv.mirror`` for downloading Python sources from an
+  alternative endpoint (`#139
+  <https://code.contact.de/pod/components/csspin-python/-/work_items/139>`_)
+- Add ``pytest.playwright.mirror`` for downloading Playwright browsers from a
+  mirror (`#140
+  <https://code.contact.de/pod/components/csspin-python/-/work_items/140>`_)
+
+Bug Fixes
+---------
+
+- ``uv_provisioner``: Installing pip into a fresh venv contacts the default
+  index instead of ``python.index_url`` (`#137
+  <https://code.contact.de/pod/components/csspin-python/-/work_items/137>`_)
+- Windows interpreter setup via nuget installs pip, wheel and packaging without
+  ``python.index_url`` and ``python.constraints`` (`#135
+  <https://code.contact.de/pod/components/csspin-python/-/work_items/135>`_)
+- ``python_sbom``: Upgrading pip in the temporary SBOM venv ignores
+  ``python.index_url`` (`#136
+  <https://code.contact.de/pod/components/csspin-python/-/work_items/136>`_)
+
+Chores
+------
+
+- Run Linux CI on Python 3.11 instead of 3.10 (`#142
+  <https://code.contact.de/pod/components/csspin-python/-/work_items/142>`_)
+- Deprecate ``python_env()`` and activate the virtual environment once, as
+  phase 1 of csspin#270 (`!142
+  <https://code.contact.de/pod/components/csspin-python/-/merge_requests/142>`_)
+- Use ``spin.plugin_site_packages`` for running virtualenv (`!140
+  <https://code.contact.de/pod/components/csspin-python/-/merge_requests/140>`_)
+
 v6.0.1
 ======
 
