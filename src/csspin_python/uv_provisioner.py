@@ -49,10 +49,30 @@ defaults = config(
 )
 
 
+def _set_uv_config_file(cfg: ConfigTree) -> None:
+    setenv(UV_CONFIG_FILE=cfg.uv_provisioner.uv_toml_path)
+
+
+def _set_uv_project_environment(cfg: ConfigTree) -> None:
+    setenv(UV_PROJECT_ENVIRONMENT=cfg.python.venv)
+
+
+def init(cfg: ConfigTree) -> None:
+    """
+    Set the environment variables ``uv`` needs in every spin run.
+
+    ``spin provision`` runs no ``init`` hooks, so ``venv_hook`` and
+    ``SimpleUvProvisioner.provision_venv`` set the same variables for it.
+    """
+    if interpolate1(cfg.uv_provisioner.enabled).lower() == "true":
+        _set_uv_config_file(cfg)
+        _set_uv_project_environment(cfg)
+
+
 def venv_hook(cfg: ConfigTree) -> None:
     """Things to do right after venv creation."""
     _configure_uv_toml(cfg)
-    setenv(UV_CONFIG_FILE=cfg.uv_provisioner.uv_toml_path)
+    _set_uv_config_file(cfg)
 
 
 def configure(cfg: ConfigTree) -> None:
@@ -155,7 +175,7 @@ class SimpleUvProvisioner(SimpleProvisioner):
         info(f"Using '{cfg.python.interpreter}' as interpreter")
 
     def provision_venv(self, cfg: ConfigTree) -> None:
-        setenv(UV_PROJECT_ENVIRONMENT=cfg.python.venv)
+        _set_uv_project_environment(cfg)
         self._uv_cmd(
             "venv",
             f"--python={cfg.python.interpreter}",
