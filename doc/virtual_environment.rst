@@ -28,31 +28,25 @@ When provisioning the ``csspin_python.python`` plugin or plugins extending the
 ``{python.venv}``. This is the Python environment that spin uses when executing
 subcommands like ``spin pytest`` and ``spin run <something>``.
 
-Environment Activation
-======================
+Running Commands in the Environment
+===================================
 
-Basic Activation
-----------------
+.. Warning:: Activating the virtual environment by hand is deprecated and will
+             be removed in a future release. This includes ``spin env`` and the
+             activation scripts that ``spin provision`` patches. Use ``spin run
+             <command>`` instead.
 
-The virtual environment can be activated as described in :ref:`spin env
-<section-label-spin-env>`. This allows executing non-spin commands and
-executables like ``foo.exe`` within the environment without the need for calling
-``spin run foo.exe``.
-
-.. Warning:: When manually activating the environment, ``configure`` and
-             ``init`` hooks of provisioned spin plugins are *not* executed. This
-             leads to a slightly different environment than the one used when
-             running ``spin run``.
-
-Recommended Approach
---------------------
-
-Instead of manually activating the Python virtual environment, we recommend
-using ``spin run zsh`` (or your preferred shell). This approach ensures that:
+To run commands in the Python virtual environment, use ``spin run <command>``,
+for example ``spin run zsh`` (or your preferred shell). This approach ensures
+that:
 
 * All ``init`` and ``configure`` hooks of provisioned plugins are executed
 * Commands obtain the same environment as if executed via ``spin run <command>``
 * The environment setup is consistent and reliable
+
+.. Note:: Do not run ``spin`` commands in a shell that ``spin run`` starts. The
+          shell already has the environment of the ``spin`` call that started
+          it. A nested ``spin`` call can lead to unexpected behavior.
 
 Important Considerations
 ========================
