@@ -131,8 +131,11 @@ credentials go into `csspin.secrets` to keep them out of logs.
 
 `python.py` rewrites the venv's activation scripts for every supported shell
 (the `ActivateScriptPatcher` subclasses) so that variables set via
-`csspin.setenv()` during provisioning also apply when a user sources the script
-outside of `spin`, and get reverted by a patched `deactivate`.
+`csspin.setenv()` also apply when a user sources the script outside of `spin`,
+and get reverted by a patched `deactivate`. Activating the virtual environment
+by hand, including `spin env`, is deprecated, and so is this patching: the
+patched activation scripts (all except `deactivate.bat`) and `spin env` print a
+warning.
 
 ### Docs and tests
 

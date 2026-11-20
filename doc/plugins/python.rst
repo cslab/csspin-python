@@ -166,42 +166,6 @@ usage of the passed interpreter.
     ...
     spin -p python.use=/usr/bin/python <task>
 
-.. _section-label-spin-env:
-
-How to activate the virtual environment provisioned by csspin manually?
-#######################################################################
-
-.. Attention:: The activation script presented by ``spin env`` doesn't lead to
-               same environment in which ``spin run <command>`` is executed,
-               since plugins' hooks are not run through when activating an
-               environment by hand! For more information, please refer to
-               :ref:`python_virtual_environment`.
-
-Retrieving the path to activate the virtual environment created by the
-``python`` plugin is as easy as follows:
-
-.. code-block:: console
-    :caption: Retrieving the activate script of the virtual environment provisioned by csspin
-
-    # Unix-style shells:
-    spin env
-    . /home/developer/src/qs/spin/csspin_python/.spin/venv/bin/activate
-
-    # Powershell 7:
-    spin env
-    C:\Users\developer\Desktop\csspin\.spin\venv\Scripts\activate.ps1
-
-Activating the virtual environment can be done by sourcing the activate script:
-
-.. code-block:: console
-    :caption: Activating the virtual environment provisioned by csspin
-
-    # Unix-style shells:
-    $(spin env)
-
-    # Powershell 7:
-    & (spin env)
-
 How to inject a custom pip configuration within the scope of the environment?
 #############################################################################
 

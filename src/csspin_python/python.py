@@ -234,7 +234,17 @@ def env() -> None:
 
     NOTE: spin itself should not be run from within the activated virtual
           environment!
+
+    .. deprecated::
+       Activating the virtual environment by hand yields a different environment
+       than ``spin run``, because spin runs no hooks on activation. Use ``spin
+       run <command>`` instead. This task will be removed in a future release.
     """
+    warn(
+        "Activating the virtual environment by hand, including `spin env`, is"
+        " deprecated and will be removed in a future release."
+        " Use `spin run <command>` instead."
+    )
     if sys.platform == "win32":
         # Don't care about cmd
         print(normpath("{python.scriptdir}", "activate.ps1"))
@@ -570,7 +580,22 @@ def python_env(cfg: ConfigTree) -> Generator:
                 setattr(sys, "real_prefix", old_real_prefix)
 
 
+# Printed to stderr by the patched activation scripts. Contains no single
+# quote, so each script can wrap it in single quotes.
+_ACTIVATION_WARNING = (
+    "Activating the virtual environment by hand is deprecated and will be"
+    " removed in a future release. Use `spin run <command>` to run commands in"
+    " the full spin environment."
+)
+
+
 class ActivateScriptPatcher(abc.ABC):
+    """Base class of the activation script patchers.
+
+    Deprecated: spin does not apply the patched variables itself. The patched
+    scripts print a deprecation warning when a user activates them.
+    """
+
     activatescript: Union[str, Path]
     setpattern: str
     resetpattern: str
@@ -578,6 +603,8 @@ class ActivateScriptPatcher(abc.ABC):
     patchmarker: str
     replacements: list[tuple[str, str]]
     script: str
+    # Script code that prints ``_ACTIVATION_WARNING``.
+    warning: str = ""
 
     @staticmethod
     @abc.abstractmethod
@@ -602,12 +629,17 @@ class ActivateScriptPatcher(abc.ABC):
 
 
 def patch_activate(schema: Type[ActivateScriptPatcher]) -> None:
-    """Patch the activate script"""
+    """Patch the activate script
+
+    Deprecated: see :class:`ActivateScriptPatcher`.
+    """
     if exists(schema.activatescript):
         setters = []
         resetters = set()
         old_value_setters = set()
-        for name, value in EXPORTS:
+        # list.copy() reads EXPORTS without triggering a warning, should EXPORTS
+        # warn on reads. Provision must stay silent about this.
+        for name, value in list.copy(EXPORTS):
             value = schema.interpolate_environ_value(value)
             setters.append(schema.setpattern.format(name=name, value=value))
             resetters.add(schema.resetpattern.format(name=name))
@@ -636,13 +668,17 @@ def patch_activate(schema: Type[ActivateScriptPatcher]) -> None:
             resetters=resetters_string,
             old_value_setters=old_value_setters_string,
             setters=setters_string,
+            warning=schema.warning,
         )
         writetext(f"{schema.activatescript}", newscript)
 
 
 class BashActivate(ActivateScriptPatcher):
+    """Deprecated: see :class:`ActivateScriptPatcher`."""
+
     patchmarker = "\n## Patched by csspin_python.python\n"
     activatescript = Path("{python.scriptdir}") / "activate"
+    warning = f"echo '{_ACTIVATION_WARNING}' >&2"
     replacements = [
         ("deactivate", "origdeactivate"),
     ]
@@ -686,6 +722,7 @@ class BashActivate(ActivateScriptPatcher):
         deactivate nondestructive
         {old_value_setters}
         {setters}
+        {warning}
 
         # The hash command must be called to get it to forget past
         # commands. Without forgetting past commands the $PATH changes
@@ -705,8 +742,13 @@ class BashActivate(ActivateScriptPatcher):
 
 
 class PowershellActivate(ActivateScriptPatcher):
+    """Deprecated: see :class:`ActivateScriptPatcher`."""
+
     patchmarker = "\n## Patched by csspin_python.python\n"
     activatescript = Path("{python.scriptdir}") / "activate.ps1"
+    # Single quotes keep the backticks literal. Write-Warning is not used: it
+    # can end up in the stdout of a captured pwsh process.
+    warning = f"[Console]::Error.WriteLine('{_ACTIVATION_WARNING}')"
     replacements = [
         ("deactivate", "origdeactivate"),
     ]
@@ -739,6 +781,7 @@ class PowershellActivate(ActivateScriptPatcher):
         deactivate -nondestructive
         {old_value_setters}
         {setters}
+        {warning}
         """)
 
     @staticmethod
@@ -753,8 +796,12 @@ class PowershellActivate(ActivateScriptPatcher):
 
 
 class BatchActivate(ActivateScriptPatcher):
+    """Deprecated: see :class:`ActivateScriptPatcher`."""
+
     patchmarker = "\nREM Patched by csspin_python.python\n"
     activatescript = Path("{python.scriptdir}") / "activate.bat"
+    # cmd treats unescaped angle brackets as redirections.
+    warning = ">&2 echo " + _ACTIVATION_WARNING.replace("<", "^<").replace(">", "^>")
     replacements = []
     old_env_pattern = dedent("""
         if defined _OLD_SPIN_VALUE_{name} goto ENDIFSPIN{name}1
@@ -785,6 +832,7 @@ class BatchActivate(ActivateScriptPatcher):
         {original}
         {old_value_setters}
         {setters}
+        {warning}
         """)
 
     @staticmethod
@@ -799,6 +847,8 @@ class BatchActivate(ActivateScriptPatcher):
 
 
 class BatchDeactivate(ActivateScriptPatcher):
+    """Deprecated: see :class:`ActivateScriptPatcher`."""
+
     patchmarker = "\nREM Patched by csspin_python.python\n"
     activatescript = Path("{python.scriptdir}") / "deactivate.bat"
     replacements = []
@@ -826,8 +876,12 @@ class BatchDeactivate(ActivateScriptPatcher):
 
 
 class PythonActivate(ActivateScriptPatcher):
+    """Deprecated: see :class:`ActivateScriptPatcher`."""
+
     patchmarker = "# Patched by csspin_python.python\n"
     activatescript = Path("{python.scriptdir}") / "activate_this.py"
+    # The original script imports ``sys``.
+    warning = f"print({_ACTIVATION_WARNING!r}, file=sys.stderr)"
     replacements = []
     old_env_pattern = ""
     setpattern = 'os.environ["{name}"] = fr"{value}"'
@@ -836,6 +890,7 @@ class PythonActivate(ActivateScriptPatcher):
         {patchmarker}
         {original}
         {setters}
+        {warning}
         """)
 
     @staticmethod

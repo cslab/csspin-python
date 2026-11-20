@@ -55,41 +55,39 @@ used within any function of the plugin.
         """This is a dummy plugin"""
         ...
 
-How to write environment variables into the Python virtual environment?
-#######################################################################
+How does a plugin set environment variables?
+############################################
 
-spin's API already provides the ``csspin.setenv`` function that enables setting
-environment variables for the current process.
+A plugin sets the environment variables it needs in its ``init`` hook, with the
+``csspin.setenv`` function. spin runs the ``init`` hook on every ``spin``
+call, so the variables are available to every command that spin starts.
 
-In combination with the ``python`` plugin, these environment
-variables are written into the Python virtual environment in case the plugin
-depends on ``python`` and ``csspin.setenv`` is called during
-``configure(cfg)`` or ``provision(cfg)`` of the current plugin.
+``spin provision`` runs no ``init`` hook. A plugin that needs a variable during
+provision also sets it in ``provision``. The ``csspin-java`` plugin is a model
+for this pattern. For details, see `csspin's plugin guide
+<https://csspin.readthedocs.io/en/stable/howtoplugins.html>`_.
 
 .. code-block:: python
-    :caption: Writing environment variables into the Python virtual environment
+    :caption: Setting environment variables in a plugin
 
     from csspin import config, setenv
 
-    defaults = config(spin=["csspin_python.python"])
+    defaults = config(requires=config(spin=["csspin_python.python"]))
 
 
-    def configure(cfg):
+    def init(cfg):
         setenv(FOO="bar")
 
 
     def provision(cfg):
-        setenv(PIPAPO="...")
+        # "spin provision" runs no "init" hook.
+        setenv(FOO="bar")
         ...
 
-
-    ...
-
-After provision of a project using the plugin module above, the environment
-variable ``FOO`` is available within the Python virtual environment, i.e. also
-when activating the virtual environment manually. This is useful for such
-environment variables that are required by plugins during runtime and don't
-change when working with the same environment.
+.. note::
+    The ``python`` plugin writes the variables that ``setenv`` records into the
+    activation scripts of the virtual environment. This patching is deprecated.
+    See :ref:`python_virtual_environment`.
 
 What is the use of ``ProvisionerProtocol``?
 ###########################################
