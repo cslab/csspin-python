@@ -150,3 +150,20 @@ the spinfiles in `tests/integration/yamls/`, provisioning under a temp
 `spin.data` dir, driven by `provision_env()`). `test_aws_auth.py` skips without
 `CS_AWS_OIDC_CLIENT_SECRET`. The session-scoped `disable_global_yaml` fixture in
 `tests/conftest.py` keeps a developer's local `global.yaml` out of test runs.
+
+## Compatibility
+
+Customers and external projects use csspin and the `csspin-*` plugin packages,
+so every change must keep existing setups working.
+
+- Deprecate before removing. Keep the old property, task, option, default or
+  API working next to the new one and remove it in a later major release. For
+  user-facing changes, warn with `warn_deprecated` (from `csspin`) and mark
+  the schema help as deprecated. This covers schema property names and
+  defaults. Keep warnings sparse and show them only to people who can act on
+  them. Name unavoidable breaks in the MR description for the release notes.
+- Each deprecation needs an issue that owns the removal. Link it in the MR
+  that adds the deprecation and assign it to the milestone
+  `PTM - <project>: vX.Y.Z release planning` of the next major release, where
+  `<project>` is this project's name. Create the milestone if the project has
+  none yet.
